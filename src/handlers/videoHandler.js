@@ -45,7 +45,7 @@ export function setupVideoHandler(bot) {
 			console.log(
 				`[Video] File too big: ${(video.file_size / 1024 / 1024).toFixed(1)}MB`
 			);
-			await ctx.reply('Video qua lon (>20MB), bo qua.');
+			await ctx.reply('Video too big (>20MB), skipped.');
 			return;
 		}
 
@@ -103,18 +103,16 @@ export function setupVideoHandler(bot) {
 			const time = formatVietnameseTime(new Date(post.scheduledAt));
 			console.log(`[Video] Scheduled: ${time}`);
 
-			// Notify user - use simple ASCII to avoid UTF-8 issues
-			const shortTitle =
-				content.title.replace(/[^\x00-\x7F]/g, '').slice(0, 20) || 'Video';
-			await ctx.reply(`OK: ${shortTitle}... | ${time}`);
+			// Notify user - pure ASCII
+			await ctx.reply(`Scheduled: ${time}`);
 		} catch (error) {
 			console.error('[Video] Error:', error.message);
-			await ctx.reply(`❌ Lỗi: ${error.message}`);
+			await ctx.reply(`Error: ${error.message.replace(/[^\x00-\x7F]/g, '')}`);
 		}
 	});
 
 	bot.on('message:video_note', async (ctx) => {
-		await ctx.reply('⚠️ Video tròn không hỗ trợ');
+		await ctx.reply('Round video not supported');
 	});
 
 	// Handle commands

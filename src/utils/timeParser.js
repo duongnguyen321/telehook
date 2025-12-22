@@ -149,7 +149,7 @@ export function parseVietnameseTime(input, baseTime = new Date()) {
 import { toGMT7 } from './timezone.js';
 
 /**
- * Format date to Vietnamese readable string (in GMT+7)
+ * Format date to readable string (in GMT+7, ASCII only)
  * @param {Date} date
  * @returns {string}
  */
@@ -168,12 +168,12 @@ export function formatVietnameseTime(date) {
 	const timeStr = `${hours}:${minutes}`;
 
 	if (isToday) {
-		return `hôm nay lúc ${timeStr}`;
+		return `Today ${timeStr}`;
 	} else if (isTomorrow) {
-		return `ngày mai lúc ${timeStr}`;
+		return `Tomorrow ${timeStr}`;
 	} else {
 		const day = gmt7.getDate().toString().padStart(2, '0');
 		const month = (gmt7.getMonth() + 1).toString().padStart(2, '0');
-		return `${day}/${month} lúc ${timeStr}`;
+		return `${day}/${month} ${timeStr}`;
 	}
 }
