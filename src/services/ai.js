@@ -658,6 +658,102 @@ const TITLES = [
 	'Toàn bộ body sexy',
 	'Em khoe back view',
 	'Góc sau body em',
+
+	// === ROLEPLAY & FANTASY (40) ===
+	'Cô giáo dạy hư đây',
+	'Học bài đi không phạt',
+	'Cô giáo sexy của em',
+	'Bài học riêng cho anh',
+	'Nữ sinh ngây thơ',
+	'Học sinh mới chuyển trường',
+	'Em chưa thuộc bài',
+	'Thầy phạt em đi',
+	'Thư ký riêng của sếp',
+	'Sếp ơi ký duyệt đi',
+	'Văn phòng vắng người',
+	'OT đêm nay với sếp',
+	'Y tá trực đêm buồn',
+	'Bệnh nhân đặc biệt',
+	'Khám tổng quát cho anh',
+	'Tiêm thuốc giảm đau nha',
+	'Hầu gái dọn dẹp',
+	'Chủ nhân về rồi ạ',
+	'Phục vụ chủ nhân',
+	'Master của em đâu?',
+	'Gym vibes nóng bỏng',
+	'Squat mông cong vút',
+	'Tập chung không anh?',
+	'Pt riêng của em',
+	'Yoga pose gợi cảm',
+	'Dãn cơ cùng em',
+	'Sweaty workout sexy',
+	'Tập xong mệt quá',
+	'Công sở nghiêm túc?',
+	'Váy zip công sở hot',
+	'Sơ mi bung cúc',
+	'Office lady sexy',
+	'Áo dài trắng mỏng',
+	'Nón lá che nghiêng',
+	'Truyền thống nhưng hot',
+	'Áo dài khoe đường cong',
+	'Em gái quê lên phố',
+	'Street style gợi cảm',
+	'Dạo phố cùng em',
+	'Nổi bật nhất phố',
+
+	// === VIBE & ATMOSPHERE (30) ===
+	'Bóng tối làm em bạo',
+	'Dark mood sexy',
+	'Bí ẩn trong bóng đêm',
+	'Chỉ mình anh thấy',
+	'Nắng sớm chiếu rọi',
+	'Morning vibes trong veo',
+	'Sáng nay em đẹp không?',
+	'Cà phê sáng cùng em',
+	'Cozy home vibes',
+	'Ấm áp bên em',
+	'Nhà là nơi có em',
+	'Chăn ấm nệm êm',
+	'Sang chảnh kiêu sa',
+	'Luxury lifestyle hot',
+	'Tiểu thư đài các',
+	'Queen vibe quyền lực',
+	'Cute phô mai que',
+	'Em bé đáng yêu',
+	'Baby girl của anh',
+	'Nhõng nhẽo một chút',
+	'Hoang dã ướt át',
+	'Crazy night tonight',
+	'Wild cat tìm mồi',
+	'Điên cuồng vì anh',
+	'Xõa hết mình đêm nay',
+	'Không giới hạn',
+	'No rules tonight',
+	'Phá lệ vì anh',
+	'Ngoan xinh yêu đây',
+	'Hư một chút mới vui',
+
+	// === ANGLES & POV (20) ===
+	'POV: Anh nhìn xuống',
+	'POV: Em nhìn lên',
+	'Góc nhìn từ trên cao',
+	'Low angle legs dài',
+	'Cận cảnh face xinh',
+	'Zoom vào mắt em',
+	'Góc nghiêng thần thánh',
+	'Nhìn gần chi tiết da',
+	'Toàn cảnh body em',
+	'Xa xa vẫn sexy',
+	'Góc máy bí mật',
+	'Camera giấu kín?',
+	'Góc quay lén?',
+	'Tự quay sexy',
+	'Cầm máy quay em',
+	'Góc nhìn người yêu',
+	'Boyfriend point of view',
+	'Mắt anh nhìn em',
+	'Qua lăng kính tình yêu',
+	'Góc nào cũng đẹp',
 ];
 
 // 300+ descriptions - dirty talk style, gợi dục táo bạo
@@ -1200,6 +1296,102 @@ const DESCRIPTIONS = [
 	'Toàn bộ body sexy đây',
 	'Em khoe back view nha',
 	'Góc sau body em đẹp',
+
+	// === ROLEPLAY DESCRIPTIONS (40) ===
+	'Cô giáo hôm nay dạy trễ',
+	'Bài học này sếp phải nhớ',
+	'Trò hư cần bị phạt roi',
+	'Em chép phạt 100 lần nha',
+	'Thầy giáo tay hư quá',
+	'Tan học ở lại gặp cô',
+	'Sếp ký nhanh còn làm việc khác',
+	'Văn phòng này cách âm tốt',
+	'Thư ký ngoan hay hư?',
+	'Cafe của sếp đây ạ',
+	'Y tá tiêm nhẹ thôi nha',
+	'Bệnh này cần thuốc đặc biệt',
+	'Khám body em kỹ vào',
+	'Trực đêm buồn quá anh ơi',
+	'Dọn dẹp phòng cho chủ nhân',
+	'Lau dọn tư thế sexy',
+	'Hầu gái nghe lời chủ nhân',
+	'Master muốn em làm gì?',
+	'Tập gym mồ hôi nhễ nhại',
+	'Squat 100 cái mông căng',
+	'Leg day mỏi chân quá',
+	'Cardio trên giường đốt calo',
+	'Yoga pose khó cho anh',
+	'Dẻo dai chiều anh hết ý',
+	'Dân văn phòng cũng biết hư',
+	'Zip ngắn quá sếp ơi',
+	'Họp kín trong phòng sếp',
+	'Áo dài lụa mỏng tang',
+	'Gió bay tà áo gợi cảm',
+	'Nét đẹp Việt Nam sexy',
+	'Em gái phố đi dạo',
+	'Street wear ngắn cũnn',
+	'Thu hút mọi ánh nhìn',
+	'Bikini đi biển mùa này',
+	'Nắng vàng biển xanh em nude',
+	'Cát trắng dính da em',
+	'Sóng đánh tụt bikini',
+	'Hồ bơi vô cực chill',
+	'Ướt át dưới vòi sen',
+	'Bọt xà phòng che thân',
+
+	// === VIBE DESCRIPTIONS (30) ===
+	'Tắt đèn đi anh',
+	'Trong bóng tối em là nữ hoàng',
+	'Bí ẩn làm nên quyến rũ',
+	'Chỉ ánh trăng và đôi ta',
+	'Nắng sớm làm má em hồng',
+	'Chào ngày mới đầy năng lượng',
+	'Trong veo như sương mai',
+	'Em hiền như ma sơ (đùa đấy)',
+	'Ấm áp như vòng tay anh',
+	'Cuộn tròn trong chăn ấm',
+	'Mùa đông không lạnh có em',
+	'Nhà mình là nhất',
+	'Sang trọng và quyến rũ',
+	'Đẳng cấp quý cô',
+	'Rượu vang và em',
+	'Tiệc đêm sang chảnh',
+	'Dễ thương nhưng không dễ dãi',
+	'Cute phô mai que',
+	'Làm nũng anh một tí',
+	'Cần người dỗ dành',
+	'Hoang dại như thú săn mồi',
+	'Em sẽ ăn thịt anh',
+	'Không luật lệ đêm nay',
+	'Phá vỡ mọi quy tắc',
+	'Tự do là sexy nhất',
+	'Điên dại vì tình',
+	'Cuồng nhiệt hết mình',
+	'Cháy hết đêm nay',
+	'Sáng nhất đêm nay',
+	'Hư nhưng anh thích',
+
+	// === ANGLE DESCRIPTIONS (20) ===
+	'Góc này chân em dài nhất',
+	'Nhìn từ trên cao xuống',
+	'Anh thích góc này không?',
+	'Zoom kỹ vào đi anh',
+	'Chi tiết từng lỗ chân lông',
+	'Mắt em nhìn anh đắm đuối',
+	'Góc nghiêng này ok không?',
+	'Góc nhìn của bạn trai',
+	'Tưởng tượng em đang nhìn anh',
+	'Camera đặt thấp thấy gì?',
+	'Góc quay lén lút sexy',
+	'Tự cầm máy quay rung',
+	'Sát rạt màn hình',
+	'Hơi thở ngay bên tai',
+	'POV em đang cưỡi',
+	'POV anh đang nằm',
+	'Nhìn xuống em đi',
+	'Ngước mắt nhìn anh',
+	'Toàn thân không che góc nào',
+	'Mọi góc độ đều đẹp',
 ];
 
 // 40+ hashtag sets - đa dạng chủ đề, trending hashtags
@@ -1259,6 +1451,27 @@ const HASHTAG_SETS = [
 	'#fyp #trending #hot #sexy #viral #fypage',
 	'#fyp #foryoupage #hot #sexy #trending #viral',
 	'#fyp #explore #sexy #hot #tiktokviral #trend',
+
+	// Roleplay & Cosplay
+	'#fyp #roleplay #cosplay #teacher #nurse #maid #sexy',
+	'#fyp #hocsinh #cogiao #sexy #uniform #vietnam',
+	'#fyp #bankgai #girlfriend #pov #dating #sexy',
+	'#fyp #secretary #office #work #sexy #boss',
+	'#fyp #gym #fitness #squat #yoga #sexy #fitgirl',
+
+	// Vibez
+	'#fyp #dark #mystery #sexy #night #vibes',
+	'#fyp #cute #sweet #baby #sexy #girl',
+	'#fyp #luxury #rich #classy #sexy #queen',
+	'#fyp #wild #party #crazy #sexy #fun',
+	'#fyp #chill #home #cozy #sexy #bed',
+
+	// Specifics
+	'#fyp #aodai #vietnam #traditional #sexy #girl',
+	'#fyp #bikini #beach #summer #hot #wet',
+	'#fyp #eyes #lips #face #close #sexy',
+	'#fyp #legs #feet #hands #body #sexy',
+	'#fyp #dance #cover #trend #sexy #move',
 ];
 
 // Global tracking to avoid duplicates across all generated content
@@ -1301,11 +1514,11 @@ function random(arr) {
  * Generate 1 unique content option (title + description)
  * Tracks used titles/descriptions globally to minimize duplicates
  */
-export function generateContentOptions() {
+export function generateContentOptions(count = 3) {
 	const options = [];
 	const sessionTitles = new Set();
 
-	for (let i = 0; i < 3; i++) {
+	for (let i = 0; i < count; i++) {
 		let title;
 		// Ensure unique within this generation session too
 		do {
@@ -1377,14 +1590,32 @@ const CATEGORIES = {
 		name: 'Tư thế',
 		emoji: '📷',
 		options: {
-			FRONT: { label: 'Trước', keywords: ['trước', 'mặt', 'nhìn', 'ngực'] },
-			BACK: { label: 'Sau', keywords: ['sau', 'lưng', 'mông', 'quay'] },
-			TOP: { label: 'Trên', keywords: ['trên', 'xuống', 'rãnh', 'top'] },
-			BOTTOM: { label: 'Dưới', keywords: ['dưới', 'lên', 'chân', 'low'] },
+			FRONT: {
+				label: 'Trước',
+				keywords: ['trước', 'mặt', 'nhìn', 'ngực', 'frontal'],
+			},
+			BACK: {
+				label: 'Sau',
+				keywords: ['sau', 'lưng', 'mông', 'quay', 'from behind'],
+			},
+			TOP: {
+				label: 'Trên',
+				keywords: ['trên', 'xuống', 'rãnh', 'top', 'high angle'],
+			},
+			BOTTOM: {
+				label: 'Dưới',
+				keywords: ['dưới', 'lên', 'chân', 'low', 'upwards'],
+			},
 			SIDE: {
 				label: 'Nghiêng',
-				keywords: ['nghiêng', 'cong', 'đường cong', 'profile'],
+				keywords: ['nghiêng', 'cong', 'đường cong', 'profile', 'side'],
 			},
+			SQUAT: { label: 'Squat', keywords: ['squat', 'ngồi xổm', 'hạ thấp'] },
+			ARCH: {
+				label: 'Uốn lưng',
+				keywords: ['uốn', 'cong lưng', 'arch', 'võng'],
+			},
+			STRETCH: { label: 'Vươn', keywords: ['vươn', 'stretch', 'dãn', 'căng'] },
 		},
 	},
 
@@ -1393,15 +1624,39 @@ const CATEGORIES = {
 		name: 'Hành động',
 		emoji: '🎬',
 		options: {
-			SHOWING: { label: 'Khoe', keywords: ['khoe', 'show', 'flex', 'xem'] },
-			BOUNCING: { label: 'Nhún', keywords: ['nhún', 'bounce', 'nảy', 'lắc'] },
-			DANCING: {
-				label: 'Lắc',
-				keywords: ['lắc', 'dance', 'nhảy', 'quẩy', 'xoay'],
+			SHOWING: {
+				label: 'Khoe',
+				keywords: ['khoe', 'show', 'flex', 'xem', 'reveal'],
 			},
-			LYING: { label: 'Nằm', keywords: ['nằm', 'giường', 'lying', 'ngủ'] },
-			BENDING: { label: 'Cúi', keywords: ['cúi', 'bend', 'gập', 'doggy'] },
-			TOUCHING: { label: 'Sờ', keywords: ['sờ', 'chạm', 'vuốt', 'touch'] },
+			BOUNCING: {
+				label: 'Nhún',
+				keywords: ['nhún', 'bounce', 'nảy', 'lắc', 'shake'],
+			},
+			DANCING: {
+				label: 'Lắc/Nhảy',
+				keywords: ['lắc', 'dance', 'nhảy', 'quẩy', 'xoay', 'move'],
+			},
+			LYING: {
+				label: 'Nằm',
+				keywords: ['nằm', 'giường', 'lying', 'ngủ', 'bed'],
+			},
+			BENDING: {
+				label: 'Cúi',
+				keywords: ['cúi', 'bend', 'gập', 'doggy', 'forward'],
+			},
+			TOUCHING: {
+				label: 'Sờ/Vuốt',
+				keywords: ['sờ', 'chạm', 'vuốt', 'touch', 'caress'],
+			},
+			LICKING: { label: 'Liếm', keywords: ['liếm', 'lick', 'mút', 'lưỡi'] },
+			WINKING: {
+				label: 'Nháy mắt',
+				keywords: ['nháy', 'wink', 'đá lông nheo'],
+			},
+			PLAYING: {
+				label: 'Nghịch',
+				keywords: ['nghịch', 'play', 'chơi', 'tease'],
+			},
 		},
 	},
 
@@ -1410,14 +1665,86 @@ const CATEGORIES = {
 		name: 'Biểu cảm',
 		emoji: '😮',
 		options: {
-			MOANING: { label: 'Kêu', keywords: ['kêu', 'rên', 'sướng', 'ahh', 'ơi'] },
-			SILENT: { label: 'Im lặng', keywords: ['im', 'lặng', 'quiet', 'silent'] },
-			SMILING: { label: 'Cười', keywords: ['cười', 'smile', 'vui'] },
+			MOANING: {
+				label: 'Kêu/Rên',
+				keywords: ['kêu', 'rên', 'sướng', 'ahh', 'ơi', 'ồn'],
+			},
+			SILENT: {
+				label: 'Im lặng',
+				keywords: ['im', 'lặng', 'quiet', 'silent', 'hush'],
+			},
+			SMILING: { label: 'Cười', keywords: ['cười', 'smile', 'vui', 'happy'] },
 			SEDUCTIVE: {
 				label: 'Gợi tình',
-				keywords: ['mắt', 'nhìn', 'gợi', 'quyến rũ'],
+				keywords: ['mắt', 'nhìn', 'gợi', 'quyến rũ', 'seduce', 'hư'],
 			},
-			BITING: { label: 'Cắn môi', keywords: ['cắn', 'môi', 'liếm', 'lip'] },
+			BITING: {
+				label: 'Cắn môi',
+				keywords: ['cắn', 'môi', 'liếm', 'lip', 'bite'],
+			},
+			CONFUSED: {
+				label: 'Ngây thơ',
+				keywords: ['ngây', 'ngơ', 'innocent', 'naive'],
+			},
+			ANGRY: { label: 'Giận dỗi', keywords: ['giận', 'dỗi', 'mad', 'pout'] },
+		},
+	},
+
+	// Vibe / Mood (Mới)
+	VIBE: {
+		name: 'Vibe',
+		emoji: '✨',
+		options: {
+			DARK: {
+				label: 'Tối/Bí ẩn',
+				keywords: ['tối', 'dark', 'bí ẩn', 'mystery', 'black'],
+			},
+			BRIGHT: {
+				label: 'Sáng/Trong',
+				keywords: ['sáng', 'trong', 'bright', 'clear', 'nắng'],
+			},
+			COZY: { label: 'Ấm áp', keywords: ['ấm', 'cozy', 'nhà', 'homey'] },
+			LUXURY: {
+				label: 'Sang chảnh',
+				keywords: ['sang', 'luxury', 'chảnh', 'rich', 'quý phái'],
+			},
+			CUTE: {
+				label: 'Đáng yêu',
+				keywords: ['cute', 'dễ thương', 'yêu', 'baby'],
+			},
+			WILD: { label: 'Hoang dã', keywords: ['hoang', 'wild', 'điên', 'crazy'] },
+		},
+	},
+
+	// Roleplay (Mới)
+	ROLE: {
+		name: 'Roleplay',
+		emoji: '🎭',
+		options: {
+			TEACHER: {
+				label: 'Cô giáo',
+				keywords: ['cô giáo', 'teacher', 'dạy', 'học'],
+			},
+			STUDENT: {
+				label: 'Học sinh',
+				keywords: ['học sinh', 'student', 'nữ sinh', 'trường'],
+			},
+			SECRETARY: {
+				label: 'Thư ký',
+				keywords: ['thư ký', 'secretary', 'sếp', 'văn phòng'],
+			},
+			NURSE: {
+				label: 'Y tá',
+				keywords: ['y tá', 'nurse', 'bệnh', 'khám', 'thuốc'],
+			},
+			MAID: {
+				label: 'Hầu gái',
+				keywords: ['hầu gái', 'maid', 'dọn', 'phục vụ', 'chủ'],
+			},
+			GYM: {
+				label: 'Gym/Sport',
+				keywords: ['gym', 'sport', 'tập', 'yoga', 'fitness'],
+			},
 		},
 	},
 
@@ -1426,27 +1753,37 @@ const CATEGORIES = {
 		name: 'Địa điểm',
 		emoji: '🏠',
 		options: {
-			MIRROR: { label: 'Trước gương', keywords: ['gương', 'mirror', 'selfie'] },
-			KARAOKE: { label: 'Karaoke', keywords: ['karaoke', 'phòng hát'] },
+			MIRROR: {
+				label: 'Trước gương',
+				keywords: ['gương', 'mirror', 'selfie', 'phản chiếu'],
+			},
+			KARAOKE: {
+				label: 'Karaoke',
+				keywords: ['karaoke', 'phòng hát', 'mic', 'hát'],
+			},
 			OUTDOOR: {
 				label: 'Ngoài trời',
-				keywords: ['ngoài', 'outdoor', 'beach', 'biển'],
+				keywords: ['ngoài', 'outdoor', 'beach', 'biển', 'công viên', 'phố'],
 			},
 			INDOOR: {
 				label: 'Trong nhà',
-				keywords: ['nhà', 'phòng', 'indoor', 'home'],
+				keywords: ['nhà', 'phòng', 'indoor', 'home', 'sofa', 'bếp'],
 			},
 			BED: {
 				label: 'Trên giường',
-				keywords: ['giường', 'bed', 'nằm', 'gối', 'chăn'],
+				keywords: ['giường', 'bed', 'nằm', 'gối', 'chăn', 'nệm'],
 			},
 			BATHROOM: {
 				label: 'Phòng tắm',
-				keywords: ['tắm', 'bathroom', 'shower', 'ướt'],
+				keywords: ['tắm', 'bathroom', 'shower', 'ướt', 'bồn'],
 			},
 			HOTEL: {
 				label: 'Khách sạn',
-				keywords: ['khách sạn', 'hotel', 'check-in'],
+				keywords: ['khách sạn', 'hotel', 'check-in', 'resort'],
+			},
+			CAR: {
+				label: 'Trong xe',
+				keywords: ['xe', 'car', 'ô tô', 'lái', 'ghế xe'],
 			},
 		},
 	},
@@ -1456,12 +1793,15 @@ const CATEGORIES = {
 		name: 'Thời gian',
 		emoji: '🌙',
 		options: {
-			DAY: { label: 'Ban ngày', keywords: ['ngày', 'nắng', 'sáng', 'day'] },
+			DAY: {
+				label: 'Ban ngày',
+				keywords: ['ngày', 'nắng', 'sáng', 'day', 'trưa'],
+			},
 			NIGHT: {
 				label: 'Đêm',
-				keywords: ['đêm', 'khuya', 'night', 'midnight', 'tối'],
+				keywords: ['đêm', 'khuya', 'night', 'midnight', 'tối', 'khuya'],
 			},
-			UNKNOWN: { label: 'Không rõ', keywords: [] }, // Match anything
+			UNKNOWN: { label: 'Không rõ', keywords: [] },
 		},
 	},
 
@@ -1470,18 +1810,21 @@ const CATEGORIES = {
 		name: 'Số người',
 		emoji: '👥',
 		options: {
-			SOLO_FEMALE: { label: '1 nữ', keywords: ['em', 'một mình', 'solo'] },
+			SOLO_FEMALE: {
+				label: '1 nữ',
+				keywords: ['em', 'một mình', 'solo', 'alone'],
+			},
 			MANY_MALE_1_FEMALE: {
 				label: 'Nhiều nam 1 nữ',
-				keywords: ['nhiều anh', 'các anh', 'nhóm'],
+				keywords: ['nhiều anh', 'các anh', 'nhóm', 'gang', 'hội anh'],
 			},
 			MANY_FEMALE: {
 				label: 'Nhiều nữ',
-				keywords: ['chị em', 'hội', 'girls', 'các em'],
+				keywords: ['chị em', 'hội', 'girls', 'các em', 'nhóm nữ'],
 			},
 			COUPLE: {
 				label: 'Cặp đôi',
-				keywords: ['anh và em', 'couple', 'hai đứa'],
+				keywords: ['anh và em', 'couple', 'hai đứa', 'bạn trai', 'người yêu'],
 			},
 		},
 	},
@@ -1493,25 +1836,37 @@ const CATEGORIES = {
 		options: {
 			BIKINI: {
 				label: 'Bikini',
-				keywords: ['bikini', 'đồ bơi', 'beach', 'summer'],
+				keywords: ['bikini', 'đồ bơi', 'beach', 'summer', '2 mảnh'],
 			},
 			LINGERIE: {
 				label: 'Nội y',
-				keywords: ['nội y', 'lingerie', 'lace', 'ren', 'đồ lót'],
+				keywords: ['nội y', 'lingerie', 'lace', 'ren', 'đồ lót', 'lọt khe'],
 			},
 			COSPLAY: {
 				label: 'Cosplay',
-				keywords: ['cosplay', 'bunny', 'maid', 'nurse', 'nữ sinh'],
+				keywords: ['cosplay', 'bunny', 'maid', 'nurse', 'hóa trang'],
 			},
 			CASUAL: {
 				label: 'Thường',
-				keywords: ['đồ nhà', 'casual', 'bình thường'],
+				keywords: ['đồ nhà', 'casual', 'bình thường', 'pyjama', 'đồ ngủ'],
+			},
+			OFFICE: {
+				label: 'Công sở',
+				keywords: ['công sở', 'office', 'sơ mi', 'chân váy', 'zip'],
+			},
+			AO_DAI: {
+				label: 'Áo dài',
+				keywords: ['áo dài', 'truyền thống', 'lụa', 'nón'],
+			},
+			STREET: {
+				label: 'Dạo phố',
+				keywords: ['phố', 'váy ngắn', 'short', 'áo thun'],
 			},
 			NAKED: {
 				label: 'Không mặc',
-				keywords: ['cởi', 'nude', 'trần', 'không mặc'],
+				keywords: ['cởi', 'nude', 'trần', 'không mặc', 'skin'],
 			},
-			WET: { label: 'Ướt', keywords: ['ướt', 'wet', 'nước', 'tắm'] },
+			WET: { label: 'Ướt', keywords: ['ướt', 'wet', 'nước', 'tắm', 'soaked'] },
 		},
 	},
 
@@ -1520,10 +1875,20 @@ const CATEGORIES = {
 		name: 'Tóc',
 		emoji: '💇',
 		options: {
-			SHORT: { label: 'Ngắn', keywords: ['tóc ngắn', 'short hair'] },
-			LONG: { label: 'Dài', keywords: ['tóc dài', 'long hair', 'thướt tha'] },
-			LOOSE: { label: 'Xõa', keywords: ['xõa', 'tóc xõa', 'vai'] },
-			TIED: { label: 'Buộc', keywords: ['buộc', 'ponytail', 'đuôi ngựa'] },
+			SHORT: { label: 'Ngắn', keywords: ['tóc ngắn', 'short hair', 'cá tính'] },
+			LONG: {
+				label: 'Dài',
+				keywords: ['tóc dài', 'long hair', 'thướt tha', 'suôn'],
+			},
+			LOOSE: { label: 'Xõa', keywords: ['xõa', 'tóc xõa', 'vai', 'thả'] },
+			TIED: {
+				label: 'Buộc',
+				keywords: ['buộc', 'ponytail', 'đuôi ngựa', 'búi'],
+			},
+			DYED: {
+				label: 'Nhuộm',
+				keywords: ['nhuộm', 'màu', 'bạch kim', 'hồng', 'đỏ'],
+			},
 		},
 	},
 
@@ -1532,16 +1897,43 @@ const CATEGORIES = {
 		name: 'Điểm nhấn',
 		emoji: '🎯',
 		options: {
-			CHEST: { label: 'Ngực', keywords: ['ngực', 'vòng 1', 'rãnh', 'căng'] },
-			BUTT: { label: 'Mông', keywords: ['mông', 'vòng 3', 'đít'] },
-			WAIST: { label: 'Eo', keywords: ['eo', 'vòng eo', 'bé xíu'] },
-			LEGS: { label: 'Chân', keywords: ['chân', 'đùi', 'legs'] },
-			FACE: { label: 'Mặt', keywords: ['mặt', 'face', 'xinh'] },
+			CHEST: {
+				label: 'Ngực',
+				keywords: ['ngực', 'vòng 1', 'rãnh', 'căng', 'bưởi'],
+			},
+			BUTT: {
+				label: 'Mông',
+				keywords: ['mông', 'vòng 3', 'đít', 'peach', 'nảy'],
+			},
+			WAIST: { label: 'Eo', keywords: ['eo', 'vòng eo', 'bé xíu', 'con kiến'] },
+			LEGS: { label: 'Chân', keywords: ['chân', 'đùi', 'legs', 'dài'] },
+			FACE: { label: 'Mặt', keywords: ['mặt', 'face', 'xinh', 'nét'] },
+			LIPS: { label: 'Môi', keywords: ['môi', 'lips', 'miệng', 'hôn'] },
+			EYES: { label: 'Mắt', keywords: ['mắt', 'eyes', 'nhìn'] },
 			FULL_BODY: {
 				label: 'Toàn thân',
-				keywords: ['body', 'full', 'toàn thân', '3 vòng'],
+				keywords: ['body', 'full', 'toàn thân', '3 vòng', 'dáng'],
 			},
-			BACK_BODY: { label: 'Lưng', keywords: ['lưng', 'back'] },
+			BACK_BODY: { label: 'Lưng', keywords: ['lưng', 'back', 'phía sau'] },
+		},
+	},
+
+	// Góc quay (Mới)
+	ANGLE: {
+		name: 'Góc quay',
+		emoji: '🎥',
+		options: {
+			POV: { label: 'POV', keywords: ['pov', 'ngôi thứ nhất', 'nhìn xuống'] },
+			CLOSEUP: {
+				label: 'Cận cảnh',
+				keywords: ['cận', 'close', 'zoom', 'chi tiết'],
+			},
+			WIDE: {
+				label: 'Toàn cảnh',
+				keywords: ['xa', 'toàn', 'bao quát', 'wide'],
+			},
+			LOW: { label: 'Góc thấp', keywords: ['thấp', 'dưới lên', 'low'] },
+			HIGH: { label: 'Góc cao', keywords: ['cao', 'trên xuống', 'high'] },
 		},
 	},
 };
@@ -1601,7 +1993,7 @@ export function getCategoryOptions(categoryKey) {
  * @param {number} count - Number of options to generate (default: 3)
  * @returns {Array<{title: string, description: string, hashtags: string}>}
  */
-export function generateContentFromCategories(selectedCategories, count = 3) {
+export function generateContentFromCategories(selectedCategories, count = 6) {
 	// Collect all keywords from selected categories
 	const allKeywords = [];
 
@@ -1632,13 +2024,16 @@ export function generateContentFromCategories(selectedCategories, count = 3) {
 		return score;
 	};
 
+	// Helper to sort by score (desc) then random
+	const randomSort = (a, b) => b.score - a.score || Math.random() - 0.5;
+
 	// Score and sort titles by relevance
 	const scoredTitles = TITLES.map((t) => ({
 		text: t,
 		score: scoreByKeywords(t),
 	}))
 		.filter((t) => t.score > 0)
-		.sort((a, b) => b.score - a.score);
+		.sort(randomSort);
 
 	// Score and sort descriptions by relevance
 	const scoredDescs = DESCRIPTIONS.map((d) => ({
@@ -1646,24 +2041,33 @@ export function generateContentFromCategories(selectedCategories, count = 3) {
 		score: scoreByKeywords(d),
 	}))
 		.filter((d) => d.score > 0)
-		.sort((a, b) => b.score - a.score);
+		.sort(randomSort);
 
 	// Generate options from scored content
 	const options = [];
 	const usedTitles = new Set();
 	const usedDescs = new Set();
 
-	for (let i = 0; i < count && i < scoredTitles.length; i++) {
-		// Pick from top titles (already sorted by score)
-		let titleObj = scoredTitles.find(
-			(t) => !usedTitles.has(t.text) && t.score > 0
-		);
+	// Try to fill up to count
+	for (let i = 0; i < count; i++) {
+		// Pick from top titles
+		// Since we sorted with random, picking sequentially is fine
+		let titleObj = scoredTitles.find((t) => !usedTitles.has(t.text));
+
+		// If we run out of matching titles, stop?
+		// Or should we fill with random high-quality ones?
+		// User wants "fit nhất", so if it doesn't fit, maybe stop or use lower score?
+		// scoredTitles only has score > 0.
 		if (!titleObj) break;
+
 		usedTitles.add(titleObj.text);
 
-		// Pick matching description (prefer high scoring)
+		// Pick matching description
 		let descObj = scoredDescs.find((d) => !usedDescs.has(d.text));
 		if (!descObj) {
+			// If no matching description, pick a random one to complete the pair?
+			// Or maybe reusing a description is bad?
+			// Let's pick a random one from the pool if we really need to fill the slot for the title
 			descObj = { text: random(DESCRIPTIONS), score: 0 };
 		}
 		usedDescs.add(descObj.text);
@@ -1672,11 +2076,13 @@ export function generateContentFromCategories(selectedCategories, count = 3) {
 			title: titleObj.text,
 			description: descObj.text,
 			hashtags: random(HASHTAG_SETS),
-			_score: titleObj.score + descObj.score, // For debugging
+			_score: titleObj.score + descObj.score,
 		});
 	}
 
-	// Sort final options by combined score
+	// Sort final options by combined score (and random again for variety in final presentation?)
+	// Actually no, we already randomized. Just keep them.
+	// But valid to sort by total score desc for the user to see best first
 	options.sort((a, b) => b._score - a._score);
 
 	// Remove internal score property
