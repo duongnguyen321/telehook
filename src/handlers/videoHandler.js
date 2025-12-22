@@ -251,6 +251,10 @@ async function handleCommand(ctx, command) {
 	const chatId = ctx.chat.id;
 	const userId = ctx.from?.id;
 	const ADMIN_USER_ID = parseInt(process.env.ADMIN_USER_ID || '0', 10);
+	const TIKTOK_USERNAME = process.env.TIKTOK_USERNAME || '';
+	const tiktokLink = TIKTOK_USERNAME
+		? `\n\n🔥 Follow TikTok: https://tiktok.com/@${TIKTOK_USERNAME}`
+		: '';
 
 	setDefaultChatId(chatId);
 
@@ -260,7 +264,8 @@ async function handleCommand(ctx, command) {
 			`Bot auto-schedule TikTok videos\n\n` +
 				`Forward video -> auto schedule\n` +
 				`9 videos/day (9:30-10:30, 14:30-15:30, 20:30-21:30 GMT+7)\n\n` +
-				`/queue /stats /reschedule`
+				`/queue /stats /reschedule` +
+				tiktokLink
 		);
 		// Show queue after welcome message
 		await sendQueuePage(ctx, chatId, 0);
@@ -279,7 +284,8 @@ async function handleCommand(ctx, command) {
 			`Stats:\n` +
 				`Downloaded: ${videoStats?.total || 0}\n` +
 				`Pending: ${videoStats?.scheduled || 0}\n` +
-				`Posted: ${stats?.total || 0}`
+				`Posted: ${stats?.total || 0}` +
+				tiktokLink
 		);
 		return;
 	}
@@ -287,10 +293,10 @@ async function handleCommand(ctx, command) {
 	if (command === '/videos') {
 		const videos = getDownloadedVideos(chatId);
 		if (!videos?.length) {
-			await ctx.reply('No videos yet');
+			await ctx.reply('No videos yet' + tiktokLink);
 			return;
 		}
-		await ctx.reply(`${videos.length} videos downloaded`);
+		await ctx.reply(`${videos.length} videos downloaded` + tiktokLink);
 		return;
 	}
 
