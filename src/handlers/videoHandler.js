@@ -40,6 +40,15 @@ export function setupVideoHandler(bot) {
 
 		console.log(`[Video] Received: ${video.file_id.slice(-8)}`);
 
+		// Check file size (Telegram Bot API limit: 20MB)
+		if (video.file_size && video.file_size > 20 * 1024 * 1024) {
+			console.log(
+				`[Video] File too big: ${(video.file_size / 1024 / 1024).toFixed(1)}MB`
+			);
+			await ctx.reply('Video qua lon (>20MB), bo qua.');
+			return;
+		}
+
 		try {
 			console.log('[Video] Step 1: Getting file info...');
 			// Download video
@@ -58,7 +67,7 @@ export function setupVideoHandler(bot) {
 			console.log('[Video] Step 3: Downloading...');
 			const response = await axios.get(fileUrl, {
 				responseType: 'arraybuffer',
-				timeout: 60000, // 60 second timeout
+				timeout: 120000, // 2 minute timeout for large files
 			});
 			fs.writeFileSync(videoPath, response.data);
 			console.log('[Video] Step 3: Downloaded OK');
@@ -94,10 +103,12 @@ export function setupVideoHandler(bot) {
 			const time = formatVietnameseTime(new Date(post.scheduledAt));
 			console.log(`[Video] Scheduled: ${time}`);
 
-			// Notify user (batch summary)
-			await ctx.reply(`✅ ${content.title.slice(0, 30)}...\n⏰ ${time}`);
+			// Notify user - use simple ASCII to avoid UTF-8 issues
+			const shortTitle =
+				content.title.replace(/[^\x00-\x7F]/g, '').slice(0, 20) || 'Video';
+			await ctx.reply(`OK: ${shortTitle}... | ${time}`);
 		} catch (error) {
-			console.error('[Video] Error:', error.message, error.stack);
+			console.error('[Video] Error:', error.message);
 			await ctx.reply(`❌ Lỗi: ${error.message}`);
 		}
 	});
