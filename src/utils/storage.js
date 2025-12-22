@@ -320,11 +320,12 @@ export function getSmartScheduleSlot() {
 
 /**
  * Reschedule all pending posts with new schedule
+ * 9 videos/day: 3 per golden hour (9:30/10:00/10:30, 14:30/15:00/15:30, 20:30/21:00/21:30)
  * @param {number} chatId
  * @returns {number} Number of posts rescheduled
  */
 export function rescheduleAllPending(chatId) {
-	// Clear recent slots cache
+	// Clear cache
 	recentlyUsedSlots.clear();
 
 	// Get all pending posts ordered by creation time
@@ -341,22 +342,74 @@ export function rescheduleAllPending(chatId) {
 
 	console.log(`[Reschedule] Rescheduling ${posts.length} pending posts...`);
 
-	// Reset all scheduled times
-	const updateStmt = db.prepare(`
-		UPDATE scheduled_posts SET scheduled_at = ? WHERE id = ?
-	`);
+	// Define all time slots (hour, minute) in a day
+	const DAILY_SLOTS = [
+		[9, 30],
+		[10, 0],
+		[10, 30], // Morning golden hour
+		[14, 30],
+		[15, 0],
+		[15, 30], // Afternoon golden hour
+		[20, 30],
+		[21, 0],
+		[21, 30], // Evening golden hour
+	];
+
+	// Start from now
+	const nowGmt7 = nowGMT7();
+	let currentDate = new Date(nowGmt7);
+	currentDate.setHours(0, 0, 0, 0);
+
+	let slotIndex = 0;
+
+	// Find first slot that's in the future
+	for (let i = 0; i < DAILY_SLOTS.length; i++) {
+		const [hour, minute] = DAILY_SLOTS[i];
+		const testTime = new Date(currentDate);
+		testTime.setHours(hour, minute, 0, 0);
+		if (testTime > nowGmt7) {
+			slotIndex = i;
+			break;
+		}
+		// If all slots today are past, start from tomorrow
+		if (i === DAILY_SLOTS.length - 1) {
+			currentDate.setDate(currentDate.getDate() + 1);
+			slotIndex = 0;
+		}
+	}
+
+	// Update all posts
+	const updateStmt = db.prepare(
+		`UPDATE scheduled_posts SET scheduled_at = ? WHERE id = ?`
+	);
 
 	let count = 0;
 	for (const post of posts) {
-		const newTime = getSmartScheduleSlot();
-		updateStmt.run(newTime, post.id);
-		count++;
-		console.log(
-			`[Reschedule] ${count}/${posts.length}: ${post.id.slice(
-				0,
-				8
-			)} -> ${newTime.slice(0, 16)}`
+		const [hour, minute] = DAILY_SLOTS[slotIndex];
+
+		// Create schedule time
+		const scheduleTime = createGMT7Time(
+			currentDate.getFullYear(),
+			currentDate.getMonth() + 1,
+			currentDate.getDate(),
+			hour
 		);
+		scheduleTime.setMinutes(minute);
+
+		updateStmt.run(scheduleTime.toISOString(), post.id);
+		count++;
+
+		const timeStr = `${
+			currentDate.getMonth() + 1
+		}/${currentDate.getDate()} ${hour}:${String(minute).padStart(2, '0')}`;
+		console.log(`[Reschedule] ${count}/${posts.length}: ${timeStr}`);
+
+		// Move to next slot
+		slotIndex++;
+		if (slotIndex >= DAILY_SLOTS.length) {
+			slotIndex = 0;
+			currentDate.setDate(currentDate.getDate() + 1);
+		}
 	}
 
 	return count;
