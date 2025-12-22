@@ -5,9 +5,9 @@ import fs from 'fs';
 import {
 	nowGMT7,
 	toGMT7,
-	getDateKeyGMT7,
-	getSlotKeyGMT7,
-	createGMT7Date,
+	getSlotKey,
+	getDateKey,
+	createGMT7Time,
 } from './timezone.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -200,35 +200,33 @@ export function getSmartScheduleSlot() {
 	const TIME_SLOTS = [10, 15, 21]; // 10AM, 3PM, 9PM in GMT+7
 	const now = nowGMT7();
 
-	// Get all scheduled slots from DB (converted to GMT+7 slot keys)
+	// Get all scheduled slots from DB - convert each to GMT+7 slot key
 	const stmt = db.prepare(
-		`SELECT scheduled_at FROM scheduled_posts WHERE status = 'pending'`
+		`SELECT scheduled_at FROM scheduled_posts WHERE status = 'pending' ORDER BY scheduled_at DESC`
 	);
 	const dbRows = stmt.all();
 	const dbSlotKeys = new Set(
-		dbRows.map((r) => getSlotKeyGMT7(new Date(r.scheduled_at)))
+		dbRows.map((r) => {
+			const d = toGMT7(new Date(r.scheduled_at));
+			return getSlotKey(d);
+		})
 	);
 
-	console.log(
-		`[Schedule] DB has ${dbRows.length} pending posts, slots: ${[
-			...dbSlotKeys,
-		].join(', ')}`
-	);
-	console.log(
-		`[Schedule] Memory has ${recentlyUsedSlots.size} recent slots: ${[
-			...recentlyUsedSlots,
-		].join(', ')}`
-	);
-
-	// Combine with recently used slots (in-memory)
+	// Combine DB + memory slots
 	const allUsedSlots = new Set([...dbSlotKeys, ...recentlyUsedSlots]);
 
-	// Start checking from today in GMT+7
+	console.log(
+		`[Schedule] All used slots (${allUsedSlots.size}): ${[...allUsedSlots]
+			.slice(-5)
+			.join(', ')}`
+	);
+
+	// Start from today in GMT+7
 	let checkDate = new Date(now);
 	checkDate.setHours(0, 0, 0, 0);
 
 	for (let dayOffset = 0; dayOffset < 365; dayOffset++) {
-		const dateKey = getDateKeyGMT7(checkDate);
+		const dateKey = getDateKey(checkDate);
 
 		// Count used slots for this day
 		let usedCount = 0;
@@ -237,30 +235,28 @@ export function getSmartScheduleSlot() {
 		}
 
 		if (usedCount < SLOTS_PER_DAY) {
-			// Find available time slot
 			for (const slotHour of TIME_SLOTS) {
 				const slotKey = `${dateKey}-${slotHour}`;
 
 				if (!allUsedSlots.has(slotKey)) {
-					// Create schedule time in GMT+7
-					const scheduleTime = createGMT7Date(
+					// Create the actual schedule time
+					const scheduleTime = createGMT7Time(
 						checkDate.getFullYear(),
-						checkDate.getMonth(),
+						checkDate.getMonth() + 1, // createGMT7Time uses 1-indexed month
 						checkDate.getDate(),
-						slotHour,
-						0
+						slotHour
 					);
 
 					// Make sure it's in the future
 					if (scheduleTime > new Date()) {
-						// Mark as used immediately to prevent race condition
+						// Mark as used immediately
 						recentlyUsedSlots.add(slotKey);
 						allUsedSlots.add(slotKey);
 
-						// Clean up after 10 seconds (DB will have it by then)
-						setTimeout(() => recentlyUsedSlots.delete(slotKey), 10000);
+						// Clean up after 30 seconds
+						setTimeout(() => recentlyUsedSlots.delete(slotKey), 30000);
 
-						console.log(`[Schedule] Slot: ${dateKey} ${slotHour}:00 (GMT+7)`);
+						console.log(`[Schedule] Slot: ${slotKey} (GMT+7)`);
 						return scheduleTime.toISOString();
 					}
 				}
