@@ -11,6 +11,7 @@ import {
 	getDownloadedVideos,
 	getVideoStats,
 	rescheduleAllPending,
+	deleteScheduledPost,
 	DATA_DIR,
 } from '../utils/storage.js';
 import { formatVietnameseTime } from '../utils/timeParser.js';
@@ -24,13 +25,28 @@ import { downloadVideo, queueDownload } from '../utils/downloader.js';
 
 /**
  * Send paginated queue page with video details + video file
+ * @param {import('grammy').Context} ctx
+ * @param {number} chatId
+ * @param {number} page
+ * @param {number|null} messageId
+ * @param {boolean} isAdmin - Whether user is admin
  */
-async function sendQueuePage(ctx, chatId, page, messageId = null) {
+async function sendQueuePage(
+	ctx,
+	chatId,
+	page,
+	messageId = null,
+	isAdmin = false
+) {
 	const { InputFile } = await import('grammy');
 	const posts = getPendingPostsByChat(chatId);
+	const TIKTOK_USERNAME = process.env.TIKTOK_USERNAME || '';
+	const tiktokLink = TIKTOK_USERNAME
+		? `\n\n🔥 Follow: https://tiktok.com/@${TIKTOK_USERNAME}`
+		: '';
 
 	if (posts.length === 0) {
-		const text = 'No pending videos';
+		const text = 'No pending videos' + tiktokLink;
 		if (messageId) {
 			await ctx.api.editMessageText(chatId, messageId, text);
 		} else {
@@ -41,7 +57,7 @@ async function sendQueuePage(ctx, chatId, page, messageId = null) {
 
 	const post = posts[page];
 	if (!post) {
-		await sendQueuePage(ctx, chatId, 0, messageId);
+		await sendQueuePage(ctx, chatId, 0, messageId, isAdmin);
 		return;
 	}
 
@@ -50,10 +66,13 @@ async function sendQueuePage(ctx, chatId, page, messageId = null) {
 		`[${page + 1}/${posts.length}] ${time}\n\n` +
 		`${post.title}\n\n` +
 		`${post.description}\n\n` +
-		`${post.hashtags}`;
+		`${post.hashtags}` +
+		tiktokLink;
 
 	// Build keyboard
 	const keyboard = new InlineKeyboard();
+
+	// Navigation row
 	if (page > 0) {
 		keyboard.text('<< Prev', `queue_${page - 1}`);
 	}
@@ -61,9 +80,16 @@ async function sendQueuePage(ctx, chatId, page, messageId = null) {
 		keyboard.text('Next >>', `queue_${page + 1}`);
 	}
 
+	// Admin: Add delete button on new row
+	if (isAdmin) {
+		keyboard.row();
+		keyboard.text('🗑 Xóa video này', `delete_${post.id}_${page}`);
+	}
+
 	// Check if video file exists
 	if (!fs.existsSync(post.videoPath)) {
-		const text = `[${page + 1}/${posts.length}] Video file missing!\n${time}`;
+		const text =
+			`[${page + 1}/${posts.length}] Video file missing!\n${time}` + tiktokLink;
 		if (messageId) {
 			await ctx.api.editMessageText(chatId, messageId, text, {
 				reply_markup: keyboard,
@@ -223,16 +249,43 @@ export function setupVideoHandler(bot) {
 		await ctx.reply('Round video not supported');
 	});
 
-	// Handle pagination callbacks
+	// Handle pagination and delete callbacks
 	bot.on('callback_query:data', async (ctx) => {
 		const data = ctx.callbackQuery.data;
+		const chatId = ctx.chat.id;
+		const userId = ctx.from?.id;
+		const messageId = ctx.callbackQuery.message.message_id;
+		const isAdmin = userId === ADMIN_USER_ID;
+
+		// Handle pagination
 		if (data.startsWith('queue_')) {
 			const page = parseInt(data.replace('queue_', ''));
-			const chatId = ctx.chat.id;
-			const messageId = ctx.callbackQuery.message.message_id;
-			await sendQueuePage(ctx, chatId, page, messageId);
+			await sendQueuePage(ctx, chatId, page, messageId, isAdmin);
 			await ctx.answerCallbackQuery();
+			return;
 		}
+
+		// Handle delete (admin only)
+		if (data.startsWith('delete_') && isAdmin) {
+			const parts = data.split('_');
+			const postId = parts[1];
+			const currentPage = parseInt(parts[2]) || 0;
+
+			const result = deleteScheduledPost(postId, chatId);
+			if (result.success) {
+				await ctx.answerCallbackQuery(
+					`Đã xóa! Đã reschedule ${result.rescheduled} video`
+				);
+				// Show previous page or first page
+				const newPage = Math.max(0, currentPage - 1);
+				await sendQueuePage(ctx, chatId, newPage, messageId, isAdmin);
+			} else {
+				await ctx.answerCallbackQuery('Lỗi: Không tìm thấy video');
+			}
+			return;
+		}
+
+		await ctx.answerCallbackQuery();
 	});
 
 	// Handle commands
@@ -268,12 +321,14 @@ async function handleCommand(ctx, command) {
 				tiktokLink
 		);
 		// Show queue after welcome message
-		await sendQueuePage(ctx, chatId, 0);
+		const isAdmin = userId === ADMIN_USER_ID;
+		await sendQueuePage(ctx, chatId, 0, null, isAdmin);
 		return;
 	}
 
 	if (command === '/queue') {
-		await sendQueuePage(ctx, chatId, 0);
+		const isAdmin = userId === ADMIN_USER_ID;
+		await sendQueuePage(ctx, chatId, 0, null, isAdmin);
 		return;
 	}
 

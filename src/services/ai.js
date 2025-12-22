@@ -4,9 +4,9 @@
  * Note: Vietnamese with proper diacritics
  */
 
-// 150+ titles - tiếng Việt có dấu đầy đủ, dirty talk style
+// 250+ titles - tiếng Việt có dấu đầy đủ, dirty talk style
 const TITLES = [
-	// === DIRTY TALK - GỢI DỤC ===
+	// === DIRTY TALK - GỢI DỤC (25) ===
 	'Anh thích mạnh hay nhẹ?',
 	'Muốn cởi không?',
 	'Đêm nay ai làm em mệt?',
@@ -22,8 +22,18 @@ const TITLES = [
 	'Thích nghịch không?',
 	'Em ngoan lắm... đâu?',
 	'Muốn thử không anh?',
+	'Làm em nóng đi anh',
+	'Anh có khỏe không?',
+	'Đêm nay anh rảnh không?',
+	'Em muốn anh chiều em',
+	'Chịu được mấy round?',
+	'Anh có thể làm em mệt?',
+	'Em thích slow hay fast?',
+	'Anh giỏi không?',
+	'Làm em run đi anh',
+	'Em muốn more...',
 
-	// === KHIÊU KHÍCH - TEASING ===
+	// === KHIÊU KHÍCH - TEASING (25) ===
 	'Nóng quá ai chịu nổi',
 	'Body này ai chiều được?',
 	'Ai dám nhìn lâu hơn 5 giây?',
@@ -39,8 +49,18 @@ const TITLES = [
 	'Ngực em căng tròn',
 	'Mông em cong vút',
 	'Body em nóng bỏng',
+	'Nhìn em anh nghĩ gì?',
+	'Da em trắng không?',
+	'Môi em mềm lắm',
+	'Mắt em biết nói',
+	'Tóc em dài quá',
+	'Chân em thon không?',
+	'Eo em bé xíu',
+	'Má em hồng hồng',
+	'Mũi em xinh ghê',
+	'Cổ em dài đẹp',
 
-	// === ĐÊM KHUYA - NÓNG BỎNG ===
+	// === ĐÊM KHUYA - NÓNG BỎNG (25) ===
 	'Chỉ dành cho người lớn',
 	'Warning: Gây nghiện',
 	'Đêm khuya ai nóng?',
@@ -56,8 +76,18 @@ const TITLES = [
 	'Đêm về em nhớ anh',
 	'Cần người ôm đêm nay',
 	'Ai làm em nóng tối nay?',
+	'Midnight vibes',
+	'Late night mood',
+	'2AM và em vẫn thức',
+	'Đêm nay em cô đơn',
+	'Ai online giờ này?',
+	'Khuya rồi ai chưa ngủ?',
+	'Đêm khuya em buồn',
+	'Ai ôm em đêm nay?',
+	'Giường rộng quá anh ơi',
+	'Em sợ ngủ một mình',
 
-	// === BODY HOT - KHOE THÂN ===
+	// === BODY HOT - KHOE THÂN (25) ===
 	'Vòng một căng tròn',
 	'Vòng ba gây thương nhớ',
 	'Body này ai chịu nổi?',
@@ -73,8 +103,18 @@ const TITLES = [
 	'Body mlem mlem',
 	'Đường cong sexy quá',
 	'Real 100% không fake',
+	'Body chuẩn gym',
+	'Eo thon mông cong',
+	'Ngực đẹp tự nhiên',
+	'Đùi thon chân dài',
+	'Da trắng mịn màng',
+	'Body không tì vết',
+	'Đường cong hoàn hảo',
+	'3 vòng như mơ',
+	'Body tạc tượng',
+	'Hàng real 100%',
 
-	// === THẢ THÍNH - FLIRTY ===
+	// === THẢ THÍNH - FLIRTY (25) ===
 	'Anh có thấy nóng không?',
 	'IB đi đừng ngại',
 	'Single sẵn sàng chiều anh',
@@ -90,8 +130,18 @@ const TITLES = [
 	'Single và muốn nghịch',
 	'Đợi anh dũng cảm IB',
 	'Em sẵn sàng cho anh',
+	'Anh có muốn quen không?',
+	'Em đang tìm người yêu',
+	'Anh có gấu chưa?',
+	'Em single lâu rồi',
+	'Cần người chăm sóc',
+	'Anh có thật lòng không?',
+	'Em muốn được yêu',
+	'Anh có nhớ em không?',
+	'Em nghĩ về anh hoài',
+	'Anh đâu rồi?',
 
-	// === BÍ ẨN - MYSTERIOUS ===
+	// === BÍ ẨN - MYSTERIOUS (20) ===
 	'Em giấu gì dưới váy?',
 	'Muốn khám phá em không?',
 	'Bí mật trong phòng ngủ',
@@ -107,8 +157,13 @@ const TITLES = [
 	'Ai tò mò IB đi',
 	'Exclusive content trong IB',
 	'Đừng bỏ lỡ phần hot',
+	'Bí mật của em đây',
+	'Muốn biết không?',
+	'Em có điều muốn kể',
+	'Phần 2 nóng hơn',
+	'Full HD trong IB',
 
-	// === TÁOBẠO - BOLD ===
+	// === TÁOBẠO - BOLD (20) ===
 	'Nóng bỏng tay đây',
 	'Càng xem càng nghiện',
 	'Anh muốn gì em chiều',
@@ -124,8 +179,13 @@ const TITLES = [
 	'Em nguy hiểm lắm đó',
 	'Cẩn thận bị nghiện',
 	'Em không ngoan đâu',
+	'Em táo bạo lắm',
+	'Anh chịu nổi không?',
+	'Em wild lắm đó',
+	'Nóng không tưởng',
+	'Fire content đây',
 
-	// === CONFIDENT SEXY ===
+	// === CONFIDENT SEXY (20) ===
 	'Bad girl energy',
 	'Sexy và em biết',
 	'Queen không cần king',
@@ -141,8 +201,13 @@ const TITLES = [
 	'Real beauty đây',
 	'Natural và sexy',
 	'Chuẩn không cần chỉnh',
+	'Tự tin là sexy',
+	'Em xinh em biết',
+	'Đẹp tự nhiên 100%',
+	'No filter needed',
+	'Original content',
 
-	// === TƯƠNG TÁC HOT ===
+	// === TƯƠNG TÁC HOT (20) ===
 	'Rate body 1-10 đi',
 	'Thích phần nào nhất em?',
 	'Comment 🔥 nếu hot',
@@ -158,11 +223,68 @@ const TITLES = [
 	'Thả tim = xem phần 2',
 	'10k like = cởi thêm',
 	'IB để xem private',
+	'Comment số điểm',
+	'Rate 1-100 đi',
+	'Thích thì like',
+	'Yêu thì follow',
+	'Miss thì save',
+
+	// === THÊM MỚI - EXTRA (50) ===
+	'Em đẹp không anh?',
+	'Anh thấy em thế nào?',
+	'Góc này đẹp không?',
+	'Style này ổn không?',
+	'Em nên mặc gì tiếp?',
+	'Màu này hợp em không?',
+	'Tóc này đẹp không?',
+	'Make up ổn chưa?',
+	'Outfit hôm nay',
+	'OOTD nóng bỏng',
+	'Mirror selfie',
+	'Góc chụp tự sướng',
+	'Chụp lén hay chụp hẹn?',
+	'Góc nghiêng góc thẳng',
+	'Trước gương',
+	'Trong phòng ngủ',
+	'Bên cửa sổ',
+	'Nắng chiều vàng',
+	'Đèn mờ mood',
+	'Aesthetic vibes',
+	'Soft content',
+	'Chill vibes',
+	'Relax mode',
+	'Weekend mood',
+	'Sunday chill',
+	'Lazy day',
+	'Stay home content',
+	'Bedroom vibes',
+	'Homebody',
+	'Cozy corner',
+	'Em ở nhà',
+	'Work from home',
+	'Chill tại giường',
+	'Nằm ườn cả ngày',
+	'Lười biếng chủ nhật',
+	'Thứ 7 rảnh rang',
+	'Cuối tuần em làm gì?',
+	'Buổi sáng lười',
+	'Buổi tối chill',
+	'Đêm khuya thư giãn',
+	'After shower',
+	'Fresh clean',
+	'Mới tắm xong',
+	'Thơm tho đây',
+	'Sạch sẽ thơm tho',
+	'Skin care time',
+	'Self care sunday',
+	'Me time',
+	'Treat yourself',
+	'Love yourself first',
 ];
 
-// 90+ descriptions - dirty talk style, gợi dục táo bạo
+// 160+ descriptions - dirty talk style, gợi dục táo bạo
 const DESCRIPTIONS = [
-	// === DIRTY TALK ===
+	// === DIRTY TALK (20) ===
 	'Anh muốn em làm gì?',
 	'Chịu được bao lâu nào?',
 	'Em thích mạnh hay nhẹ?',
@@ -176,8 +298,15 @@ const DESCRIPTIONS = [
 	'Em hư lắm anh biết không?',
 	'Đêm nay em muốn nghịch',
 	'Ai dám làm em mệt?',
+	'Em thích anh chiều em',
+	'Làm em nóng đi',
+	'Anh có muốn thử không?',
+	'Em sẵn sàng rồi đó',
+	'Đến đây với em',
+	'Em đang đợi anh',
+	'Anh ở đâu rồi?',
 
-	// === GỢI CẢM - SEDUCTIVE ===
+	// === GỢI CẢM - SEDUCTIVE (20) ===
 	'Nhìn gì mà nhìn dữ vậy anh?',
 	'Thích thì IB, yêu thì follow',
 	'Single và sẵn sàng chiều',
@@ -191,8 +320,15 @@ const DESCRIPTIONS = [
 	'Hương em quyến rũ lắm',
 	'Em là giấc mơ ướt đêm nay',
 	'Body em nóng lắm anh',
+	'Em sexy mà em biết',
+	'Quyến rũ không cần cố',
+	'Anh thích em không?',
+	'Em có đẹp không?',
+	'Rate em đi anh',
+	'Em xinh lắm phải không?',
+	'Anh nghĩ sao về em?',
 
-	// === ĐÊM KHUYA - LATE NIGHT ===
+	// === ĐÊM KHUYA - LATE NIGHT (20) ===
 	'Warning: Gây nghiện nặng',
 	'Chỉ dành cho người lớn thôi',
 	'Content 18+ real 100%',
@@ -206,8 +342,15 @@ const DESCRIPTIONS = [
 	'Midnight confession nóng bỏng',
 	'Ai ôm em đêm nay?',
 	'Đêm dài cần người bầu bạn',
+	'Late night vibes',
+	'Midnight mood',
+	'2AM thoughts',
+	'Đêm khuya tâm sự',
+	'Ai còn thức?',
+	'Khuya rồi nhớ anh',
+	'Đêm nay em buồn',
 
-	// === BODY CONFIDENT ===
+	// === BODY CONFIDENT (20) ===
 	'Body chuẩn từng cm',
 	'Vòng một căng real',
 	'Natural và proud of it',
@@ -221,8 +364,15 @@ const DESCRIPTIONS = [
 	'Số đo chuẩn không chỉnh',
 	'Real và sexy',
 	'Body mlem quá đi',
+	'Đẹp tự nhiên 100%',
+	'No edit needed',
+	'Original beauty',
+	'Born this way',
+	'Natural is best',
+	'Real over fake',
+	'Authentic beauty',
 
-	// === TƯƠNG TÁC - ENGAGEMENT ===
+	// === TƯƠNG TÁC - ENGAGEMENT (20) ===
 	'Rate em 1-10 đi anh',
 	'Comment phần anh thích nhất',
 	'Like nếu em sexy',
@@ -236,8 +386,15 @@ const DESCRIPTIONS = [
 	'Rate góc nào sexy nhất',
 	'Comment anh muốn em mặc gì',
 	'10k like em cởi thêm',
+	'Like = yêu em',
+	'Follow = support em',
+	'Share = giúp em viral',
+	'Save = xem lại sau',
+	'Comment = tương tác',
+	'Thả tim = thích em',
+	'Drop emoji nào',
 
-	// === ĐÊM VIBES ===
+	// === ĐÊM VIBES (15) ===
 	'Late night post nóng',
 	'Ai thức đêm với em?',
 	'Midnight vibes nóng bỏng',
@@ -251,8 +408,10 @@ const DESCRIPTIONS = [
 	'Đêm về em lại nhớ anh',
 	'Ai thức late IB em',
 	'Đêm dài cần bạn tâm sự',
+	'Khuya rồi ai chưa ngủ',
+	'Midnight story',
 
-	// === TỰ TIN - CONFIDENT ===
+	// === TỰ TIN - CONFIDENT (15) ===
 	'Em là real 100%',
 	'Anti photoshop gang',
 	'Natural is the new sexy',
@@ -266,8 +425,10 @@ const DESCRIPTIONS = [
 	'Em là masterpiece',
 	'Đẹp từ trong ra ngoài',
 	'Hot girl đích thực',
+	'Self love first',
+	'Love yourself',
 
-	// === KHIÊU GỢI - TEASING ===
+	// === KHIÊU GỢI - TEASING (15) ===
 	'Muốn xem thêm? IB',
 	'Part 2 if 5k likes',
 	'Bí mật trong IB anh ơi',
@@ -281,9 +442,33 @@ const DESCRIPTIONS = [
 	'5k like = full reveal',
 	'IB để biết thêm nè',
 	'Private content trong IB',
+	'Phần 2 sắp lên',
+	'Stay tuned babe',
+
+	// === THÊM MỚI - EXTRA (20) ===
+	'Cuối tuần em rảnh',
+	'Weekend vibes',
+	'Sunday mood',
+	'Chill tại nhà',
+	'Relax mode on',
+	'Lazy sunday',
+	'Home content',
+	'Bedroom aesthetic',
+	'Soft lighting',
+	'Golden hour',
+	'Natural light',
+	'Mirror check',
+	'OOTD của em',
+	'Today outfit',
+	'Style hôm nay',
+	'Look của ngày',
+	'Fresh content',
+	'New post alert',
+	'Just posted',
+	'Hot off the press',
 ];
 
-// 35+ hashtag sets - đa dạng chủ đề, trending hashtags
+// 40+ hashtag sets - đa dạng chủ đề, trending hashtags
 const HASHTAG_SETS = [
 	// Hot & Sexy
 	'#fyp #sexy #hotgirl #18plus #body #vietnam #viral',
@@ -342,35 +527,88 @@ const HASHTAG_SETS = [
 	'#fyp #explore #sexy #hot #tiktokviral #trend',
 ];
 
+// Global tracking to avoid duplicates across all generated content
+const usedTitlesGlobal = new Set();
+const usedDescriptionsGlobal = new Set();
+
 /**
- * Get random item from array
+ * Get random item from array, avoiding items in usedSet
+ * @param {string[]} arr - Array to pick from
+ * @param {Set} usedSet - Set of already used items
+ * @returns {string} Random unused item
+ */
+function getUniqueRandom(arr, usedSet) {
+	// Reset if we've used too many (80% threshold)
+	if (usedSet.size >= arr.length * 0.8) {
+		usedSet.clear();
+	}
+
+	let item;
+	let attempts = 0;
+	const maxAttempts = arr.length;
+
+	do {
+		item = arr[Math.floor(Math.random() * arr.length)];
+		attempts++;
+	} while (usedSet.has(item) && attempts < maxAttempts);
+
+	usedSet.add(item);
+	return item;
+}
+
+/**
+ * Get random item from array (simple, for hashtags)
  */
 function random(arr) {
 	return arr[Math.floor(Math.random() * arr.length)];
 }
 
 /**
- * Generate 3 random content options
+ * Generate 1 unique content option (title + description)
+ * Tracks used titles/descriptions globally to minimize duplicates
  */
 export function generateContentOptions() {
 	const options = [];
-	const usedTitles = new Set();
+	const sessionTitles = new Set();
 
 	for (let i = 0; i < 3; i++) {
 		let title;
+		// Ensure unique within this generation session too
 		do {
-			title = random(TITLES);
-		} while (usedTitles.has(title) && usedTitles.size < TITLES.length);
-		usedTitles.add(title);
+			title = getUniqueRandom(TITLES, usedTitlesGlobal);
+		} while (sessionTitles.has(title) && sessionTitles.size < TITLES.length);
+		sessionTitles.add(title);
 
 		options.push({
 			title,
-			description: random(DESCRIPTIONS),
+			description: getUniqueRandom(DESCRIPTIONS, usedDescriptionsGlobal),
 			hashtags: random(HASHTAG_SETS),
 		});
 	}
 
 	return options;
+}
+
+/**
+ * Get stats about content pool usage
+ */
+export function getContentStats() {
+	return {
+		titlesTotal: TITLES.length,
+		titlesUsed: usedTitlesGlobal.size,
+		titlesRemaining: TITLES.length - usedTitlesGlobal.size,
+		descriptionsTotal: DESCRIPTIONS.length,
+		descriptionsUsed: usedDescriptionsGlobal.size,
+		descriptionsRemaining: DESCRIPTIONS.length - usedDescriptionsGlobal.size,
+	};
+}
+
+/**
+ * Reset all tracking (useful for testing or manual reset)
+ */
+export function resetContentTracking() {
+	usedTitlesGlobal.clear();
+	usedDescriptionsGlobal.clear();
 }
 
 /**

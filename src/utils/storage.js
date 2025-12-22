@@ -712,6 +712,48 @@ export function getPendingPostsByChat(chatId) {
 }
 
 /**
+ * Delete a scheduled post, its video file, and reschedule remaining posts
+ * @param {string} postId - The post ID to delete
+ * @param {number} chatId - Chat ID for rescheduling
+ * @returns {{success: boolean, rescheduled: number}}
+ */
+export function deleteScheduledPost(postId, chatId) {
+	// Get the post first
+	const post = db
+		.prepare(`SELECT * FROM scheduled_posts WHERE id = ?`)
+		.get(postId);
+
+	if (!post) {
+		return { success: false, rescheduled: 0 };
+	}
+
+	// Delete video file if exists
+	const fullPath = getVideoFullPath(post.video_path);
+	if (fs.existsSync(fullPath)) {
+		try {
+			fs.unlinkSync(fullPath);
+			console.log(`[Delete] Removed video file: ${post.video_path}`);
+		} catch (e) {
+			console.error(`[Delete] Failed to remove file: ${e.message}`);
+		}
+	}
+
+	// Delete from downloaded_videos if exists (by video path)
+	db.prepare(`DELETE FROM downloaded_videos WHERE video_path = ?`).run(
+		post.video_path
+	);
+
+	// Delete from scheduled_posts
+	db.prepare(`DELETE FROM scheduled_posts WHERE id = ?`).run(postId);
+	console.log(`[Delete] Removed post from database: ${postId}`);
+
+	// Reschedule remaining posts to fill the gap
+	const rescheduled = rescheduleAllPending(chatId);
+
+	return { success: true, rescheduled };
+}
+
+/**
  * Get archive stats
  * @param {number} chatId
  * @returns {{total: number, totalViews: number}}
