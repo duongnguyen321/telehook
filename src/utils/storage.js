@@ -12,15 +12,38 @@ import {
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 export const DATA_DIR = path.join(__dirname, '../../data');
+export const VIDEOS_DIR = path.join(DATA_DIR, 'videos');
 const DB_PATH = path.join(DATA_DIR, 'tiktok_bot.db');
+
+/**
+ * Convert relative video path (filename) to absolute path
+ * @param {string} relativePath - filename or relative path
+ * @returns {string} absolute path
+ */
+export function getVideoFullPath(relativePath) {
+	// If already absolute, return as is
+	if (path.isAbsolute(relativePath)) {
+		return relativePath;
+	}
+	return path.join(VIDEOS_DIR, relativePath);
+}
+
+/**
+ * Convert absolute video path to relative (just filename)
+ * @param {string} absolutePath
+ * @returns {string} filename only
+ */
+export function getVideoRelativePath(absolutePath) {
+	return path.basename(absolutePath);
+}
 
 // Ensure data directory exists
 if (!fs.existsSync(DATA_DIR)) {
 	fs.mkdirSync(DATA_DIR, { recursive: true });
 }
 
-if (!fs.existsSync(path.join(DATA_DIR, 'videos'))) {
-	fs.mkdirSync(path.join(DATA_DIR, 'videos'), { recursive: true });
+if (!fs.existsSync(VIDEOS_DIR)) {
+	fs.mkdirSync(VIDEOS_DIR, { recursive: true });
 }
 
 // Initialize database
@@ -170,7 +193,7 @@ export function addScheduledPost(post) {
 	stmt.run(
 		id,
 		post.chatId,
-		post.videoPath,
+		getVideoRelativePath(post.videoPath), // Store relative path only
 		post.title,
 		post.description,
 		post.hashtags,
@@ -430,7 +453,7 @@ export function getDuePosts() {
 	return stmt.all(now).map((row) => ({
 		id: row.id,
 		chatId: row.chat_id,
-		videoPath: row.video_path,
+		videoPath: getVideoFullPath(row.video_path),
 		title: row.title,
 		description: row.description,
 		hashtags: row.hashtags,
@@ -605,7 +628,7 @@ export function scheduleReposts(chatId) {
 
 		const post = addScheduledPost({
 			chatId: video.chat_id,
-			videoPath: video.video_path,
+			videoPath: getVideoFullPath(video.video_path),
 			title: content.title,
 			description: content.description,
 			hashtags: content.hashtags,
@@ -649,7 +672,7 @@ export function getPendingPostsByChat(chatId) {
 	return stmt.all(chatId).map((row) => ({
 		id: row.id,
 		chatId: row.chat_id,
-		videoPath: row.video_path,
+		videoPath: getVideoFullPath(row.video_path),
 		title: row.title,
 		description: row.description,
 		hashtags: row.hashtags,
@@ -698,7 +721,7 @@ export function trackDownloadedVideo(fileId, chatId, videoPath, fileSize) {
     INSERT OR REPLACE INTO downloaded_videos (file_id, chat_id, video_path, file_size, status)
     VALUES (?, ?, ?, ?, 'pending')
   `);
-	stmt.run(fileId, chatId, videoPath, fileSize);
+	stmt.run(fileId, chatId, getVideoRelativePath(videoPath), fileSize);
 }
 
 /**
@@ -739,8 +762,9 @@ export function deleteDownloadedVideo(fileId) {
 		.get(fileId);
 	if (video) {
 		// Delete file if exists
-		if (fs.existsSync(video.video_path)) {
-			fs.unlinkSync(video.video_path);
+		const fullPath = getVideoFullPath(video.video_path);
+		if (fs.existsSync(fullPath)) {
+			fs.unlinkSync(fullPath);
 		}
 		// Delete record
 		db.prepare(`DELETE FROM downloaded_videos WHERE file_id = ?`).run(fileId);

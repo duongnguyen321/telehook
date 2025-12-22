@@ -23,9 +23,10 @@ import { generateContentOptions } from '../services/ai.js';
 import { downloadVideo, queueDownload } from '../utils/downloader.js';
 
 /**
- * Send paginated queue page with video details
+ * Send paginated queue page with video details + video file
  */
 async function sendQueuePage(ctx, chatId, page, messageId = null) {
+	const { InputFile } = await import('grammy');
 	const posts = getPendingPostsByChat(chatId);
 
 	if (posts.length === 0) {
@@ -45,16 +46,14 @@ async function sendQueuePage(ctx, chatId, page, messageId = null) {
 	}
 
 	const time = formatVietnameseTime(new Date(post.scheduledAt));
-	const msg =
-		`[${page + 1}/${posts.length}] Schedule\n\n` +
-		`Time: ${time}\n\n` +
-		`Title:\n${post.title}\n\n` +
-		`Desc:\n${post.description}\n\n` +
-		`Tags:\n${post.hashtags}`;
+	const caption =
+		`[${page + 1}/${posts.length}] ${time}\n\n` +
+		`${post.title}\n\n` +
+		`${post.description}\n\n` +
+		`${post.hashtags}`;
 
 	// Build keyboard
 	const keyboard = new InlineKeyboard();
-
 	if (page > 0) {
 		keyboard.text('<< Prev', `queue_${page - 1}`);
 	}
@@ -62,13 +61,34 @@ async function sendQueuePage(ctx, chatId, page, messageId = null) {
 		keyboard.text('Next >>', `queue_${page + 1}`);
 	}
 
-	if (messageId) {
-		await ctx.api.editMessageText(chatId, messageId, msg, {
-			reply_markup: keyboard,
-		});
-	} else {
-		await ctx.reply(msg, { reply_markup: keyboard });
+	// Check if video file exists
+	if (!fs.existsSync(post.videoPath)) {
+		const text = `[${page + 1}/${posts.length}] Video file missing!\n${time}`;
+		if (messageId) {
+			await ctx.api.editMessageText(chatId, messageId, text, {
+				reply_markup: keyboard,
+			});
+		} else {
+			await ctx.reply(text, { reply_markup: keyboard });
+		}
+		return;
 	}
+
+	// For pagination, we need to delete old message and send new video
+	// because you can't edit a text message to become a video
+	if (messageId) {
+		try {
+			await ctx.api.deleteMessage(chatId, messageId);
+		} catch (e) {
+			// Ignore delete error
+		}
+	}
+
+	await ctx.api.sendVideo(chatId, new InputFile(post.videoPath), {
+		caption,
+		reply_markup: keyboard,
+		supports_streaming: true,
+	});
 }
 
 /**
@@ -114,8 +134,19 @@ async function processVideoAfterDownload(ctx, video, videoPath, chatId) {
  * @param {import('grammy').Bot} bot
  */
 export function setupVideoHandler(bot) {
+	// Only this user can forward/upload videos
+	const ADMIN_USER_ID = 1708974691;
+
 	// Handle video messages - auto schedule without user input
 	bot.on('message:video', async (ctx) => {
+		const userId = ctx.from?.id;
+
+		// Check authorization
+		if (userId !== ADMIN_USER_ID) {
+			await ctx.reply('You do not have permission to upload videos.');
+			return;
+		}
+
 		const video = ctx.message.video;
 		const chatId = ctx.chat.id;
 
