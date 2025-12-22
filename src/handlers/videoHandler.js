@@ -9,6 +9,7 @@ import {
 	updateVideoStatus,
 	getDownloadedVideos,
 	getVideoStats,
+	rescheduleAllPending,
 	DATA_DIR,
 } from '../utils/storage.js';
 import { formatVietnameseTime } from '../utils/timeParser.js';
@@ -157,8 +158,17 @@ async function handleCommand(ctx, command) {
 		await ctx.reply(
 			`Bot auto-schedule TikTok videos\n\n` +
 				`Forward video -> auto schedule\n` +
-				`Max 3/day (10h, 15h, 21h GMT+7)\n\n` +
-				`/queue /stats /repost`
+				`9 videos/day (9:30-10:30, 14:30-15:30, 20:30-21:30 GMT+7)\n\n` +
+				`/queue /stats /reschedule`
+		);
+		return;
+	}
+
+	if (command === '/reschedule') {
+		await ctx.reply('Rescheduling all pending videos...');
+		const count = rescheduleAllPending(chatId);
+		await ctx.reply(
+			`Done! Rescheduled ${count} videos with new schedule (9/day)`
 		);
 		return;
 	}

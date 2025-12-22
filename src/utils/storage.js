@@ -191,13 +191,14 @@ export function addScheduledPost(post) {
 const recentlyUsedSlots = new Set();
 
 /**
- * Get smart schedule slot for next video (max 3 videos/day at fixed times)
- * Time slots: 10:00, 15:00, 21:00 (GMT+7)
+ * Get smart schedule slot for next video
+ * 9 videos/day: 3 per timeslot at 10:00, 15:00, 21:00 (GMT+7)
  * @returns {string} ISO date string
  */
 export function getSmartScheduleSlot() {
-	const SLOTS_PER_DAY = 3;
+	const VIDEOS_PER_SLOT = 3;
 	const TIME_SLOTS = [10, 15, 21]; // 10AM, 3PM, 9PM in GMT+7
+	const SLOTS_PER_DAY = VIDEOS_PER_SLOT * TIME_SLOTS.length; // 9 total
 	const now = nowGMT7();
 
 	// Get all scheduled slots from DB - convert each to GMT+7 slot key
@@ -205,20 +206,22 @@ export function getSmartScheduleSlot() {
 		`SELECT scheduled_at FROM scheduled_posts WHERE status = 'pending' ORDER BY scheduled_at DESC`
 	);
 	const dbRows = stmt.all();
-	const dbSlotKeys = new Set(
-		dbRows.map((r) => {
-			const d = toGMT7(new Date(r.scheduled_at));
-			return getSlotKey(d);
-		})
-	);
 
-	// Combine DB + memory slots
-	const allUsedSlots = new Set([...dbSlotKeys, ...recentlyUsedSlots]);
+	// Count slots per hour (format: YYYY-MM-DD-HH)
+	const slotCounts = new Map();
+	for (const r of dbRows) {
+		const d = toGMT7(new Date(r.scheduled_at));
+		const key = getSlotKey(d);
+		slotCounts.set(key, (slotCounts.get(key) || 0) + 1);
+	}
+
+	// Also count recently used slots
+	for (const key of recentlyUsedSlots) {
+		slotCounts.set(key, (slotCounts.get(key) || 0) + 1);
+	}
 
 	console.log(
-		`[Schedule] All used slots (${allUsedSlots.size}): ${[...allUsedSlots]
-			.slice(-5)
-			.join(', ')}`
+		`[Schedule] Total pending: ${dbRows.length}, recent: ${recentlyUsedSlots.size}`
 	);
 
 	// Start from today in GMT+7
@@ -228,35 +231,56 @@ export function getSmartScheduleSlot() {
 	for (let dayOffset = 0; dayOffset < 365; dayOffset++) {
 		const dateKey = getDateKey(checkDate);
 
-		// Count used slots for this day
-		let usedCount = 0;
-		for (const slot of allUsedSlots) {
-			if (slot.startsWith(dateKey)) usedCount++;
+		// Count total videos scheduled for this day
+		let dayTotal = 0;
+		for (const [key, count] of slotCounts) {
+			if (key.startsWith(dateKey)) dayTotal += count;
 		}
 
-		if (usedCount < SLOTS_PER_DAY) {
+		if (dayTotal < SLOTS_PER_DAY) {
+			// Find available slot
 			for (const slotHour of TIME_SLOTS) {
 				const slotKey = `${dateKey}-${slotHour}`;
+				const slotCount = slotCounts.get(slotKey) || 0;
 
-				if (!allUsedSlots.has(slotKey)) {
+				if (slotCount < VIDEOS_PER_SLOT) {
 					// Create the actual schedule time
+					// Position: 0 = -30min, 1 = 0min (golden hour), 2 = +30min
+					const minuteOffsets = [-30, 0, 30];
+					const minuteOffset = minuteOffsets[slotCount];
+
+					// Calculate hour and minute
+					let scheduleHour = slotHour;
+					let scheduleMinute = minuteOffset;
+
+					if (minuteOffset < 0) {
+						scheduleHour = slotHour - 1;
+						scheduleMinute = 30; // -30 means previous hour :30
+					}
+
 					const scheduleTime = createGMT7Time(
 						checkDate.getFullYear(),
-						checkDate.getMonth() + 1, // createGMT7Time uses 1-indexed month
+						checkDate.getMonth() + 1,
 						checkDate.getDate(),
-						slotHour
+						scheduleHour
 					);
+					scheduleTime.setMinutes(scheduleMinute);
 
 					// Make sure it's in the future
 					if (scheduleTime > new Date()) {
 						// Mark as used immediately
 						recentlyUsedSlots.add(slotKey);
-						allUsedSlots.add(slotKey);
+						slotCounts.set(slotKey, slotCount + 1);
 
 						// Clean up after 30 seconds
 						setTimeout(() => recentlyUsedSlots.delete(slotKey), 30000);
 
-						console.log(`[Schedule] Slot: ${slotKey} (GMT+7)`);
+						console.log(
+							`[Schedule] Slot: ${slotKey}:${String(minuteOffset).padStart(
+								2,
+								'0'
+							)} (GMT+7)`
+						);
 						return scheduleTime.toISOString();
 					}
 				}
@@ -269,6 +293,50 @@ export function getSmartScheduleSlot() {
 
 	// Fallback: 1 hour from now
 	return new Date(Date.now() + 60 * 60 * 1000).toISOString();
+}
+
+/**
+ * Reschedule all pending posts with new schedule
+ * @param {number} chatId
+ * @returns {number} Number of posts rescheduled
+ */
+export function rescheduleAllPending(chatId) {
+	// Clear recent slots cache
+	recentlyUsedSlots.clear();
+
+	// Get all pending posts ordered by creation time
+	const stmt = db.prepare(`
+		SELECT * FROM scheduled_posts 
+		WHERE chat_id = ? AND status = 'pending'
+		ORDER BY id ASC
+	`);
+	const posts = stmt.all(chatId);
+
+	if (posts.length === 0) {
+		return 0;
+	}
+
+	console.log(`[Reschedule] Rescheduling ${posts.length} pending posts...`);
+
+	// Reset all scheduled times
+	const updateStmt = db.prepare(`
+		UPDATE scheduled_posts SET scheduled_at = ? WHERE id = ?
+	`);
+
+	let count = 0;
+	for (const post of posts) {
+		const newTime = getSmartScheduleSlot();
+		updateStmt.run(newTime, post.id);
+		count++;
+		console.log(
+			`[Reschedule] ${count}/${posts.length}: ${post.id.slice(
+				0,
+				8
+			)} -> ${newTime.slice(0, 16)}`
+		);
+	}
+
+	return count;
 }
 
 /**
