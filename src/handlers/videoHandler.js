@@ -12,6 +12,7 @@ import {
 	getVideoStats,
 	rescheduleAllPending,
 	deleteScheduledPost,
+	updatePostContent,
 	DATA_DIR,
 } from '../utils/storage.js';
 import { formatVietnameseTime } from '../utils/timeParser.js';
@@ -80,10 +81,11 @@ async function sendQueuePage(
 		keyboard.text('Next >>', `queue_${page + 1}`);
 	}
 
-	// Admin: Add delete button on new row
+	// Admin: Add action buttons on new row
 	if (isAdmin) {
 		keyboard.row();
-		keyboard.text('🗑 Xóa video này', `delete_${post.id}_${page}`);
+		keyboard.text('� Đổi nội dung', `regen_${post.id}_${page}`);
+		keyboard.text('🗑 Xóa', `delete_${post.id}_${page}`);
 	}
 
 	// Check if video file exists
@@ -279,6 +281,23 @@ export function setupVideoHandler(bot) {
 				// Show previous page or first page
 				const newPage = Math.max(0, currentPage - 1);
 				await sendQueuePage(ctx, chatId, newPage, messageId, isAdmin);
+			} else {
+				await ctx.answerCallbackQuery('Lỗi: Không tìm thấy video');
+			}
+			return;
+		}
+
+		// Handle regenerate content (admin only)
+		if (data.startsWith('regen_') && isAdmin) {
+			const parts = data.split('_');
+			const postId = parts[1];
+			const currentPage = parseInt(parts[2]) || 0;
+
+			const result = updatePostContent(postId);
+			if (result.success) {
+				await ctx.answerCallbackQuery('Đã đổi nội dung mới!');
+				// Refresh current page to show new content
+				await sendQueuePage(ctx, chatId, currentPage, messageId, isAdmin);
 			} else {
 				await ctx.answerCallbackQuery('Lỗi: Không tìm thấy video');
 			}

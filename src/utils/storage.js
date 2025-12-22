@@ -754,6 +754,45 @@ export function deleteScheduledPost(postId, chatId) {
 }
 
 /**
+ * Update post content (title, description, hashtags) with new random content
+ * @param {string} postId - The post ID to update
+ * @returns {{success: boolean, title: string, description: string, hashtags: string}}
+ */
+export function updatePostContent(postId) {
+	// Import content generator dynamically to avoid circular deps
+	const { generateContentOptions } = require('../services/ai.js');
+
+	// Check if post exists
+	const post = db
+		.prepare(`SELECT * FROM scheduled_posts WHERE id = ?`)
+		.get(postId);
+
+	if (!post) {
+		return { success: false, title: '', description: '', hashtags: '' };
+	}
+
+	// Generate new random content
+	const [content] = generateContentOptions();
+
+	// Update the post
+	const stmt = db.prepare(
+		`UPDATE scheduled_posts SET title = ?, description = ?, hashtags = ? WHERE id = ?`
+	);
+	stmt.run(content.title, content.description, content.hashtags, postId);
+
+	console.log(
+		`[Update] New content for ${postId}: "${content.title.slice(0, 25)}..."`
+	);
+
+	return {
+		success: true,
+		title: content.title,
+		description: content.description,
+		hashtags: content.hashtags,
+	};
+}
+
+/**
  * Get archive stats
  * @param {number} chatId
  * @returns {{total: number, totalViews: number}}
