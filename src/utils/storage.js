@@ -2,6 +2,13 @@ import { Database } from 'bun:sqlite';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
+import {
+	nowGMT7,
+	toGMT7,
+	getDateKeyGMT7,
+	getSlotKeyGMT7,
+	createGMT7Date,
+} from './timezone.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 export const DATA_DIR = path.join(__dirname, '../../data');
@@ -180,65 +187,69 @@ export function addScheduledPost(post) {
 }
 
 // Track recently used slots to prevent race conditions
+// Key format: "YYYY-MM-DD-HH" in GMT+7
 const recentlyUsedSlots = new Set();
 
 /**
  * Get smart schedule slot for next video (max 3 videos/day at fixed times)
- * Time slots: 10:00, 15:00, 21:00
+ * Time slots: 10:00, 15:00, 21:00 (GMT+7)
  * @returns {string} ISO date string
  */
 export function getSmartScheduleSlot() {
 	const SLOTS_PER_DAY = 3;
-	const TIME_SLOTS = [10, 15, 21]; // 10AM, 3PM, 9PM
-	const now = new Date();
+	const TIME_SLOTS = [10, 15, 21]; // 10AM, 3PM, 9PM in GMT+7
+	const now = nowGMT7();
 
-	// Get all scheduled slots from DB + recently used (in-memory)
-	const stmt = db.prepare(`
-    SELECT scheduled_at FROM scheduled_posts WHERE status = 'pending'
-  `);
-	const dbSlots = stmt.all().map((r) => r.scheduled_at);
+	// Get all scheduled slots from DB (converted to GMT+7 slot keys)
+	const stmt = db.prepare(
+		`SELECT scheduled_at FROM scheduled_posts WHERE status = 'pending'`
+	);
+	const dbSlotKeys = new Set(
+		stmt.all().map((r) => getSlotKeyGMT7(new Date(r.scheduled_at)))
+	);
 
-	// Combine DB slots with recently used slots
-	const allUsedSlots = new Set([...dbSlots, ...recentlyUsedSlots]);
+	// Combine with recently used slots (in-memory)
+	const allUsedSlots = new Set([...dbSlotKeys, ...recentlyUsedSlots]);
 
-	// Find first available slot
+	// Start checking from today in GMT+7
 	let checkDate = new Date(now);
 	checkDate.setHours(0, 0, 0, 0);
 
-	for (let i = 0; i < 365; i++) {
-		const dateStr = checkDate.toISOString().split('T')[0];
+	for (let dayOffset = 0; dayOffset < 365; dayOffset++) {
+		const dateKey = getDateKeyGMT7(checkDate);
 
 		// Count used slots for this day
-		let usedForDay = 0;
-		const usedHours = [];
-
-		for (const slotTime of allUsedSlots) {
-			if (slotTime.startsWith(dateStr)) {
-				usedForDay++;
-				const hour = new Date(slotTime).getHours();
-				usedHours.push(hour);
-			}
+		let usedCount = 0;
+		for (const slot of allUsedSlots) {
+			if (slot.startsWith(dateKey)) usedCount++;
 		}
 
-		if (usedForDay < SLOTS_PER_DAY) {
-			// Find available slot
+		if (usedCount < SLOTS_PER_DAY) {
+			// Find available time slot
 			for (const slotHour of TIME_SLOTS) {
-				const isUsed = usedHours.some((h) => Math.abs(h - slotHour) < 2);
-				if (!isUsed) {
-					const scheduleTime = new Date(checkDate);
-					scheduleTime.setHours(slotHour, 0, 0, 0);
+				const slotKey = `${dateKey}-${slotHour}`;
+
+				if (!allUsedSlots.has(slotKey)) {
+					// Create schedule time in GMT+7
+					const scheduleTime = createGMT7Date(
+						checkDate.getFullYear(),
+						checkDate.getMonth(),
+						checkDate.getDate(),
+						slotHour,
+						0
+					);
 
 					// Make sure it's in the future
-					if (scheduleTime > now) {
-						const isoTime = scheduleTime.toISOString();
+					if (scheduleTime > new Date()) {
+						// Mark as used immediately to prevent race condition
+						recentlyUsedSlots.add(slotKey);
+						allUsedSlots.add(slotKey);
 
-						// Mark as used immediately
-						recentlyUsedSlots.add(isoTime);
+						// Clean up after 10 seconds (DB will have it by then)
+						setTimeout(() => recentlyUsedSlots.delete(slotKey), 10000);
 
-						// Clean up old entries after 5 seconds
-						setTimeout(() => recentlyUsedSlots.delete(isoTime), 5000);
-
-						return isoTime;
+						console.log(`[Schedule] Slot: ${dateKey} ${slotHour}:00 (GMT+7)`);
+						return scheduleTime.toISOString();
 					}
 				}
 			}
@@ -246,11 +257,10 @@ export function getSmartScheduleSlot() {
 
 		// Move to next day
 		checkDate.setDate(checkDate.getDate() + 1);
-		checkDate.setHours(0, 0, 0, 0);
 	}
 
 	// Fallback: 1 hour from now
-	return new Date(now.getTime() + 60 * 60 * 1000).toISOString();
+	return new Date(Date.now() + 60 * 60 * 1000).toISOString();
 }
 
 /**

@@ -146,20 +146,25 @@ export function parseVietnameseTime(input, baseTime = new Date()) {
 	return null;
 }
 
+import { toGMT7 } from './timezone.js';
+
 /**
- * Format date to Vietnamese readable string
+ * Format date to Vietnamese readable string (in GMT+7)
  * @param {Date} date
  * @returns {string}
  */
 export function formatVietnameseTime(date) {
-	const now = new Date();
-	const isToday = date.toDateString() === now.toDateString();
+	// Convert to GMT+7 for display
+	const gmt7 = toGMT7(date);
+	const now = toGMT7(new Date());
+
+	const isToday = gmt7.toDateString() === now.toDateString();
 	const tomorrow = new Date(now);
 	tomorrow.setDate(tomorrow.getDate() + 1);
-	const isTomorrow = date.toDateString() === tomorrow.toDateString();
+	const isTomorrow = gmt7.toDateString() === tomorrow.toDateString();
 
-	const hours = date.getHours().toString().padStart(2, '0');
-	const minutes = date.getMinutes().toString().padStart(2, '0');
+	const hours = gmt7.getHours().toString().padStart(2, '0');
+	const minutes = gmt7.getMinutes().toString().padStart(2, '0');
 	const timeStr = `${hours}:${minutes}`;
 
 	if (isToday) {
@@ -167,8 +172,8 @@ export function formatVietnameseTime(date) {
 	} else if (isTomorrow) {
 		return `ngày mai lúc ${timeStr}`;
 	} else {
-		const day = date.getDate().toString().padStart(2, '0');
-		const month = (date.getMonth() + 1).toString().padStart(2, '0');
+		const day = gmt7.getDate().toString().padStart(2, '0');
+		const month = (gmt7.getMonth() + 1).toString().padStart(2, '0');
 		return `${day}/${month} lúc ${timeStr}`;
 	}
 }
