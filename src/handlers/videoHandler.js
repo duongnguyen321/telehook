@@ -262,6 +262,8 @@ async function handleCommand(ctx, command) {
 				`9 videos/day (9:30-10:30, 14:30-15:30, 20:30-21:30 GMT+7)\n\n` +
 				`/queue /stats /reschedule`
 		);
+		// Show queue after welcome message
+		await sendQueuePage(ctx, chatId, 0);
 		return;
 	}
 
