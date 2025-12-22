@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import { InlineKeyboard } from 'grammy';
 import {
 	addScheduledPost,
 	getPendingPostsByChat,
@@ -20,6 +21,55 @@ import {
 } from '../services/scheduler.js';
 import { generateContentOptions } from '../services/ai.js';
 import { downloadVideo, queueDownload } from '../utils/downloader.js';
+
+/**
+ * Send paginated queue page with video details
+ */
+async function sendQueuePage(ctx, chatId, page, messageId = null) {
+	const posts = getPendingPostsByChat(chatId);
+
+	if (posts.length === 0) {
+		const text = 'No pending videos';
+		if (messageId) {
+			await ctx.api.editMessageText(chatId, messageId, text);
+		} else {
+			await ctx.reply(text);
+		}
+		return;
+	}
+
+	const post = posts[page];
+	if (!post) {
+		await sendQueuePage(ctx, chatId, 0, messageId);
+		return;
+	}
+
+	const time = formatVietnameseTime(new Date(post.scheduledAt));
+	const msg =
+		`[${page + 1}/${posts.length}] Schedule\n\n` +
+		`Time: ${time}\n\n` +
+		`Title:\n${post.title}\n\n` +
+		`Desc:\n${post.description}\n\n` +
+		`Tags:\n${post.hashtags}`;
+
+	// Build keyboard
+	const keyboard = new InlineKeyboard();
+
+	if (page > 0) {
+		keyboard.text('<< Prev', `queue_${page - 1}`);
+	}
+	if (page < posts.length - 1) {
+		keyboard.text('Next >>', `queue_${page + 1}`);
+	}
+
+	if (messageId) {
+		await ctx.api.editMessageText(chatId, messageId, msg, {
+			reply_markup: keyboard,
+		});
+	} else {
+		await ctx.reply(msg, { reply_markup: keyboard });
+	}
+}
 
 /**
  * Process video after successful download
@@ -138,6 +188,18 @@ export function setupVideoHandler(bot) {
 		await ctx.reply('Round video not supported');
 	});
 
+	// Handle pagination callbacks
+	bot.on('callback_query:data', async (ctx) => {
+		const data = ctx.callbackQuery.data;
+		if (data.startsWith('queue_')) {
+			const page = parseInt(data.replace('queue_', ''));
+			const chatId = ctx.chat.id;
+			const messageId = ctx.callbackQuery.message.message_id;
+			await sendQueuePage(ctx, chatId, page, messageId);
+			await ctx.answerCallbackQuery();
+		}
+	});
+
 	// Handle commands
 	bot.on('message:text', async (ctx) => {
 		const text = ctx.message.text.trim();
@@ -173,24 +235,8 @@ async function handleCommand(ctx, command) {
 		return;
 	}
 
-	if (command === '/queue') {
-		const posts = getPendingPostsByChat(chatId);
-		if (posts.length === 0) {
-			await ctx.reply('No pending videos');
-			return;
-		}
-
-		let msg = `${posts.length} pending:\n\n`;
-		posts.slice(0, 10).forEach((p, i) => {
-			const time = formatVietnameseTime(new Date(p.scheduledAt));
-			msg += `${i + 1}. ${time}\n`;
-		});
-
-		if (posts.length > 10) {
-			msg += `\n+${posts.length - 10} more...`;
-		}
-
-		await ctx.reply(msg);
+	if (command === '/queue' || command === '/list') {
+		await sendQueuePage(ctx, chatId, 0);
 		return;
 	}
 

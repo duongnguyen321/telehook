@@ -38,14 +38,15 @@ _Logic: Fills the first available future slot. If all slots today are full, it m
 
 ## 🛠 Commands
 
-| Command       | Description                                                       |
-| :------------ | :---------------------------------------------------------------- |
-| `/start`      | Show bot information and instructions.                            |
-| `/queue`      | View the list of pending videos (next 10 upcoming).               |
-| `/stats`      | View statistics (Downloaded, Pending, Posted).                    |
-| `/videos`     | List downloaded video files.                                      |
-| `/repost`     | Manually check for reposts (runs daily automatically).            |
-| `/reschedule` | **New!** Re-apply the 9-video/day schedule to ALL pending videos. |
+| Command       | Description                                                                            |
+| :------------ | :------------------------------------------------------------------------------------- |
+| `/start`      | Show bot information and instructions.                                                 |
+| `/queue`      | **Paginated** view of pending videos (Title, Desc, Tags, Time) with Prev/Next buttons. |
+| `/list`       | Alias for `/queue`.                                                                    |
+| `/stats`      | View statistics (Downloaded, Pending, Posted).                                         |
+| `/videos`     | List downloaded video files.                                                           |
+| `/repost`     | Manually check for reposts (runs daily automatically).                                 |
+| `/reschedule` | Re-apply the 9-video/day schedule to ALL pending videos.                               |
 
 ## 🚀 Tech Stack
 
