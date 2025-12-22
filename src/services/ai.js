@@ -4,181 +4,342 @@
  * Note: Vietnamese with proper diacritics
  */
 
-// 70+ titles - tiếng Việt có dấu đầy đủ
+// 150+ titles - tiếng Việt có dấu đầy đủ, dirty talk style
 const TITLES = [
-	// Super hot
+	// === DIRTY TALK - GỢI DỤC ===
+	'Anh thích mạnh hay nhẹ?',
+	'Muốn cởi không?',
+	'Đêm nay ai làm em mệt?',
+	'Chịu được bao lâu?',
+	'Em thích ở trên hay dưới?',
+	'Nóng quá muốn cởi hết',
+	'Ai làm em ướt đêm nay?',
+	'Càng đêm càng muốn...',
+	'Anh có chịu nổi không?',
+	'Em muốn anh làm gì?',
+	'Đụng vào là cháy',
+	'Anh dám không?',
+	'Thích nghịch không?',
+	'Em ngoan lắm... đâu?',
+	'Muốn thử không anh?',
+
+	// === KHIÊU KHÍCH - TEASING ===
 	'Nóng quá ai chịu nổi',
-	'Body chuẩn không cần chỉnh',
-	'Hot girl đã về nhà',
+	'Body này ai chiều được?',
 	'Ai dám nhìn lâu hơn 5 giây?',
 	'Sexy không cần cố gắng',
+	'Môi em ngọt lắm nha',
+	'Đường cong chết người đây',
+	'Nhìn là muốn ôm chặt',
+	'Chạm nhẹ thôi cũng run',
+	'Da em mịn lắm đó',
+	'Lưng trần mời gọi anh',
+	'Vai trần thơm phức',
+	'Hông em đong đưa',
+	'Ngực em căng tròn',
+	'Mông em cong vút',
+	'Body em nóng bỏng',
 
-	// Teasing 18+
+	// === ĐÊM KHUYA - NÓNG BỎNG ===
 	'Chỉ dành cho người lớn',
 	'Warning: Gây nghiện',
-	'Đêm khuya thả thính',
-	'Ai thức đêm xem đi',
-	'Content 18+ incoming',
+	'Đêm khuya ai nóng?',
+	'Ai thức đêm với em?',
+	'Content 18+ đây',
+	'Đêm nay nóng lắm anh',
+	'Ai còn thức canh em?',
+	'Giường em lạnh quá',
+	'Đêm nay ai sưởi ấm em?',
+	'Đêm dài lắm anh ơi',
+	'Thức khuya có thưởng nóng',
+	'Ai mất ngủ vì em?',
+	'Đêm về em nhớ anh',
+	'Cần người ôm đêm nay',
+	'Ai làm em nóng tối nay?',
 
-	// Bold & confident
-	'Vòng một chuẩn real',
+	// === BODY HOT - KHOE THÂN ===
+	'Vòng một căng tròn',
 	'Vòng ba gây thương nhớ',
-	'Body goals nhà các chị',
+	'Body này ai chịu nổi?',
 	'Nhìn kỹ đi đừng bỏ lỡ',
-	'Quá đẹp nên phải khoe',
+	'Đẹp không góc chết',
+	'Hoàn hảo từng đường cong',
+	'Body 3 vòng siêu chuẩn',
+	'Đẹp từ đầu đến mông',
+	'Vòng eo bé xíu',
+	'Đùi em thon lắm',
+	'Hông em tròn đầy',
+	'Ngực em mềm mại',
+	'Body mlem mlem',
+	'Đường cong sexy quá',
+	'Real 100% không fake',
 
-	// Flirty seductive
+	// === THẢ THÍNH - FLIRTY ===
 	'Anh có thấy nóng không?',
-	'DM đi đừng ngại',
-	'Single sẵn sàng',
-	'Muốn biết thêm thì follow',
-	'Bí mật trong DM nhá',
+	'IB đi đừng ngại',
+	'Single sẵn sàng chiều anh',
+	'Muốn biết thêm thì IB',
+	'Bí mật trong IB nhá',
+	'Em đang đợi anh',
+	'Nhắn gì đi anh yêu',
+	'Có dám tiến tới không?',
+	'Anh có đủ gan không?',
+	'Tim em chỉ cho anh',
+	'Vào IB biết nhiều hơn',
+	'Cần anh sưởi ấm',
+	'Single và muốn nghịch',
+	'Đợi anh dũng cảm IB',
+	'Em sẵn sàng cho anh',
 
-	// Night vibes
-	'Midnight content cực cháy',
-	'Đêm nay ai cô đơn?',
-	'Late night vibes',
-	'Ai không ngủ được?',
-	'Đêm khuya content',
-
-	// Very provocative
-	'Nóng bỏng tay đây',
-	'Càng xem càng muốn xem',
-	'Không follow hối hận đó',
-	'Part 2 nếu đủ like',
-	'Anh muốn gì nữa?',
-
-	// Confident sexy
-	'Em không ngoan đâu',
-	'Bad girl vibes',
-	'Sexy và biết điều đó',
-	'Xinh đẹp là vô đối',
-	'Queen energy',
-
-	// Interactive hot
-	'Rate body 1-10 đi',
-	'Thích phần nào nhất?',
-	'Comment emoji nóng nhất',
-	'Like nếu thấy sexy',
-	'Share cho crush đi',
-
-	// Super bold
-	'Hàng real 100%',
-	'Natural body goals',
-	'Không photoshop nhá',
-	'Original content only',
-	'Anti fake beauty',
-
-	// More 18+
-	'Chỉ người lớn mới hiểu',
-	'Content nóng 40 độ',
-	'Warning: Gây cháy',
-	'Đêm nay em đẹp lắm',
-	'Ai sẵn sàng?',
-
-	// Extra spicy
-	'Quá hot nên phải đăng',
-	'Body này ai chịu nổi',
-	'Vòng nào cũng chuẩn',
-	'Real beauty no filter',
-	'Hot không cần cố gắng',
-
-	// Additional provocative
-	'Đừng có mà thả tim',
-	'Xem xong nhớ follow',
-	'Anh có dám không?',
-	'Em xinh lắm đúng không?',
-	'Thích thì bấm like',
-
-	// More teasing
-	'Đang chờ anh đó',
-	'Đêm nay không ngủ',
+	// === BÍ ẨN - MYSTERIOUS ===
+	'Em giấu gì dưới váy?',
+	'Muốn khám phá em không?',
+	'Bí mật trong phòng ngủ',
+	'Điều gì em chưa cởi?',
+	'Tò mò thì IB',
+	'Unlock để xem hết',
+	'VIP mới được xem full',
+	'Cởi thêm nếu đủ like',
 	'Follow để xem nhiều hơn',
-	'Bí mật của em đây',
-	'Anh thích em chưa?',
+	'Phần hay nhất ở IB',
+	'Em có bí mật nóng',
+	'Chỉ reveal cho anh thôi',
+	'Ai tò mò IB đi',
+	'Exclusive content trong IB',
+	'Đừng bỏ lỡ phần hot',
+
+	// === TÁOBẠO - BOLD ===
+	'Nóng bỏng tay đây',
+	'Càng xem càng nghiện',
+	'Anh muốn gì em chiều',
+	'Táo bạo một chút nhé',
+	'Em hư lắm anh ơi',
+	'Bad girl thích nghịch',
+	'Dangerous curves',
+	'Warning: Extreme hot',
+	'Cấm nhìn lâu sợ cháy',
+	'Đốt mắt anh không?',
+	'Quá nóng cần dập lửa',
+	'Ai dám đến gần em?',
+	'Em nguy hiểm lắm đó',
+	'Cẩn thận bị nghiện',
+	'Em không ngoan đâu',
+
+	// === CONFIDENT SEXY ===
+	'Bad girl energy',
+	'Sexy và em biết',
+	'Queen không cần king',
+	'Boss lady here',
+	'Em là số 1',
+	'Slay mỗi ngày',
+	'Born to be hot',
+	'Im lặng cũng sexy',
+	'Ngắm em đi anh',
+	'Đẹp thì em biết',
+	'Xinh thì được chiều',
+	'Hot girl không fake',
+	'Real beauty đây',
+	'Natural và sexy',
+	'Chuẩn không cần chỉnh',
+
+	// === TƯƠNG TÁC HOT ===
+	'Rate body 1-10 đi',
+	'Thích phần nào nhất em?',
+	'Comment 🔥 nếu hot',
+	'Like nếu muốn xem thêm',
+	'Share cho ai thèm',
+	'Vote: bikini hay lingerie?',
+	'Góc nào sexy nhất?',
+	'Anh thích em mặc gì?',
+	'Duet với em không?',
+	'Tag ai đang thèm',
+	'Drop 🔥🔥🔥 nếu nóng',
+	'Ai brave comment góc sau',
+	'Thả tim = xem phần 2',
+	'10k like = cởi thêm',
+	'IB để xem private',
 ];
 
-// 40+ descriptions - tiếng Việt có dấu đầy đủ
+// 90+ descriptions - dirty talk style, gợi dục táo bạo
 const DESCRIPTIONS = [
-	// Flirty bold
-	'Nhìn gì mà nhìn dữ vậy?',
-	'Thích thì like, yêu thì DM',
-	'Single và đang tìm kiếm',
-	'Cô đơn thì liên hệ',
+	// === DIRTY TALK ===
+	'Anh muốn em làm gì?',
+	'Chịu được bao lâu nào?',
+	'Em thích mạnh hay nhẹ?',
+	'Đêm nay ai làm em mệt?',
+	'Nóng quá muốn cởi hết',
+	'Càng nhìn càng muốn chạm',
+	'Ai làm em run tối nay?',
+	'Em muốn anh ở gần hơn',
+	'Chạm vào là cháy đó',
+	'Anh có chịu nổi em không?',
+	'Em hư lắm anh biết không?',
+	'Đêm nay em muốn nghịch',
+	'Ai dám làm em mệt?',
+
+	// === GỢI CẢM - SEDUCTIVE ===
+	'Nhìn gì mà nhìn dữ vậy anh?',
+	'Thích thì IB, yêu thì follow',
+	'Single và sẵn sàng chiều',
+	'Cô đơn thì IB em',
 	'Sẵn sàng cho mọi thứ',
+	'Mắt em biết dụ anh',
+	'Chạm vào là tan chảy',
+	'Nóng từ mắt đến body',
+	'Để em làm anh say',
+	'Nhìn thôi đã muốn ôm chặt',
+	'Hương em quyến rũ lắm',
+	'Em là giấc mơ ướt đêm nay',
+	'Body em nóng lắm anh',
 
-	// Very provocative
-	'Warning: Gây nghiện',
-	'Chỉ dành cho người lớn',
+	// === ĐÊM KHUYA - LATE NIGHT ===
+	'Warning: Gây nghiện nặng',
+	'Chỉ dành cho người lớn thôi',
 	'Content 18+ real 100%',
-	'Đêm khuya mới hiểu',
-	'Nóng quá nên phải chia sẻ',
+	'Đêm khuya mới hiểu hết',
+	'Đêm nay em cần anh',
+	'Ai sưởi ấm đêm đông?',
+	'Giường em lạnh cần người',
+	'Thức khuya có quà nóng',
+	'Đêm về em nhớ anh quá',
+	'Cô đơn cần bạn thân thiết',
+	'Midnight confession nóng bỏng',
+	'Ai ôm em đêm nay?',
+	'Đêm dài cần người bầu bạn',
 
-	// Confident sexy
-	'Body chuẩn từng centimet',
-	'Vòng một size M nhé',
-	'Natural beauty goals',
-	'Không chỉnh sửa vẫn đẹp',
-	'Real và proud of it',
+	// === BODY CONFIDENT ===
+	'Body chuẩn từng cm',
+	'Vòng một căng real',
+	'Natural và proud of it',
+	'Đường cong chết người',
+	'3 vòng chuẩn như vẽ',
+	'Body goals chứ gì nữa',
+	'Không filter vẫn hot',
+	'Raw beauty đây anh',
+	'Tự tin với từng đường cong',
+	'God made me perfect',
+	'Số đo chuẩn không chỉnh',
+	'Real và sexy',
+	'Body mlem quá đi',
 
-	// Interactive
-	'Rate em 1-10 đi',
-	'Comment phần thích nhất',
+	// === TƯƠNG TÁC - ENGAGEMENT ===
+	'Rate em 1-10 đi anh',
+	'Comment phần anh thích nhất',
 	'Like nếu em sexy',
-	'Follow để xem nhiều hơn',
-	'Share cho ai cần',
+	'Follow để xem nhiều hơn nữa',
+	'Thả 🔥 nếu em hot',
+	'Drop heart nếu muốn xem tiếp',
+	'Tag crush để flex',
+	'Duet với em không anh?',
+	'Ai brave đủ comment?',
+	'Vote: giữ hay cởi?',
+	'Rate góc nào sexy nhất',
+	'Comment anh muốn em mặc gì',
+	'10k like em cởi thêm',
 
-	// Night content
-	'Late night post',
-	'Ai thức đêm like đi',
-	'Midnight vibes cực cháy',
-	'Đêm nay có ai?',
-	'Content cho người mất ngủ',
+	// === ĐÊM VIBES ===
+	'Late night post nóng',
+	'Ai thức đêm với em?',
+	'Midnight vibes nóng bỏng',
+	'Đêm nay có ai cô đơn?',
+	'Content cho người mất ngủ vì em',
+	'Ai còn online lúc này?',
+	'Night owl content hot',
+	'Cho những ai không ngủ được',
+	'2AM thoughts và body',
+	'Insomnia club rise up',
+	'Đêm về em lại nhớ anh',
+	'Ai thức late IB em',
+	'Đêm dài cần bạn tâm sự',
 
-	// Bold statements
+	// === TỰ TIN - CONFIDENT ===
 	'Em là real 100%',
 	'Anti photoshop gang',
-	'Natural is sexy',
+	'Natural is the new sexy',
 	'Confident và proud',
 	'Body positive vibes',
+	'Self love đi anh',
+	'Em xinh em biết mà',
+	'Không cần filter',
+	'Tự tin là sexy nhất',
+	'Own your beauty queen',
+	'Em là masterpiece',
+	'Đẹp từ trong ra ngoài',
+	'Hot girl đích thực',
 
-	// More engaging
-	'Muốn xem thêm? Follow',
-	'Part 2 if 1k likes',
-	'Bí mật trong DM',
-	'Waiting for you',
-	'Ready for more?',
-
-	// Additional descriptions
-	'Đang đợi anh đó',
-	'Em xinh lắm phải không?',
-	'Thích em không?',
-	'Follow em nhé',
-	'Anh nghĩ sao?',
+	// === KHIÊU GỢI - TEASING ===
+	'Muốn xem thêm? IB',
+	'Part 2 if 5k likes',
+	'Bí mật trong IB anh ơi',
+	'Waiting for you in IB',
+	'Ready for more baby?',
+	'Unlock premium trong IB',
+	'Exclusive cho follower thân',
+	'VIP mới được xem full',
+	'Like để mở khóa content',
+	'Follow = xem phần hot',
+	'5k like = full reveal',
+	'IB để biết thêm nè',
+	'Private content trong IB',
 ];
 
-// 20+ hashtag sets - giữ nguyên tiếng Anh vì là hashtag
+// 35+ hashtag sets - đa dạng chủ đề, trending hashtags
 const HASHTAG_SETS = [
+	// Hot & Sexy
 	'#fyp #sexy #hotgirl #18plus #body #vietnam #viral',
 	'#fyp #gaixinh #sexy #hot #model #tiktokvn #trend',
 	'#fyp #hotgirl #sexy #beautiful #goddess #vietnam',
 	'#fyp #sexy #body #goals #hotgirl #asian #viral',
 	'#fyp #gaixinh #18plus #hot #sexy #tiktokvietnam',
+
+	// Night & Vibes
 	'#fyp #nightlife #sexy #hot #vibes #mood #viral',
-	'#fyp #baddie #sexy #hot #slay #queen #goddess',
-	'#fyp #sexy #body #aesthetic #hot #style #model',
-	'#fyp #hotgirl #sexy #asian #beauty #viral #trend',
-	'#fyp #18plus #sexy #hot #content #tiktokvn #viral',
-	'#fyp #gaixinh #sexy #single #available #dm #hot',
-	'#fyp #sexy #late #night #content #hot #viral',
-	'#fyp #body #goals #sexy #hot #model #vietnam',
-	'#fyp #hotgirl #sexy #queen #goddess #trending',
-	'#fyp #sexy #real #natural #body #hot #viral',
 	'#fyp #midnight #sexy #content #hot #vibes #trend',
+	'#fyp #sexy #late #night #content #hot #viral',
+	'#fyp #latenight #insomnia #hot #sexy #vietnam',
+	'#fyp #nightowl #sexy #vibes #mood #aesthetic',
+
+	// Baddie & Queen
+	'#fyp #baddie #sexy #hot #slay #queen #goddess',
+	'#fyp #badgirl #sexy #hot #fire #trending #fyp',
+	'#fyp #queen #slay #sexy #confident #boss #viral',
+	'#fyp #bosslady #sexy #powerful #hot #trending',
+	'#fyp #goddess #divine #sexy #hot #beautiful',
+
+	// Body & Aesthetic
+	'#fyp #sexy #body #aesthetic #hot #style #model',
+	'#fyp #body #goals #sexy #hot #model #vietnam',
+	'#fyp #curves #body #sexy #hot #real #natural',
+	'#fyp #bodygoals #fit #sexy #hot #aesthetic',
+	'#fyp #bodypositivity #sexy #real #confidence',
+
+	// Vietnamese Hot Girl
+	'#fyp #hotgirl #sexy #asian #beauty #viral #trend',
 	'#fyp #gaixinh #sexy #confident #hot #beautiful',
-	'#fyp #18plus #hot #sexy #viral #trend #vietnam',
-	'#fyp #sexy #badgirl #hot #fire #trending #fyp',
+	'#fyp #hotgirlvietnam #sexy #trendy #viral',
+	'#fyp #vietnamesegirl #sexy #hot #trending',
+	'#fyp #asianbabe #sexy #hot #vietnam #viral',
+
+	// Single & Flirty
+	'#fyp #gaixinh #sexy #single #available #dm #hot',
+	'#fyp #single #flirty #sexy #hot #available',
+	'#fyp #dmmepls #sexy #single #hot #viral',
+	'#fyp #relationships #single #hot #sexy #vibes',
+	'#fyp #crush #flirty #sexy #hot #trending',
+
+	// Real & Natural
+	'#fyp #sexy #real #natural #body #hot #viral',
 	'#fyp #hotgirl #sexy #natural #real #body #viral',
+	'#fyp #nofilter #real #sexy #natural #hot',
+	'#fyp #authentic #real #sexy #natural #beauty',
+	'#fyp #rawbeauty #noedits #sexy #hot #real',
+
+	// Trending & Viral
+	'#fyp #18plus #sexy #hot #content #tiktokvn #viral',
+	'#fyp #18plus #hot #sexy #viral #trend #vietnam',
+	'#fyp #trending #hot #sexy #viral #fypage',
+	'#fyp #foryoupage #hot #sexy #trending #viral',
+	'#fyp #explore #sexy #hot #tiktokviral #trend',
 ];
 
 /**
