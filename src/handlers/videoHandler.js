@@ -84,8 +84,8 @@ async function sendQueuePage(
 	// Admin: Add action buttons on new row
 	if (isAdmin) {
 		keyboard.row();
-		keyboard.text('� Đổi nội dung', `regen_${post.id}_${page}`);
-		keyboard.text('🗑 Xóa', `delete_${post.id}_${page}`);
+		keyboard.text('✏️ Đổi nội dung', `regen_${post.id}_${page}`);
+		keyboard.text('🗑️ Xóa', `delask_${post.id}_${page}`);
 	}
 
 	// Check if video file exists
@@ -267,8 +267,35 @@ export function setupVideoHandler(bot) {
 			return;
 		}
 
-		// Handle delete (admin only)
-		if (data.startsWith('delete_') && isAdmin) {
+		// Handle delete confirmation request (admin only)
+		if (data.startsWith('delask_') && isAdmin) {
+			const parts = data.split('_');
+			const postId = parts[1];
+			const currentPage = parseInt(parts[2]) || 0;
+
+			// Show confirmation buttons
+			const confirmKeyboard = new InlineKeyboard()
+				.text('⚠️ Xác nhận XÓA', `delyes_${postId}_${currentPage}`)
+				.text('❌ Hủy', `delno_${postId}_${currentPage}`);
+
+			await ctx.answerCallbackQuery('Bạn có chắc muốn xóa video này?');
+
+			// Delete old message and send confirmation
+			try {
+				await ctx.api.deleteMessage(chatId, messageId);
+			} catch (e) {
+				// Ignore
+			}
+
+			await ctx.reply(
+				'⚠️ XÁC NHẬN XÓA VIDEO?\n\nVideo sẽ bị xóa vĩnh viễn khỏi hệ thống và ổ cứng!',
+				{ reply_markup: confirmKeyboard }
+			);
+			return;
+		}
+
+		// Handle delete confirmed (admin only)
+		if (data.startsWith('delyes_') && isAdmin) {
 			const parts = data.split('_');
 			const postId = parts[1];
 			const currentPage = parseInt(parts[2]) || 0;
@@ -278,12 +305,35 @@ export function setupVideoHandler(bot) {
 				await ctx.answerCallbackQuery(
 					`Đã xóa! Đã reschedule ${result.rescheduled} video`
 				);
+				// Delete confirmation message
+				try {
+					await ctx.api.deleteMessage(chatId, messageId);
+				} catch (e) {
+					// Ignore
+				}
 				// Show previous page or first page
 				const newPage = Math.max(0, currentPage - 1);
-				await sendQueuePage(ctx, chatId, newPage, messageId, isAdmin);
+				await sendQueuePage(ctx, chatId, newPage, null, isAdmin);
 			} else {
 				await ctx.answerCallbackQuery('Lỗi: Không tìm thấy video');
 			}
+			return;
+		}
+
+		// Handle delete cancelled (admin only)
+		if (data.startsWith('delno_') && isAdmin) {
+			const parts = data.split('_');
+			const currentPage = parseInt(parts[2]) || 0;
+
+			await ctx.answerCallbackQuery('Đã hủy xóa');
+
+			// Delete confirmation message and return to queue
+			try {
+				await ctx.api.deleteMessage(chatId, messageId);
+			} catch (e) {
+				// Ignore
+			}
+			await sendQueuePage(ctx, chatId, currentPage, null, isAdmin);
 			return;
 		}
 
