@@ -1681,3 +1681,26 @@ export function getOptionLabel(categoryKey, optionKey) {
 	const option = category.options[optionKey];
 	return option ? option.label : optionKey;
 }
+
+/**
+ * Get category key by index
+ * @param {number} index
+ * @returns {string|null}
+ */
+export function getCategoryKeyByIndex(index) {
+	const keys = Object.keys(CATEGORIES);
+	return keys[index] || null;
+}
+
+/**
+ * Get option key by category index and option index
+ * @param {string} categoryKey
+ * @param {number} optionIndex
+ * @returns {string|null}
+ */
+export function getOptionKeyByIndex(categoryKey, optionIndex) {
+	const category = CATEGORIES[categoryKey];
+	if (!category) return null;
+	const keys = Object.keys(category.options);
+	return keys[optionIndex] || null;
+}

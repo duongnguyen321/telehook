@@ -29,6 +29,8 @@ import {
 	generateContentFromCategories,
 	getCategoryName,
 	getOptionLabel,
+	getCategoryKeyByIndex,
+	getOptionKeyByIndex,
 } from '../services/ai.js';
 import { downloadVideo, queueDownload } from '../utils/downloader.js';
 
@@ -54,7 +56,8 @@ function buildCategoryKeyboard(postId, page, selections = {}) {
 		const label = isSelected
 			? `✅ ${cat.emoji} ${cat.name}`
 			: `${cat.emoji} ${cat.name}`;
-		keyboard.text(label, `cat_${postId}_${page}_${cat.key}`);
+		// Use index instead of key to save space
+		keyboard.text(label, `cat_${postId}_${page}_${i}`);
 		if (i % 2 === 1) keyboard.row();
 	}
 
@@ -82,9 +85,14 @@ function buildOptionsKeyboard(postId, page, categoryKey) {
 	if (!options) return keyboard;
 
 	// Add option buttons (2 per row)
+	// We need category index for the callback
+	const categories = getCategories();
+	const catIndex = categories.findIndex((c) => c.key === categoryKey);
+
 	for (let i = 0; i < options.length; i++) {
 		const opt = options[i];
-		keyboard.text(opt.label, `opt_${postId}_${page}_${categoryKey}_${opt.key}`);
+		// Use indices: opt_ID_Page_CatIndex_OptIndex
+		keyboard.text(opt.label, `opt_${postId}_${page}_${catIndex}_${i}`);
 		if (i % 2 === 1) keyboard.row();
 	}
 
@@ -447,7 +455,13 @@ export function setupVideoHandler(bot) {
 			const parts = data.split('_');
 			const postId = parts[1];
 			const currentPage = parseInt(parts[2]) || 0;
-			const categoryKey = parts[3];
+			const categoryIndex = parseInt(parts[3]);
+
+			const categoryKey = getCategoryKeyByIndex(categoryIndex);
+			if (!categoryKey) {
+				await ctx.answerCallbackQuery('Lỗi: Category không tồn tại');
+				return;
+			}
 
 			const catName = getCategoryName(categoryKey);
 			const keyboard = buildOptionsKeyboard(postId, currentPage, categoryKey);
@@ -465,8 +479,17 @@ export function setupVideoHandler(bot) {
 			const parts = data.split('_');
 			const postId = parts[1];
 			const currentPage = parseInt(parts[2]) || 0;
-			const categoryKey = parts[3];
-			const optionKey = parts[4];
+			const categoryIndex = parseInt(parts[3]);
+			const optionIndex = parseInt(parts[4]);
+
+			const categoryKey = getCategoryKeyByIndex(categoryIndex);
+			const optionKey = getOptionKeyByIndex(categoryKey, optionIndex);
+
+			if (!categoryKey || !optionKey) {
+				await ctx.answerCallbackQuery('Lỗi: Option không tồn tại');
+				return;
+			}
+
 			const selectionKey = `${chatId}_${postId}`;
 
 			// Save selection
