@@ -468,6 +468,108 @@ export function rescheduleAllPending(chatId) {
 }
 
 /**
+ * Reschedule all pending posts - ONLY update times, keep existing content
+ * Used when deleting a video to fill the schedule gap
+ * @param {number} chatId
+ * @returns {number} Number of posts rescheduled
+ */
+export function rescheduleTimesOnly(chatId) {
+	// Clear cache
+	recentlyUsedSlots.clear();
+
+	// Get all pending posts
+	const stmt = db.prepare(`
+		SELECT * FROM scheduled_posts 
+		WHERE chat_id = ? AND status = 'pending'
+	`);
+	let posts = stmt.all(chatId);
+
+	if (posts.length === 0) {
+		return 0;
+	}
+
+	// Sort by timestamp in filename (number before first underscore)
+	posts = posts.sort((a, b) => {
+		const getTimestamp = (videoPath) => {
+			const filename = path.basename(videoPath);
+			const match = filename.match(/^(\d+)_/);
+			return match ? parseInt(match[1], 10) : 0;
+		};
+		return getTimestamp(a.video_path) - getTimestamp(b.video_path);
+	});
+
+	console.log(
+		`[Reschedule] Rescheduling times for ${posts.length} posts (keeping content)...`
+	);
+
+	// Define all time slots (hour, minute) in a day
+	const DAILY_SLOTS = [
+		[9, 30],
+		[10, 0],
+		[10, 30],
+		[14, 30],
+		[15, 0],
+		[15, 30],
+		[20, 30],
+		[21, 0],
+		[21, 30],
+	];
+
+	// Start from now
+	const nowGmt7 = nowGMT7();
+	let currentDate = new Date(nowGmt7);
+	currentDate.setHours(0, 0, 0, 0);
+
+	let slotIndex = 0;
+
+	// Find first slot that's in the future
+	for (let i = 0; i < DAILY_SLOTS.length; i++) {
+		const [hour, minute] = DAILY_SLOTS[i];
+		const testTime = new Date(currentDate);
+		testTime.setHours(hour, minute, 0, 0);
+		if (testTime > nowGmt7) {
+			slotIndex = i;
+			break;
+		}
+		if (i === DAILY_SLOTS.length - 1) {
+			currentDate.setDate(currentDate.getDate() + 1);
+			slotIndex = 0;
+		}
+	}
+
+	// Update ONLY scheduled_at, keep title/description/hashtags
+	const updateStmt = db.prepare(
+		`UPDATE scheduled_posts SET scheduled_at = ? WHERE id = ?`
+	);
+
+	let count = 0;
+	for (const post of posts) {
+		const [hour, minute] = DAILY_SLOTS[slotIndex];
+
+		const scheduleTime = createGMT7Time(
+			currentDate.getFullYear(),
+			currentDate.getMonth() + 1,
+			currentDate.getDate(),
+			hour
+		);
+		scheduleTime.setMinutes(minute);
+
+		updateStmt.run(scheduleTime.toISOString(), post.id);
+		count++;
+
+		// Move to next slot
+		slotIndex++;
+		if (slotIndex >= DAILY_SLOTS.length) {
+			slotIndex = 0;
+			currentDate.setDate(currentDate.getDate() + 1);
+		}
+	}
+
+	console.log(`[Reschedule] Updated times for ${count} posts`);
+	return count;
+}
+
+/**
  * Get pending posts that are due
  * @returns {ScheduledPost[]}
  */
@@ -747,8 +849,8 @@ export function deleteScheduledPost(postId, chatId) {
 	db.prepare(`DELETE FROM scheduled_posts WHERE id = ?`).run(postId);
 	console.log(`[Delete] Removed post from database: ${postId}`);
 
-	// Reschedule remaining posts to fill the gap
-	const rescheduled = rescheduleAllPending(chatId);
+	// Reschedule remaining posts to fill the gap (keep existing content)
+	const rescheduled = rescheduleTimesOnly(chatId);
 
 	return { success: true, rescheduled };
 }
