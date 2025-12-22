@@ -258,10 +258,10 @@ async function handleCommand(ctx, command) {
 	}
 
 	if (command === '/reschedule') {
-		await ctx.reply('Rescheduling all pending videos...');
+		await ctx.reply('Rescheduling all pending videos with new content...');
 		const count = rescheduleAllPending(chatId);
 		await ctx.reply(
-			`Done! Rescheduled ${count} videos with new schedule (9/day)`
+			`Done! Rescheduled ${count} videos:\n- New schedule (9/day)\n- New Vietnamese content`
 		);
 		return;
 	}

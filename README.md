@@ -28,7 +28,7 @@ _Logic: Fills the first available future slot. If all slots today are full, it m
 
 - **Database**: 70+ titles, 40+ descriptions, 20+ hashtag sets.
 - **Style**: Provocative, "sexy/18+", engaging content.
-- **ASCII Only**: All content is strictly ASCII (no emojis) to prevent Telegram API UTF-8 encoding errors.
+- **Vietnamese**: Full Vietnamese with proper diacritics. Use `/updatecontent` to update old scheduled videos with new Vietnamese content.
 
 ### 🔔 Notification System
 
@@ -46,7 +46,7 @@ _Logic: Fills the first available future slot. If all slots today are full, it m
 | `/stats`      | View statistics (Downloaded, Pending, Posted).                                         |
 | `/videos`     | List downloaded video files.                                                           |
 | `/repost`     | Manually check for reposts (runs daily automatically).                                 |
-| `/reschedule` | Re-apply the 9-video/day schedule to ALL pending videos.                               |
+| `/reschedule` | Re-apply schedule (9/day, sorted by filename) + update with new Vietnamese content.    |
 
 ## 🚀 Tech Stack
 

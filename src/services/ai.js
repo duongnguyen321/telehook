@@ -1,142 +1,163 @@
 /**
  * Random content generator for TikTok videos
  * Target: 20-30 age, sexy/18+ content
- * Note: No emojis to avoid UTF-8 issues
+ * Note: Vietnamese with proper diacritics
  */
 
-// 70+ titles - very provocative & hot (no emojis)
+// 70+ titles - tiếng Việt có dấu đầy đủ
 const TITLES = [
 	// Super hot
-	'Nong qua ai chiu noi',
-	'Body chuan khong can chinh',
-	'Hot girl da ve nha',
-	'Ai dam nhin lau hon 5 giay?',
-	'Sexy khong can co gang',
+	'Nóng quá ai chịu nổi',
+	'Body chuẩn không cần chỉnh',
+	'Hot girl đã về nhà',
+	'Ai dám nhìn lâu hơn 5 giây?',
+	'Sexy không cần cố gắng',
 
 	// Teasing 18+
-	'Chi danh cho nguoi lon',
-	'Warning: Gay nghien',
-	'Dem khuya tha thinh',
-	'Ai thuc dem xem di',
+	'Chỉ dành cho người lớn',
+	'Warning: Gây nghiện',
+	'Đêm khuya thả thính',
+	'Ai thức đêm xem đi',
 	'Content 18+ incoming',
 
 	// Bold & confident
-	'Vong mot chuan real',
-	'Vong ba gay thuong nho',
-	'Body goals nha cac chi',
-	'Nhin ky di dung bo lo',
-	'Qua dep nen phai khoe',
+	'Vòng một chuẩn real',
+	'Vòng ba gây thương nhớ',
+	'Body goals nhà các chị',
+	'Nhìn kỹ đi đừng bỏ lỡ',
+	'Quá đẹp nên phải khoe',
 
 	// Flirty seductive
-	'Anh co thay nong khong?',
-	'DM di dung ngai',
-	'Single san sang',
-	'Muon biet them thi follow',
-	'Bi mat trong DM nha',
+	'Anh có thấy nóng không?',
+	'DM đi đừng ngại',
+	'Single sẵn sàng',
+	'Muốn biết thêm thì follow',
+	'Bí mật trong DM nhá',
 
 	// Night vibes
-	'Midnight content cuc chay',
-	'Dem nay ai co don?',
+	'Midnight content cực cháy',
+	'Đêm nay ai cô đơn?',
 	'Late night vibes',
-	'Ai khong ngu duoc?',
-	'Dem khuya content',
+	'Ai không ngủ được?',
+	'Đêm khuya content',
 
 	// Very provocative
-	'Nong bong tay day',
-	'Cang xem cang muon xem',
-	'Khong follow hoi han do',
-	'Part 2 neu du like',
-	'Anh muon gi nua?',
+	'Nóng bỏng tay đây',
+	'Càng xem càng muốn xem',
+	'Không follow hối hận đó',
+	'Part 2 nếu đủ like',
+	'Anh muốn gì nữa?',
 
 	// Confident sexy
-	'Em ko ngoan dau',
+	'Em không ngoan đâu',
 	'Bad girl vibes',
-	'Sexy va biet dieu do',
-	'Xinh dep la vo doi',
+	'Sexy và biết điều đó',
+	'Xinh đẹp là vô đối',
 	'Queen energy',
 
 	// Interactive hot
-	'Rate body 1-10 di',
-	'Thich phan nao nhat?',
-	'Comment emoji nong nhat',
-	'Like neu thay sexy',
-	'Share cho crush di',
+	'Rate body 1-10 đi',
+	'Thích phần nào nhất?',
+	'Comment emoji nóng nhất',
+	'Like nếu thấy sexy',
+	'Share cho crush đi',
 
 	// Super bold
-	'Hang real 100%',
+	'Hàng real 100%',
 	'Natural body goals',
-	'Khong photoshop nha',
+	'Không photoshop nhá',
 	'Original content only',
 	'Anti fake beauty',
 
 	// More 18+
-	'Chi nguoi lon moi hieu',
-	'Content nong 40 do',
-	'Warning: Gay chay',
-	'Dem nay em dep lam',
-	'Ai san sang?',
+	'Chỉ người lớn mới hiểu',
+	'Content nóng 40 độ',
+	'Warning: Gây cháy',
+	'Đêm nay em đẹp lắm',
+	'Ai sẵn sàng?',
 
 	// Extra spicy
-	'Qua hot nen phai dang',
-	'Body nay ai chiu noi',
-	'Vong nao cung chuan',
+	'Quá hot nên phải đăng',
+	'Body này ai chịu nổi',
+	'Vòng nào cũng chuẩn',
 	'Real beauty no filter',
-	'Hot khong can co gang',
+	'Hot không cần cố gắng',
+
+	// Additional provocative
+	'Đừng có mà thả tim',
+	'Xem xong nhớ follow',
+	'Anh có dám không?',
+	'Em xinh lắm đúng không?',
+	'Thích thì bấm like',
+
+	// More teasing
+	'Đang chờ anh đó',
+	'Đêm nay không ngủ',
+	'Follow để xem nhiều hơn',
+	'Bí mật của em đây',
+	'Anh thích em chưa?',
 ];
 
-// 40+ descriptions - very engaging & hot (no emojis)
+// 40+ descriptions - tiếng Việt có dấu đầy đủ
 const DESCRIPTIONS = [
 	// Flirty bold
-	'Nhin gi ma nhin du vay?',
-	'Thich thi like, yeu thi DM',
-	'Single va dang tim kiem',
-	'Co don thi lien he',
-	'San sang cho moi thu',
+	'Nhìn gì mà nhìn dữ vậy?',
+	'Thích thì like, yêu thì DM',
+	'Single và đang tìm kiếm',
+	'Cô đơn thì liên hệ',
+	'Sẵn sàng cho mọi thứ',
 
 	// Very provocative
-	'Warning: Gay nghien',
-	'Chi danh cho nguoi lon',
+	'Warning: Gây nghiện',
+	'Chỉ dành cho người lớn',
 	'Content 18+ real 100%',
-	'Dem khuya moi hieu',
-	'Nong qua nen phai chia se',
+	'Đêm khuya mới hiểu',
+	'Nóng quá nên phải chia sẻ',
 
 	// Confident sexy
-	'Body chuan tung centimet',
-	'Vong mot size M nhe',
+	'Body chuẩn từng centimet',
+	'Vòng một size M nhé',
 	'Natural beauty goals',
-	'Khong chinh sua van dep',
-	'Real va proud of it',
+	'Không chỉnh sửa vẫn đẹp',
+	'Real và proud of it',
 
 	// Interactive
-	'Rate em 1-10 di',
-	'Comment phan thich nhat',
-	'Like neu em sexy',
-	'Follow de xem nhieu hon',
-	'Share cho ai can',
+	'Rate em 1-10 đi',
+	'Comment phần thích nhất',
+	'Like nếu em sexy',
+	'Follow để xem nhiều hơn',
+	'Share cho ai cần',
 
 	// Night content
 	'Late night post',
-	'Ai thuc dem like di',
-	'Midnight vibes cuc chay',
-	'Dem nay co ai?',
-	'Content cho nguoi mat ngu',
+	'Ai thức đêm like đi',
+	'Midnight vibes cực cháy',
+	'Đêm nay có ai?',
+	'Content cho người mất ngủ',
 
 	// Bold statements
-	'Em la real 100%',
+	'Em là real 100%',
 	'Anti photoshop gang',
 	'Natural is sexy',
-	'Confident va proud',
+	'Confident và proud',
 	'Body positive vibes',
 
 	// More engaging
-	'Muon xem them? Follow',
+	'Muốn xem thêm? Follow',
 	'Part 2 if 1k likes',
-	'Bi mat trong DM',
+	'Bí mật trong DM',
 	'Waiting for you',
 	'Ready for more?',
+
+	// Additional descriptions
+	'Đang đợi anh đó',
+	'Em xinh lắm phải không?',
+	'Thích em không?',
+	'Follow em nhé',
+	'Anh nghĩ sao?',
 ];
 
-// 20+ hashtag sets - very hot & trending
+// 20+ hashtag sets - giữ nguyên tiếng Anh vì là hashtag
 const HASHTAG_SETS = [
 	'#fyp #sexy #hotgirl #18plus #body #vietnam #viral',
 	'#fyp #gaixinh #sexy #hot #model #tiktokvn #trend',

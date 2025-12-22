@@ -342,28 +342,44 @@ export function getSmartScheduleSlot() {
 }
 
 /**
- * Reschedule all pending posts with new schedule
+ * Reschedule all pending posts with new schedule AND new content
  * 9 videos/day: 3 per golden hour (9:30/10:00/10:30, 14:30/15:00/15:30, 20:30/21:00/21:30)
+ * Videos are sorted by timestamp in filename (number before first underscore)
  * @param {number} chatId
  * @returns {number} Number of posts rescheduled
  */
 export function rescheduleAllPending(chatId) {
+	// Import content generator dynamically to avoid circular deps
+	const { generateContentOptions } = require('../services/ai.js');
+
 	// Clear cache
 	recentlyUsedSlots.clear();
 
-	// Get all pending posts ordered by creation time
+	// Get all pending posts
 	const stmt = db.prepare(`
 		SELECT * FROM scheduled_posts 
 		WHERE chat_id = ? AND status = 'pending'
-		ORDER BY id ASC
 	`);
-	const posts = stmt.all(chatId);
+	let posts = stmt.all(chatId);
 
 	if (posts.length === 0) {
 		return 0;
 	}
 
-	console.log(`[Reschedule] Rescheduling ${posts.length} pending posts...`);
+	// Sort by timestamp in filename (number before first underscore)
+	// Filename format: 1234567890_abc123.mp4
+	posts = posts.sort((a, b) => {
+		const getTimestamp = (videoPath) => {
+			const filename = path.basename(videoPath);
+			const match = filename.match(/^(\d+)_/);
+			return match ? parseInt(match[1], 10) : 0;
+		};
+		return getTimestamp(a.video_path) - getTimestamp(b.video_path);
+	});
+
+	console.log(
+		`[Reschedule] Rescheduling ${posts.length} pending posts (sorted by filename timestamp)...`
+	);
 
 	// Define all time slots (hour, minute) in a day
 	const DAILY_SLOTS = [
@@ -401,9 +417,9 @@ export function rescheduleAllPending(chatId) {
 		}
 	}
 
-	// Update all posts
+	// Update all posts with new schedule AND new content
 	const updateStmt = db.prepare(
-		`UPDATE scheduled_posts SET scheduled_at = ? WHERE id = ?`
+		`UPDATE scheduled_posts SET scheduled_at = ?, title = ?, description = ?, hashtags = ? WHERE id = ?`
 	);
 
 	let count = 0;
@@ -419,13 +435,26 @@ export function rescheduleAllPending(chatId) {
 		);
 		scheduleTime.setMinutes(minute);
 
-		updateStmt.run(scheduleTime.toISOString(), post.id);
+		// Generate new random content
+		const [content] = generateContentOptions();
+
+		updateStmt.run(
+			scheduleTime.toISOString(),
+			content.title,
+			content.description,
+			content.hashtags,
+			post.id
+		);
 		count++;
 
 		const timeStr = `${
 			currentDate.getMonth() + 1
 		}/${currentDate.getDate()} ${hour}:${String(minute).padStart(2, '0')}`;
-		console.log(`[Reschedule] ${count}/${posts.length}: ${timeStr}`);
+		console.log(
+			`[Reschedule] ${count}/${
+				posts.length
+			}: ${timeStr} - "${content.title.slice(0, 25)}..."`
+		);
 
 		// Move to next slot
 		slotIndex++;
