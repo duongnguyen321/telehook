@@ -179,6 +179,9 @@ export function addScheduledPost(post) {
 	};
 }
 
+// Track recently used slots to prevent race conditions
+const recentlyUsedSlots = new Set();
+
 /**
  * Get smart schedule slot for next video (max 3 videos/day at fixed times)
  * Time slots: 10:00, 15:00, 21:00
@@ -189,49 +192,53 @@ export function getSmartScheduleSlot() {
 	const TIME_SLOTS = [10, 15, 21]; // 10AM, 3PM, 9PM
 	const now = new Date();
 
-	// Count pending posts per day
+	// Get all scheduled slots from DB + recently used (in-memory)
 	const stmt = db.prepare(`
-    SELECT DATE(scheduled_at) as date, COUNT(*) as count 
-    FROM scheduled_posts 
-    WHERE status = 'pending'
-    GROUP BY DATE(scheduled_at)
-    ORDER BY date ASC
+    SELECT scheduled_at FROM scheduled_posts WHERE status = 'pending'
   `);
+	const dbSlots = stmt.all().map((r) => r.scheduled_at);
 
-	const dailyCounts = stmt.all();
-	const countByDate = new Map(dailyCounts.map((r) => [r.date, r.count]));
+	// Combine DB slots with recently used slots
+	const allUsedSlots = new Set([...dbSlots, ...recentlyUsedSlots]);
 
-	// Find first day with available slot
+	// Find first available slot
 	let checkDate = new Date(now);
 	checkDate.setHours(0, 0, 0, 0);
 
 	for (let i = 0; i < 365; i++) {
 		const dateStr = checkDate.toISOString().split('T')[0];
-		const count = countByDate.get(dateStr) || 0;
 
-		if (count < SLOTS_PER_DAY) {
-			// Get used slots for this day
-			const usedSlots = db
-				.prepare(
-					`
-        SELECT strftime('%H', scheduled_at) as hour 
-        FROM scheduled_posts 
-        WHERE DATE(scheduled_at) = ? AND status = 'pending'
-      `
-				)
-				.all(dateStr)
-				.map((r) => parseInt(r.hour));
+		// Count used slots for this day
+		let usedForDay = 0;
+		const usedHours = [];
 
+		for (const slotTime of allUsedSlots) {
+			if (slotTime.startsWith(dateStr)) {
+				usedForDay++;
+				const hour = new Date(slotTime).getHours();
+				usedHours.push(hour);
+			}
+		}
+
+		if (usedForDay < SLOTS_PER_DAY) {
 			// Find available slot
 			for (const slotHour of TIME_SLOTS) {
-				const isUsed = usedSlots.some((h) => Math.abs(h - slotHour) < 2);
+				const isUsed = usedHours.some((h) => Math.abs(h - slotHour) < 2);
 				if (!isUsed) {
 					const scheduleTime = new Date(checkDate);
 					scheduleTime.setHours(slotHour, 0, 0, 0);
 
 					// Make sure it's in the future
 					if (scheduleTime > now) {
-						return scheduleTime.toISOString();
+						const isoTime = scheduleTime.toISOString();
+
+						// Mark as used immediately
+						recentlyUsedSlots.add(isoTime);
+
+						// Clean up old entries after 5 seconds
+						setTimeout(() => recentlyUsedSlots.delete(isoTime), 5000);
+
+						return isoTime;
 					}
 				}
 			}
