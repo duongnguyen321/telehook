@@ -73,10 +73,8 @@ async function processNotification(job) {
 	const { postId, chatId, videoPath, title, description, hashtags, isRepost } =
 		job.data;
 
-	const repostLabel = isRepost ? ' (đăng lại)' : '';
-	console.log(
-		`[Worker] Processing notification for post ${postId}: "${title}"${repostLabel}`
-	);
+	const repostLabel = isRepost ? ' (repost)' : '';
+	console.log(`[Worker] Processing: ${postId.slice(0, 8)}${repostLabel}`);
 
 	try {
 		if (!bot) {
@@ -91,53 +89,49 @@ async function processNotification(job) {
 		// Format caption for easy copy-paste
 		const fullCaption = `${title}\n\n${description}\n\n${hashtags}`;
 
-		// Send notification message
+		// Send notification message (ASCII only)
 		await bot.api.sendMessage(
 			chatId,
-			`🔔 **ĐẾN GIỜ ĐĂNG VIDEO!**${repostLabel}\n\n` +
-				`📌 **Tiêu đề:**\n\`${title}\`\n\n` +
-				`📝 **Mô tả:**\n\`${description}\`\n\n` +
-				`#️⃣ **Hashtags:**\n\`${hashtags}\`\n\n` +
-				`📋 **Caption đầy đủ (copy để paste):**`,
-			{ parse_mode: 'Markdown' }
+			`=== TIME TO POST ===\n\n` +
+				`Title: ${title}\n\n` +
+				`Desc: ${description}\n\n` +
+				`Tags: ${hashtags}\n\n` +
+				`--- Copy below ---`
 		);
 
 		// Send copyable caption
 		await bot.api.sendMessage(chatId, fullCaption);
 
-		// Send video file
-		await bot.api.sendVideo(chatId, fs.createReadStream(videoPath), {
-			caption: '👆 Video để đăng lên TikTok. Tải về và đăng thủ công.',
+		// Send video file using InputFile
+		const { InputFile } = await import('grammy');
+		await bot.api.sendVideo(chatId, new InputFile(videoPath), {
+			caption: 'Video to post on TikTok',
 			supports_streaming: true,
 		});
 
-		// Send confirmation buttons
-		await bot.api.sendMessage(
-			chatId,
-			`✅ Sau khi đăng xong, reply \`/done ${postId.slice(
-				0,
-				8
-			)}\` để đánh dấu hoàn thành.\n` +
-				`❌ Hoặc reply \`/skip ${postId.slice(0, 8)}\` để bỏ qua video này.`,
-			{ parse_mode: 'Markdown' }
-		);
-
-		// Mark as "notified" (we'll add a new status later, for now mark as posted)
+		// Mark as posted
 		updatePostStatus(postId, 'posted');
-		console.log(`[Worker] Notification sent for: ${postId}`);
+		console.log(`[Worker] Posted: ${postId.slice(0, 8)}`);
 
 		return { success: true, postId };
 	} catch (error) {
-		console.error(`[Worker] Failed to notify for ${postId}:`, error.message);
+		console.error(`[Worker] Failed ${postId.slice(0, 8)}:`, error.message);
 		updatePostStatus(postId, 'failed', error.message);
 
 		if (bot) {
-			await bot.api.sendMessage(
-				chatId,
-				`❌ Lỗi khi gửi thông báo!\n\n` +
-					`📌 Video: ${title}\n` +
-					`❗ Lỗi: ${error.message}`
-			);
+			try {
+				await bot.api.sendMessage(
+					chatId,
+					`Error posting video!\nTitle: ${title.slice(
+						0,
+						30
+					)}...\nError: ${error.message
+						.replace(/[^\x00-\x7F]/g, '')
+						.slice(0, 100)}`
+				);
+			} catch (e) {
+				console.error('[Worker] Failed to send error msg:', e.message);
+			}
 		}
 
 		throw error;
