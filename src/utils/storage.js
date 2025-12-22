@@ -207,15 +207,38 @@ export function getSmartScheduleSlot() {
 	);
 	const dbRows = stmt.all();
 
-	// Count slots per hour (format: YYYY-MM-DD-HH)
+	// Count slots per GOLDEN HOUR (not actual hour)
+	// 9:30-10:30 -> 10 slot, 14:30-15:30 -> 15 slot, 20:30-21:30 -> 21 slot
 	const slotCounts = new Map();
+
+	function getGoldenHourSlot(date) {
+		const d = toGMT7(date);
+		const hour = d.getHours();
+		const minute = d.getMinutes();
+		const dateKey = getDateKey(d);
+
+		// Map to golden hour based on time
+		let goldenHour;
+		if ((hour === 9 && minute >= 30) || (hour === 10 && minute <= 30)) {
+			goldenHour = 10;
+		} else if ((hour === 14 && minute >= 30) || (hour === 15 && minute <= 30)) {
+			goldenHour = 15;
+		} else if ((hour === 20 && minute >= 30) || (hour === 21 && minute <= 30)) {
+			goldenHour = 21;
+		} else {
+			// Default: use actual hour
+			goldenHour = hour;
+		}
+
+		return `${dateKey}-${goldenHour}`;
+	}
+
 	for (const r of dbRows) {
-		const d = toGMT7(new Date(r.scheduled_at));
-		const key = getSlotKey(d);
+		const key = getGoldenHourSlot(new Date(r.scheduled_at));
 		slotCounts.set(key, (slotCounts.get(key) || 0) + 1);
 	}
 
-	// Also count recently used slots
+	// Also count recently used slots (already using golden hour keys)
 	for (const key of recentlyUsedSlots) {
 		slotCounts.set(key, (slotCounts.get(key) || 0) + 1);
 	}
