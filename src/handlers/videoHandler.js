@@ -134,8 +134,12 @@ async function processVideoAfterDownload(ctx, video, videoPath, chatId) {
  * @param {import('grammy').Bot} bot
  */
 export function setupVideoHandler(bot) {
-	// Only this user can forward/upload videos
-	const ADMIN_USER_ID = 1708974691;
+	// Admin user ID from env
+	const ADMIN_USER_ID = parseInt(process.env.ADMIN_USER_ID || '0', 10);
+
+	if (!ADMIN_USER_ID) {
+		console.warn('[Config] WARNING: ADMIN_USER_ID not set in .env');
+	}
 
 	// Handle video messages - auto schedule without user input
 	bot.on('message:video', async (ctx) => {
@@ -241,12 +245,16 @@ export function setupVideoHandler(bot) {
 }
 
 /**
- * Handle commands
+ * Handle commands (admin only except /start)
  */
 async function handleCommand(ctx, command) {
 	const chatId = ctx.chat.id;
+	const userId = ctx.from?.id;
+	const ADMIN_USER_ID = parseInt(process.env.ADMIN_USER_ID || '0', 10);
+
 	setDefaultChatId(chatId);
 
+	// ========== PUBLIC COMMANDS (GET data) ==========
 	if (command === '/start') {
 		await ctx.reply(
 			`Bot auto-schedule TikTok videos\n\n` +
@@ -257,16 +265,7 @@ async function handleCommand(ctx, command) {
 		return;
 	}
 
-	if (command === '/reschedule') {
-		await ctx.reply('Rescheduling all pending videos with new content...');
-		const count = rescheduleAllPending(chatId);
-		await ctx.reply(
-			`Done! Rescheduled ${count} videos:\n- New schedule (9/day)\n- New Vietnamese content`
-		);
-		return;
-	}
-
-	if (command === '/queue' || command === '/list') {
+	if (command === '/queue') {
 		await sendQueuePage(ctx, chatId, 0);
 		return;
 	}
@@ -283,12 +282,6 @@ async function handleCommand(ctx, command) {
 		return;
 	}
 
-	if (command === '/repost') {
-		await ctx.reply('Checking for repost...');
-		await triggerRepostCheck();
-		return;
-	}
-
 	if (command === '/videos') {
 		const videos = getDownloadedVideos(chatId);
 		if (!videos?.length) {
@@ -296,6 +289,27 @@ async function handleCommand(ctx, command) {
 			return;
 		}
 		await ctx.reply(`${videos.length} videos downloaded`);
+		return;
+	}
+
+	// ========== ADMIN COMMANDS (UPDATE data) ==========
+	if (userId !== ADMIN_USER_ID) {
+		await ctx.reply('You do not have permission to use this command.');
+		return;
+	}
+
+	if (command === '/reschedule') {
+		await ctx.reply('Rescheduling all pending videos with new content...');
+		const count = rescheduleAllPending(chatId);
+		await ctx.reply(
+			`Done! Rescheduled ${count} videos:\n- New schedule (9/day)\n- New Vietnamese content`
+		);
+		return;
+	}
+
+	if (command === '/repost') {
+		await ctx.reply('Checking for repost...');
+		await triggerRepostCheck();
 		return;
 	}
 }

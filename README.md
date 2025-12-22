@@ -42,11 +42,10 @@ _Logic: Fills the first available future slot. If all slots today are full, it m
 | :------------ | :------------------------------------------------------------------------------------- |
 | `/start`      | Show bot information and instructions.                                                 |
 | `/queue`      | **Paginated** view of pending videos (Title, Desc, Tags, Time) with Prev/Next buttons. |
-| `/list`       | Alias for `/queue`.                                                                    |
 | `/stats`      | View statistics (Downloaded, Pending, Posted).                                         |
 | `/videos`     | List downloaded video files.                                                           |
-| `/repost`     | Manually check for reposts (runs daily automatically).                                 |
-| `/reschedule` | Re-apply schedule (9/day, sorted by filename) + update with new Vietnamese content.    |
+| `/reschedule` | 🔐 **Admin** - Re-apply schedule (9/day) + update with new Vietnamese content.         |
+| `/repost`     | 🔐 **Admin** - Manually check for reposts (runs daily automatically).                  |
 
 ## 🚀 Tech Stack
 
