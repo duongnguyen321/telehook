@@ -4,7 +4,7 @@
  * Note: Vietnamese with proper diacritics
  */
 
-// 250+ titles - tiếng Việt có dấu đầy đủ, dirty talk style
+// 350+ titles - tiếng Việt có dấu đầy đủ, dirty talk style
 const TITLES = [
 	// === DIRTY TALK - GỢI DỤC (25) ===
 	'Anh thích mạnh hay nhẹ?',
@@ -32,6 +32,48 @@ const TITLES = [
 	'Anh giỏi không?',
 	'Làm em run đi anh',
 	'Em muốn more...',
+
+	// === PASSIONATE DIRTY TALK (40) ===
+	'Cho em xin đi anh',
+	'Thưởng cho em đi',
+	'Cho em đi anh ơi',
+	'Em xin anh đó',
+	'Em muốn nhận từ anh',
+	'Cho em tất cả đi',
+	'Đừng tiếc em gì',
+	'Anh cho em nhiều đi',
+	'Em hứng hết cho anh',
+	'Em sẵn sàng nhận',
+	'Vỗ nhẹ em đi anh',
+	'Phạt em đi anh',
+	'Em hư quá má em',
+	'Tay anh mạnh quá',
+	'Bad girl xin thưởng',
+	'Nắm tóc em nha',
+	'Kéo em lại gần',
+	'Ghì em chặt hơn',
+	'Ôm em mạnh đi',
+	'Siết em chặt nha',
+	'Cắn nhẹ em đi',
+	'Hôn cổ em nha',
+	'Hút nhẹ vai em',
+	'Đánh dấu em đi',
+	'Để lại dấu nha',
+	'Taste em đi anh',
+	'Thử em đi nào',
+	'Chạm sâu hơn đi',
+	'Đi sâu vào em',
+	'Vào trong em đi',
+	'Mạnh lên anh ơi',
+	'Nhanh hơn đi anh',
+	'Đừng nhẹ nữa',
+	'Em thích mạnh bạo',
+	'Thô bạo với em',
+	'Chiếm lấy em đi',
+	'Chinh phục em nào',
+	'Quản em đi anh',
+	'Sở hữu em đi',
+	'Em thuộc về anh',
 
 	// === KHIÊU KHÍCH - TEASING (25) ===
 	'Nóng quá ai chịu nổi',
@@ -380,7 +422,7 @@ const TITLES = [
 	'Chúc anh ngủ ngon',
 ];
 
-// 160+ descriptions - dirty talk style, gợi dục táo bạo
+// 300+ descriptions - dirty talk style, gợi dục táo bạo
 const DESCRIPTIONS = [
 	// === DIRTY TALK (20) ===
 	'Anh muốn em làm gì?',
@@ -403,6 +445,48 @@ const DESCRIPTIONS = [
 	'Đến đây với em',
 	'Em đang đợi anh',
 	'Anh ở đâu rồi?',
+
+	// === BODY SENSATION - CẢM XÚC CƠ THỂ (40) ===
+	'Em mệt quá anh ơi',
+	'Em sướng quá đi',
+	'Em phê quá rồi',
+	'Em say quá mất',
+	'Em run hết cả người',
+	'Em không chịu nổi nữa',
+	'Em muốn sâu hơn nữa',
+	'Em muốn lâu hơn nữa',
+	'Em muốn nhiều hơn nữa',
+	'Em muốn mạnh hơn nữa',
+	'Em muốn nhanh hơn nữa',
+	'Em muốn chậm lại thôi',
+	'Em thích quá đi mất',
+	'Em đang rất sung',
+	'Em đang rất muốn',
+	'Em đang rất cần',
+	'Em nóng hết cả người',
+	'Em ướt hết rồi',
+	'Em run không kiểm soát',
+	'Em sắp không chịu được',
+	'Em đang lên đỉnh',
+	'Em sắp tới rồi đó',
+	'Em không thể ngừng lại',
+	'Em muốn tiếp tục mãi',
+	'Đừng dừng lại anh ơi',
+	'Tiếp tục đi anh',
+	'Thêm nữa đi anh',
+	'Đúng chỗ đó anh ơi',
+	'Em thích vị trí này',
+	'Tư thế này em thích',
+	'Em cảm nhận được hết',
+	'Em thấy hết rồi đó',
+	'Em biết anh đang muốn',
+	'Em biết anh thích gì',
+	'Em chiều anh mọi thứ',
+	'Anh muốn gì em cũng chịu',
+	'Em sẵn sàng cho anh',
+	'Anh tha hồ với em',
+	'Body em thuộc về anh',
+	'Em chỉ muốn anh thôi',
 
 	// === GỢI CẢM - SEDUCTIVE (20) ===
 	'Nhìn gì mà nhìn dữ vậy anh?',
