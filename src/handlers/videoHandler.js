@@ -41,10 +41,12 @@ export function setupVideoHandler(bot) {
 		console.log(`[Video] Received: ${video.file_id.slice(-8)}`);
 
 		try {
+			console.log('[Video] Step 1: Getting file info...');
 			// Download video
 			const file = await ctx.api.getFile(video.file_id);
 			const fileUrl = `https://api.telegram.org/file/bot${process.env.TELEGRAM_BOT_TOKEN}/${file.file_path}`;
 
+			console.log('[Video] Step 2: Creating dir...');
 			const videoDir = path.join(DATA_DIR, 'videos');
 			if (!fs.existsSync(videoDir)) {
 				fs.mkdirSync(videoDir, { recursive: true });
@@ -53,11 +55,15 @@ export function setupVideoHandler(bot) {
 			const fileName = `${Date.now()}_${video.file_id.slice(-8)}.mp4`;
 			const videoPath = path.join(videoDir, fileName);
 
+			console.log('[Video] Step 3: Downloading...');
 			const response = await axios.get(fileUrl, {
 				responseType: 'arraybuffer',
+				timeout: 60000, // 60 second timeout
 			});
 			fs.writeFileSync(videoPath, response.data);
+			console.log('[Video] Step 3: Downloaded OK');
 
+			console.log('[Video] Step 4: Tracking...');
 			// Track video
 			trackDownloadedVideo(
 				video.file_id,
@@ -66,9 +72,11 @@ export function setupVideoHandler(bot) {
 				video.file_size || 0
 			);
 
+			console.log('[Video] Step 5: Generating content...');
 			// Generate random content
 			const [content] = generateContentOptions();
 
+			console.log('[Video] Step 6: Adding to schedule...');
 			// Auto schedule
 			const post = addScheduledPost({
 				chatId,
@@ -79,6 +87,7 @@ export function setupVideoHandler(bot) {
 				isRepost: false,
 			});
 
+			console.log('[Video] Step 7: Queue notification...');
 			await scheduleUpload(post, new Date(post.scheduledAt));
 			updateVideoStatus(video.file_id, 'scheduled');
 
@@ -88,7 +97,7 @@ export function setupVideoHandler(bot) {
 			// Notify user (batch summary)
 			await ctx.reply(`✅ ${content.title.slice(0, 30)}...\n⏰ ${time}`);
 		} catch (error) {
-			console.error('[Video] Error:', error.message);
+			console.error('[Video] Error:', error.message, error.stack);
 			await ctx.reply(`❌ Lỗi: ${error.message}`);
 		}
 	});

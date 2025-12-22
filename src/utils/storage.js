@@ -204,8 +204,20 @@ export function getSmartScheduleSlot() {
 	const stmt = db.prepare(
 		`SELECT scheduled_at FROM scheduled_posts WHERE status = 'pending'`
 	);
+	const dbRows = stmt.all();
 	const dbSlotKeys = new Set(
-		stmt.all().map((r) => getSlotKeyGMT7(new Date(r.scheduled_at)))
+		dbRows.map((r) => getSlotKeyGMT7(new Date(r.scheduled_at)))
+	);
+
+	console.log(
+		`[Schedule] DB has ${dbRows.length} pending posts, slots: ${[
+			...dbSlotKeys,
+		].join(', ')}`
+	);
+	console.log(
+		`[Schedule] Memory has ${recentlyUsedSlots.size} recent slots: ${[
+			...recentlyUsedSlots,
+		].join(', ')}`
 	);
 
 	// Combine with recently used slots (in-memory)
