@@ -415,12 +415,34 @@ async function handleCommand(ctx, command) {
 	}
 
 	if (command === '/videos') {
-		const videos = getDownloadedVideos(chatId);
-		if (!videos?.length) {
-			await ctx.reply('No videos yet' + tiktokLink);
+		const posts = getPendingPostsByChat(chatId);
+		if (!posts?.length) {
+			await ctx.reply('Không có video nào trong lịch' + tiktokLink);
 			return;
 		}
-		await ctx.reply(`${videos.length} videos downloaded` + tiktokLink);
+
+		// Format schedule list: title - date - time
+		const scheduleList = posts
+			.slice(0, 30)
+			.map((post, i) => {
+				const date = new Date(post.scheduledAt);
+				const gmt7 = new Date(date.getTime() + 7 * 60 * 60 * 1000);
+				const day = gmt7.getUTCDate().toString().padStart(2, '0');
+				const month = (gmt7.getUTCMonth() + 1).toString().padStart(2, '0');
+				const hours = gmt7.getUTCHours().toString().padStart(2, '0');
+				const mins = gmt7.getUTCMinutes().toString().padStart(2, '0');
+				const titleShort =
+					post.title.slice(0, 25) + (post.title.length > 25 ? '...' : '');
+				return `${i + 1}. ${titleShort} - ${day}/${month} ${hours}:${mins}`;
+			})
+			.join('\n');
+
+		const moreText =
+			posts.length > 30 ? `\n\n... và ${posts.length - 30} video khác` : '';
+		await ctx.reply(
+			`📅 LỊCH ĐĂNG (${posts.length} video):\n\n${scheduleList}${moreText}` +
+				tiktokLink
+		);
 		return;
 	}
 
