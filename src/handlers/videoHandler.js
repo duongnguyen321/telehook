@@ -553,12 +553,13 @@ export function setupVideoHandler(bot) {
 
 			const selections = categorySelections.get(selectionKey) || {};
 
-			// Generate 6 options
+			// Generate 20 options
+			const optionCount = 20;
 			let options;
 			if (Object.keys(selections).length > 0) {
-				options = generateContentFromCategories(selections, 6);
+				options = generateContentFromCategories(selections, optionCount);
 			} else {
-				options = generateContentOptions(6);
+				options = generateContentOptions(optionCount);
 			}
 
 			// Save generated options for selection
@@ -567,25 +568,20 @@ export function setupVideoHandler(bot) {
 			// Build message text
 			let messageText = '📝 **CHỌN NỘI DUNG ƯNG Ý NHẤT**\n\n';
 			options.forEach((opt, index) => {
-				messageText += `${index + 1}️⃣ **${opt.title}**\n${
-					opt.description
-				}\n\n`;
+				messageText += `${index + 1}. **${opt.title}**\n${opt.description}\n\n`;
 			});
 			messageText += '👇 Bấm số tương ứng để chọn:';
 
-			// Build selection keyboard
+			// Build selection keyboard (4 rows of 5 buttons)
 			const keyboard = new InlineKeyboard();
-			// Row 1: 1, 2, 3
-			keyboard.text('1️⃣', `choose_${postId}_${currentPage}_0`);
-			keyboard.text('2️⃣', `choose_${postId}_${currentPage}_1`);
-			keyboard.text('3️⃣', `choose_${postId}_${currentPage}_2`);
+			for (let i = 0; i < optionCount; i++) {
+				keyboard.text(`${i + 1}`, `choose_${postId}_${currentPage}_${i}`);
+				// 5 buttons per row
+				if ((i + 1) % 5 === 0) keyboard.row();
+			}
+
+			// Navigation buttons
 			keyboard.row();
-			// Row 2: 4, 5, 6
-			keyboard.text('4️⃣', `choose_${postId}_${currentPage}_3`);
-			keyboard.text('5️⃣', `choose_${postId}_${currentPage}_4`);
-			keyboard.text('6️⃣', `choose_${postId}_${currentPage}_5`);
-			keyboard.row();
-			// Row 3: Back, Random, Cancel
 			keyboard.text('⬅️', `back_${postId}_${currentPage}`);
 			keyboard.text('🔀 Random mới', `choose_random_${postId}_${currentPage}`);
 			keyboard.text('❌ Hủy', `cancel_${postId}_${currentPage}`);
