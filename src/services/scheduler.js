@@ -98,16 +98,22 @@ async function processNotification(job) {
 		// Format caption for TikTok (title + desc + hashtags)
 		const tiktokCaption = `${title}\n\n${description}\n\n${hashtags}`;
 
-		// Send video with full caption for easy copy-paste
-		const { InputFile } = await import('grammy');
+		// Send video with full caption and confirm button
+		const { InputFile, InlineKeyboard } = await import('grammy');
+
+		const keyboard = new InlineKeyboard().text(
+			'✅ Đã đăng TikTok',
+			`posted_${postId}`
+		);
+
 		await bot.api.sendVideo(chatId, new InputFile(videoPath), {
 			caption: `🔔 ĐẾN GIỜ ĐĂNG${repostLabel}\n\n${tiktokCaption}`,
 			supports_streaming: true,
+			reply_markup: keyboard,
 		});
 
-		// Mark as posted
-		updatePostStatus(postId, 'posted');
-		console.log(`[Worker] Posted: ${postId.slice(0, 8)}`);
+		// Note: Don't mark as posted yet - wait for user confirmation
+		console.log(`[Worker] Sent notification: ${postId.slice(0, 8)}`);
 
 		return { success: true, postId };
 	} catch (error) {

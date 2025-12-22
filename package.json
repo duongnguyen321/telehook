@@ -8,7 +8,9 @@
 	},
 	"private": true,
 	"devDependencies": {
-		"@types/bun": "latest"
+		"@prisma/client": "^6.19.1",
+		"@types/bun": "latest",
+		"prisma": "^6.19.1"
 	},
 	"peerDependencies": {
 		"typescript": "^5"

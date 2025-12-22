@@ -1,0 +1,69 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model ScheduledPost {
+  id          String  @id
+  chatId      BigInt  @map("chat_id")
+  videoPath   String  @map("video_path")
+  title       String
+  description String
+  hashtags    String
+  scheduledAt String  @map("scheduled_at")
+  status      String  @default("pending")
+  error       String?
+  createdAt   String? @default(dbgenerated("CURRENT_TIMESTAMP")) @map("created_at")
+  isRepost    Int     @default(0) @map("is_repost")
+
+  @@index([status])
+  @@index([scheduledAt])
+  @@map("scheduled_posts")
+}
+
+model VideoArchive {
+  id           String  @id
+  chatId       BigInt  @map("chat_id")
+  videoPath    String  @map("video_path")
+  title        String
+  description  String
+  hashtags     String
+  views        Int     @default(0)
+  likes        Int     @default(0)
+  postedAt     String  @map("posted_at")
+  lastRepostAt String? @map("last_repost_at")
+  repostCount  Int     @default(0) @map("repost_count")
+
+  @@index([views(sort: Desc)])
+  @@map("video_archive")
+}
+
+model RepostCycle {
+  id          Int    @id @default(autoincrement())
+  videoId     String @map("video_id")
+  repostDate  String @map("repost_date")
+  cycleNumber Int    @default(1) @map("cycle_number")
+
+  @@map("repost_cycle")
+}
+
+model Setting {
+  key   String  @id
+  value String?
+
+  @@map("settings")
+}
+
+model DownloadedVideo {
+  fileId       String  @id @map("file_id")
+  chatId       BigInt  @map("chat_id")
+  videoPath    String  @map("video_path")
+  fileSize     Int?    @map("file_size")
+  downloadedAt String? @default(dbgenerated("CURRENT_TIMESTAMP")) @map("downloaded_at")
+  status       String  @default("pending")
+
+  @@index([chatId])
+  @@map("downloaded_videos")
+}

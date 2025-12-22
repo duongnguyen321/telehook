@@ -354,6 +354,23 @@ export function setupVideoHandler(bot) {
 			return;
 		}
 
+		// Handle posted confirmation (from scheduler notification)
+		if (data.startsWith('posted_')) {
+			const postId = data.replace('posted_', '');
+
+			updatePostStatus(postId, 'posted');
+
+			// Edit message to remove the button and show confirmation
+			try {
+				await ctx.editMessageReplyMarkup({ reply_markup: undefined });
+			} catch (e) {
+				// Ignore if can't edit
+			}
+
+			await ctx.answerCallbackQuery('✅ Đã đánh dấu đã đăng!');
+			return;
+		}
+
 		await ctx.answerCallbackQuery();
 	});
 
