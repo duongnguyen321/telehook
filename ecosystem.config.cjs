@@ -1,7 +1,7 @@
 module.exports = {
 	apps: [
 		{
-			name: 'tiktok-bot',
+			name: 'bot',
 			script: 'src/index.js',
 			interpreter: 'bun',
 			env: {
