@@ -38,6 +38,10 @@ import { downloadVideo, queueDownload } from '../utils/downloader.js';
 // Key: `${chatId}_${postId}`, Value: { POSE: 'FRONT', ACTION: 'SHOWING', ... }
 const categorySelections = new Map();
 
+// Temporary storage for generated options to allow user selection
+// Key: `${chatId}_${postId}`, Value: Array of content options
+const generatedOptions = new Map();
+
 /**
  * Build category selection keyboard
  * @param {string} postId
@@ -337,12 +341,19 @@ export function setupVideoHandler(bot) {
 		const userId = ctx.from?.id;
 		const messageId = ctx.callbackQuery.message.message_id;
 		const isAdmin = userId === ADMIN_USER_ID;
+		const safeAnswer = async (text) => {
+			try {
+				await ctx.answerCallbackQuery(text);
+			} catch (e) {
+				// Ignore timeout errors
+			}
+		};
 
 		// Handle pagination
 		if (data.startsWith('queue_')) {
 			const page = parseInt(data.replace('queue_', ''));
 			await sendQueuePage(ctx, chatId, page, messageId, isAdmin);
-			await ctx.answerCallbackQuery();
+			await safeAnswer();
 			return;
 		}
 
@@ -357,7 +368,7 @@ export function setupVideoHandler(bot) {
 				.text('⚠️ Xác nhận XÓA', `delyes_${postId}_${currentPage}`)
 				.text('❌ Hủy', `delno_${postId}_${currentPage}`);
 
-			await ctx.answerCallbackQuery('Bạn có chắc muốn xóa video này?');
+			await safeAnswer('Bạn có chắc muốn xóa video này?');
 
 			// Delete old message and send confirmation
 			try {
@@ -381,9 +392,7 @@ export function setupVideoHandler(bot) {
 
 			const result = deleteScheduledPost(postId, chatId);
 			if (result.success) {
-				await ctx.answerCallbackQuery(
-					`Đã xóa! Đã reschedule ${result.rescheduled} video`
-				);
+				await safeAnswer(`Đã xóa! Đã reschedule ${result.rescheduled} video`);
 				// Delete confirmation message
 				try {
 					await ctx.api.deleteMessage(chatId, messageId);
@@ -394,7 +403,7 @@ export function setupVideoHandler(bot) {
 				const newPage = Math.max(0, currentPage - 1);
 				await sendQueuePage(ctx, chatId, newPage, null, isAdmin);
 			} else {
-				await ctx.answerCallbackQuery('Lỗi: Không tìm thấy video');
+				await safeAnswer('Lỗi: Không tìm thấy video');
 			}
 			return;
 		}
@@ -404,7 +413,7 @@ export function setupVideoHandler(bot) {
 			const parts = data.split('_');
 			const currentPage = parseInt(parts[2]) || 0;
 
-			await ctx.answerCallbackQuery('Đã hủy xóa');
+			await safeAnswer('Đã hủy xóa');
 
 			// Delete confirmation message and return to queue
 			try {
@@ -446,7 +455,7 @@ export function setupVideoHandler(bot) {
 					'Bấm **Xong** khi đã chọn đủ, hoặc **Random** để tạo ngẫu nhiên.',
 				{ reply_markup: keyboard, parse_mode: 'Markdown' }
 			);
-			await ctx.answerCallbackQuery();
+			await safeAnswer();
 			return;
 		}
 
@@ -459,7 +468,7 @@ export function setupVideoHandler(bot) {
 
 			const categoryKey = getCategoryKeyByIndex(categoryIndex);
 			if (!categoryKey) {
-				await ctx.answerCallbackQuery('Lỗi: Category không tồn tại');
+				await safeAnswer('Lỗi: Category không tồn tại');
 				return;
 			}
 
@@ -470,7 +479,7 @@ export function setupVideoHandler(bot) {
 				reply_markup: keyboard,
 				parse_mode: 'Markdown',
 			});
-			await ctx.answerCallbackQuery();
+			await safeAnswer();
 			return;
 		}
 
@@ -486,7 +495,7 @@ export function setupVideoHandler(bot) {
 			const optionKey = getOptionKeyByIndex(categoryKey, optionIndex);
 
 			if (!categoryKey || !optionKey) {
-				await ctx.answerCallbackQuery('Lỗi: Option không tồn tại');
+				await safeAnswer('Lỗi: Option không tồn tại');
 				return;
 			}
 
@@ -510,7 +519,7 @@ export function setupVideoHandler(bot) {
 					'Tiếp tục chọn hoặc bấm **Xong** để tạo nội dung.',
 				{ reply_markup: keyboard, parse_mode: 'Markdown' }
 			);
-			await ctx.answerCallbackQuery(`Đã chọn: ${optLabel}`);
+			await safeAnswer(`Đã chọn: ${optLabel}`);
 			return;
 		}
 
@@ -531,11 +540,11 @@ export function setupVideoHandler(bot) {
 					'Bấm **Xong** khi đã chọn đủ, hoặc **Random** để tạo ngẫu nhiên.',
 				{ reply_markup: keyboard, parse_mode: 'Markdown' }
 			);
-			await ctx.answerCallbackQuery();
+			await safeAnswer();
 			return;
 		}
 
-		// Handle done - generate content from selections (admin only)
+		// Handle done - generate content options for selection (admin only)
 		if (data.startsWith('done_') && isAdmin) {
 			const parts = data.split('_');
 			const postId = parts[1];
@@ -544,16 +553,78 @@ export function setupVideoHandler(bot) {
 
 			const selections = categorySelections.get(selectionKey) || {};
 
-			// Generate content based on selections
-			let content;
+			// Generate 6 options
+			let options;
 			if (Object.keys(selections).length > 0) {
-				const options = generateContentFromCategories(selections);
-				content = options[0];
+				options = generateContentFromCategories(selections, 6);
 			} else {
-				// No selections, use random
-				const options = generateContentOptions();
-				content = options[0];
+				options = generateContentOptions(6);
 			}
+
+			// Save generated options for selection
+			generatedOptions.set(selectionKey, options);
+
+			// Build message text
+			let messageText = '📝 **CHỌN NỘI DUNG ƯNG Ý NHẤT**\n\n';
+			options.forEach((opt, index) => {
+				messageText += `${index + 1}️⃣ **${opt.title}**\n${
+					opt.description
+				}\n\n`;
+			});
+			messageText += '👇 Bấm số tương ứng để chọn:';
+
+			// Build selection keyboard
+			const keyboard = new InlineKeyboard();
+			// Row 1: 1, 2, 3
+			keyboard.text('1️⃣', `choose_${postId}_${currentPage}_0`);
+			keyboard.text('2️⃣', `choose_${postId}_${currentPage}_1`);
+			keyboard.text('3️⃣', `choose_${postId}_${currentPage}_2`);
+			keyboard.row();
+			// Row 2: 4, 5, 6
+			keyboard.text('4️⃣', `choose_${postId}_${currentPage}_3`);
+			keyboard.text('5️⃣', `choose_${postId}_${currentPage}_4`);
+			keyboard.text('6️⃣', `choose_${postId}_${currentPage}_5`);
+			keyboard.row();
+			// Row 3: Back, Random, Cancel
+			keyboard.text('⬅️', `back_${postId}_${currentPage}`);
+			keyboard.text('🔀 Random mới', `choose_random_${postId}_${currentPage}`);
+			keyboard.text('❌ Hủy', `cancel_${postId}_${currentPage}`);
+
+			// Edit message
+			try {
+				await ctx.editMessageText(messageText, {
+					reply_markup: keyboard,
+					parse_mode: 'Markdown',
+				});
+			} catch (e) {
+				// Fallback if message too long or other error
+				console.error('Error sending options:', e);
+				await safeAnswer('Lỗi hiển thị options');
+			}
+
+			await safeAnswer();
+			return;
+		}
+
+		// Handle option choice (admin only)
+		if (
+			data.startsWith('choose_') &&
+			!data.startsWith('choose_random_') &&
+			isAdmin
+		) {
+			const parts = data.split('_');
+			const postId = parts[1];
+			const currentPage = parseInt(parts[2]) || 0;
+			const choiceIndex = parseInt(parts[3]);
+			const selectionKey = `${chatId}_${postId}`;
+
+			const options = generatedOptions.get(selectionKey);
+			if (!options || !options[choiceIndex]) {
+				await safeAnswer('Lỗi: Option không tồn tại hoặc hết hạn');
+				return;
+			}
+
+			const content = options[choiceIndex];
 
 			// Update post in database
 			const updateStmt = db.prepare(
@@ -568,6 +639,34 @@ export function setupVideoHandler(bot) {
 
 			// Cleanup
 			categorySelections.delete(selectionKey);
+			generatedOptions.delete(selectionKey);
+
+			// Delete message and return to queue
+			try {
+				// Check if message exists before deleting
+				await ctx.api.deleteMessage(chatId, messageId);
+			} catch (e) {
+				// Ignore
+			}
+
+			await safeAnswer(`Đã chọn: "${content.title.slice(0, 20)}..."`);
+			await sendQueuePage(ctx, chatId, currentPage, null, isAdmin);
+			return;
+		}
+
+		// Handle choose random (failed to load options or want fresh random)
+		if (data.startsWith('choose_random_') && isAdmin) {
+			const parts = data.split('_');
+			const postId = parts[2];
+			const currentPage = parseInt(parts[3]) || 0;
+			const selectionKey = `${chatId}_${postId}`;
+
+			// Generate random content
+			const result = updatePostContent(postId);
+
+			// Cleanup
+			categorySelections.delete(selectionKey);
+			generatedOptions.delete(selectionKey);
 
 			// Delete message and return to queue
 			try {
@@ -576,9 +675,11 @@ export function setupVideoHandler(bot) {
 				// Ignore
 			}
 
-			await ctx.answerCallbackQuery(
-				`Đã tạo nội dung: "${content.title.slice(0, 20)}..."`
-			);
+			if (result.success) {
+				await safeAnswer(`Random: "${result.title.slice(0, 20)}..."`);
+			} else {
+				await safeAnswer('Lỗi: Không tìm thấy video');
+			}
 			await sendQueuePage(ctx, chatId, currentPage, null, isAdmin);
 			return;
 		}
@@ -595,6 +696,7 @@ export function setupVideoHandler(bot) {
 
 			// Cleanup
 			categorySelections.delete(selectionKey);
+			// map generatedOptions also needs cleanup if it exists? (unlikely here but safe)
 
 			// Delete message and return to queue
 			try {
@@ -604,11 +706,9 @@ export function setupVideoHandler(bot) {
 			}
 
 			if (result.success) {
-				await ctx.answerCallbackQuery(
-					`Random: "${result.title.slice(0, 20)}..."`
-				);
+				await safeAnswer(`Random: "${result.title.slice(0, 20)}..."`);
 			} else {
-				await ctx.answerCallbackQuery('Lỗi: Không tìm thấy video');
+				await safeAnswer('Lỗi: Không tìm thấy video');
 			}
 			await sendQueuePage(ctx, chatId, currentPage, null, isAdmin);
 			return;
@@ -631,7 +731,7 @@ export function setupVideoHandler(bot) {
 				// Ignore
 			}
 
-			await ctx.answerCallbackQuery('Đã hủy');
+			await safeAnswer('Đã hủy');
 			await sendQueuePage(ctx, chatId, currentPage, null, isAdmin);
 			return;
 		}
@@ -649,11 +749,11 @@ export function setupVideoHandler(bot) {
 				// Ignore if can't edit
 			}
 
-			await ctx.answerCallbackQuery('✅ Đã đánh dấu đã đăng!');
+			await safeAnswer('✅ Đã đánh dấu đã đăng!');
 			return;
 		}
 
-		await ctx.answerCallbackQuery();
+		await safeAnswer();
 	});
 
 	// Handle commands

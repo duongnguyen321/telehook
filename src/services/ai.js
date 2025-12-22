@@ -1597,9 +1597,10 @@ export function getCategoryOptions(categoryKey) {
  * Generate content based on selected categories
  * Filters existing TITLES and DESCRIPTIONS by keywords from selected categories
  * @param {Object} selectedCategories - e.g. { POSE: 'FRONT', ACTION: 'SHOWING', ... }
+ * @param {number} count - Number of options to generate (default: 3)
  * @returns {Array<{title: string, description: string, hashtags: string}>}
  */
-export function generateContentFromCategories(selectedCategories) {
+export function generateContentFromCategories(selectedCategories, count = 3) {
 	// Collect all keywords from selected categories
 	const allKeywords = [];
 
@@ -1615,19 +1616,19 @@ export function generateContentFromCategories(selectedCategories) {
 
 	// If no valid selections, fall back to random
 	if (allKeywords.length === 0) {
-		return generateContentOptions();
+		return generateContentOptions(count);
 	}
 
 	// Filter titles and descriptions by keywords
 	const filteredTitles = filterByKeywords(TITLES, allKeywords);
 	const filteredDescriptions = filterByKeywords(DESCRIPTIONS, allKeywords);
 
-	// Generate 3 options from filtered content
+	// Generate options from filtered content
 	const options = [];
 	const usedTitles = new Set();
 	const usedDescs = new Set();
 
-	for (let i = 0; i < 3; i++) {
+	for (let i = 0; i < count; i++) {
 		// Pick unique title
 		let title;
 		let attempts = 0;
