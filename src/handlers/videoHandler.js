@@ -8,11 +8,12 @@ import {
 	isVideoDuplicate,
 	trackDownloadedVideo,
 	updateVideoStatus,
-	getDownloadedVideos,
 	getVideoStats,
 	rescheduleAllPending,
 	deleteScheduledPost,
 	updatePostContent,
+	updatePostFileId,
+	cleanOrphanedPosts,
 	DATA_DIR,
 	db,
 } from '../utils/storage.js';
@@ -132,7 +133,11 @@ async function sendQueuePage(
 	if (posts.length === 0) {
 		const text = 'No pending videos' + tiktokLink;
 		if (messageId) {
-			await ctx.api.editMessageText(chatId, messageId, text);
+			try {
+				await ctx.api.editMessageText(chatId, messageId, text);
+			} catch (e) {
+				await ctx.reply(text);
+			}
 		} else {
 			await ctx.reply(text);
 		}
@@ -176,17 +181,20 @@ async function sendQueuePage(
 		const text =
 			`[${page + 1}/${posts.length}] Video file missing!\n${time}` + tiktokLink;
 		if (messageId) {
-			await ctx.api.editMessageText(chatId, messageId, text, {
-				reply_markup: keyboard,
-			});
+			try {
+				await ctx.api.editMessageText(chatId, messageId, text, {
+					reply_markup: keyboard,
+				});
+			} catch (e) {
+				await ctx.reply(text, { reply_markup: keyboard });
+			}
 		} else {
 			await ctx.reply(text, { reply_markup: keyboard });
 		}
 		return;
 	}
 
-	// For pagination, we need to delete old message and send new video
-	// because you can't edit a text message to become a video
+	// Delete old message first (always delete to avoid confusion)
 	if (messageId) {
 		try {
 			await ctx.api.deleteMessage(chatId, messageId);
@@ -195,11 +203,29 @@ async function sendQueuePage(
 		}
 	}
 
-	await ctx.api.sendVideo(chatId, new InputFile(post.videoPath), {
-		caption,
-		reply_markup: keyboard,
-		supports_streaming: true,
-	});
+	// Use cached file_id if available, otherwise upload from disk
+	let videoSource;
+	if (post.telegramFileId) {
+		videoSource = post.telegramFileId;
+	} else {
+		videoSource = new InputFile(post.videoPath);
+	}
+
+	try {
+		const sentMessage = await ctx.api.sendVideo(chatId, videoSource, {
+			caption,
+			reply_markup: keyboard,
+			supports_streaming: true,
+		});
+
+		// Save file_id for future use if we uploaded from disk
+		if (!post.telegramFileId && sentMessage.video?.file_id) {
+			updatePostFileId(post.id, sentMessage.video.file_id);
+		}
+	} catch (e) {
+		console.error('[Queue] Error sending video:', e.message);
+		await ctx.reply(`Error loading video: ${e.message.slice(0, 50)}...`);
+	}
 }
 
 /**
@@ -553,8 +579,8 @@ export function setupVideoHandler(bot) {
 
 			const selections = categorySelections.get(selectionKey) || {};
 
-			// Generate 20 options
-			const optionCount = 20;
+			// Generate 10 options (sorted by keyword match count)
+			const optionCount = 10;
 			let options;
 			if (Object.keys(selections).length > 0) {
 				options = generateContentFromCategories(selections, optionCount);
@@ -853,6 +879,20 @@ async function handleCommand(ctx, command) {
 		await ctx.reply(
 			`Done! Rescheduled ${count} videos:\n- New schedule (9/day)\n- New Vietnamese content`
 		);
+		return;
+	}
+
+	if (command === '/fix') {
+		await ctx.reply('🔧 Đang kiểm tra và dọn dẹp dữ liệu...');
+		const result = cleanOrphanedPosts(chatId);
+		if (result.deleted > 0) {
+			await ctx.reply(
+				`✅ Đã xóa ${result.deleted} record không có video file.\n` +
+					`📅 Đã reschedule ${result.rescheduled} video còn lại.`
+			);
+		} else {
+			await ctx.reply('✅ Không có record lỗi. Database đã clean!');
+		}
 		return;
 	}
 

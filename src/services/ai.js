@@ -1596,6 +1596,7 @@ export function getCategoryOptions(categoryKey) {
 /**
  * Generate content based on selected categories
  * Filters existing TITLES and DESCRIPTIONS by keywords from selected categories
+ * Scores and sorts by number of keyword matches (most relevant first)
  * @param {Object} selectedCategories - e.g. { POSE: 'FRONT', ACTION: 'SHOWING', ... }
  * @param {number} count - Number of options to generate (default: 3)
  * @returns {Array<{title: string, description: string, hashtags: string}>}
@@ -1619,43 +1620,67 @@ export function generateContentFromCategories(selectedCategories, count = 3) {
 		return generateContentOptions(count);
 	}
 
-	// Filter titles and descriptions by keywords
-	const filteredTitles = filterByKeywords(TITLES, allKeywords);
-	const filteredDescriptions = filterByKeywords(DESCRIPTIONS, allKeywords);
+	// Score function: count how many keywords match in a string
+	const scoreByKeywords = (str) => {
+		const lowerStr = str.toLowerCase();
+		let score = 0;
+		for (const kw of allKeywords) {
+			if (lowerStr.includes(kw.toLowerCase())) {
+				score++;
+			}
+		}
+		return score;
+	};
 
-	// Generate options from filtered content
+	// Score and sort titles by relevance
+	const scoredTitles = TITLES.map((t) => ({
+		text: t,
+		score: scoreByKeywords(t),
+	}))
+		.filter((t) => t.score > 0)
+		.sort((a, b) => b.score - a.score);
+
+	// Score and sort descriptions by relevance
+	const scoredDescs = DESCRIPTIONS.map((d) => ({
+		text: d,
+		score: scoreByKeywords(d),
+	}))
+		.filter((d) => d.score > 0)
+		.sort((a, b) => b.score - a.score);
+
+	// Generate options from scored content
 	const options = [];
 	const usedTitles = new Set();
 	const usedDescs = new Set();
 
-	for (let i = 0; i < count; i++) {
-		// Pick unique title
-		let title;
-		let attempts = 0;
-		do {
-			title = filteredTitles[Math.floor(Math.random() * filteredTitles.length)];
-			attempts++;
-		} while (usedTitles.has(title) && attempts < 20);
-		usedTitles.add(title);
+	for (let i = 0; i < count && i < scoredTitles.length; i++) {
+		// Pick from top titles (already sorted by score)
+		let titleObj = scoredTitles.find(
+			(t) => !usedTitles.has(t.text) && t.score > 0
+		);
+		if (!titleObj) break;
+		usedTitles.add(titleObj.text);
 
-		// Pick unique description
-		let description;
-		attempts = 0;
-		do {
-			description =
-				filteredDescriptions[
-					Math.floor(Math.random() * filteredDescriptions.length)
-				];
-			attempts++;
-		} while (usedDescs.has(description) && attempts < 20);
-		usedDescs.add(description);
+		// Pick matching description (prefer high scoring)
+		let descObj = scoredDescs.find((d) => !usedDescs.has(d.text));
+		if (!descObj) {
+			descObj = { text: random(DESCRIPTIONS), score: 0 };
+		}
+		usedDescs.add(descObj.text);
 
 		options.push({
-			title,
-			description,
+			title: titleObj.text,
+			description: descObj.text,
 			hashtags: random(HASHTAG_SETS),
+			_score: titleObj.score + descObj.score, // For debugging
 		});
 	}
+
+	// Sort final options by combined score
+	options.sort((a, b) => b._score - a._score);
+
+	// Remove internal score property
+	options.forEach((opt) => delete opt._score);
 
 	return options;
 }

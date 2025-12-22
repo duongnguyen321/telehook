@@ -62,9 +62,17 @@ db.run(`
     status TEXT DEFAULT 'pending' CHECK(status IN ('pending', 'posted', 'failed')),
     error TEXT,
     created_at TEXT DEFAULT CURRENT_TIMESTAMP,
-    is_repost INTEGER DEFAULT 0
+    is_repost INTEGER DEFAULT 0,
+    telegram_file_id TEXT
   )
 `);
+
+// Migration: Add telegram_file_id column if not exists
+try {
+	db.run(`ALTER TABLE scheduled_posts ADD COLUMN telegram_file_id TEXT`);
+} catch (e) {
+	// Column already exists, ignore
+}
 
 // Posted videos archive for repost system
 db.run(`
@@ -835,6 +843,7 @@ export function getPendingPostsByChat(chatId) {
 		scheduledAt: row.scheduled_at,
 		status: row.status,
 		isRepost: row.is_repost === 1,
+		telegramFileId: row.telegram_file_id || null,
 	}));
 }
 
@@ -878,6 +887,54 @@ export function deleteScheduledPost(postId, chatId) {
 	const rescheduled = rescheduleTimesOnly(chatId);
 
 	return { success: true, rescheduled };
+}
+
+/**
+ * Update a post's Telegram file_id for caching
+ * @param {string} postId
+ * @param {string} fileId
+ */
+export function updatePostFileId(postId, fileId) {
+	const stmt = db.prepare(
+		`UPDATE scheduled_posts SET telegram_file_id = ? WHERE id = ?`
+	);
+	stmt.run(fileId, postId);
+	console.log(`[Cache] Saved file_id for post ${postId}`);
+}
+
+/**
+ * Clean orphaned posts where video file no longer exists
+ * @param {number} chatId
+ * @returns {{deleted: number, rescheduled: number}}
+ */
+export function cleanOrphanedPosts(chatId) {
+	const posts = db
+		.prepare(
+			`SELECT id, video_path FROM scheduled_posts WHERE chat_id = ? AND status = 'pending'`
+		)
+		.all(chatId);
+
+	let deleted = 0;
+	for (const post of posts) {
+		const fullPath = getVideoFullPath(post.video_path);
+		if (!fs.existsSync(fullPath)) {
+			// Delete record
+			db.prepare(`DELETE FROM scheduled_posts WHERE id = ?`).run(post.id);
+			db.prepare(`DELETE FROM downloaded_videos WHERE video_path = ?`).run(
+				post.video_path
+			);
+			console.log(`[Fix] Removed orphaned record: ${post.id}`);
+			deleted++;
+		}
+	}
+
+	// Reschedule remaining posts
+	let rescheduled = 0;
+	if (deleted > 0) {
+		rescheduled = rescheduleTimesOnly(chatId);
+	}
+
+	return { deleted, rescheduled };
 }
 
 /**
