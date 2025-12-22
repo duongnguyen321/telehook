@@ -596,6 +596,31 @@ export function getDuePosts() {
 }
 
 /**
+ * Get a single post by ID (fresh data from database)
+ * @param {string} postId
+ * @returns {ScheduledPost | null}
+ */
+export function getPostById(postId) {
+	const stmt = db.prepare(`SELECT * FROM scheduled_posts WHERE id = ?`);
+	const row = stmt.get(postId);
+
+	if (!row) return null;
+
+	return {
+		id: row.id,
+		chatId: row.chat_id,
+		videoPath: getVideoFullPath(row.video_path),
+		title: row.title,
+		description: row.description,
+		hashtags: row.hashtags,
+		scheduledAt: row.scheduled_at,
+		status: row.status,
+		error: row.error,
+		isRepost: row.is_repost === 1,
+	};
+}
+
+/**
  * Update post status and archive if posted
  * @param {string} id
  * @param {'pending' | 'posted' | 'failed'} status

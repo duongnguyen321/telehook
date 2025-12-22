@@ -8,6 +8,7 @@ import {
 	needsRepost,
 	scheduleReposts,
 	getPendingCount,
+	getPostById,
 } from '../utils/storage.js';
 
 let bot = null;
@@ -49,9 +50,10 @@ export function setDefaultChatId(chatId) {
 export async function scheduleUpload(post, scheduledAt) {
 	const delay = scheduledAt.getTime() - Date.now();
 
+	// Only store postId and chatId - fetch fresh data when processing
 	await notifyQueue.add(
 		'notify',
-		{ postId: post.id, ...post },
+		{ postId: post.id, chatId: post.chatId },
 		{
 			delay: Math.max(0, delay),
 			removeOnComplete: true,
@@ -70,42 +72,36 @@ export async function scheduleUpload(post, scheduledAt) {
  * Process notification job - sends video + metadata to user for manual posting
  */
 async function processNotification(job) {
-	const { postId, chatId, videoPath, title, description, hashtags, isRepost } =
-		job.data;
+	const { postId, chatId } = job.data;
 
-	const repostLabel = isRepost ? ' (repost)' : '';
-	console.log(`[Worker] Processing: ${postId.slice(0, 8)}${repostLabel}`);
+	console.log(`[Worker] Processing: ${postId.slice(0, 8)}`);
 
 	try {
 		if (!bot) {
 			throw new Error('Bot not initialized');
 		}
 
+		// Get fresh data from database (in case content was updated)
+		const post = getPostById(postId);
+		if (!post) {
+			throw new Error(`Post not found: ${postId}`);
+		}
+
+		const { videoPath, title, description, hashtags, isRepost } = post;
+		const repostLabel = isRepost ? ' [REPOST]' : '';
+
 		// Check if video file exists
 		if (!fs.existsSync(videoPath)) {
 			throw new Error(`Video file not found: ${videoPath}`);
 		}
 
-		// Format caption for easy copy-paste
-		const fullCaption = `${title}\n\n${description}\n\n${hashtags}`;
+		// Format caption for TikTok (title + desc + hashtags)
+		const tiktokCaption = `${title}\n\n${description}\n\n${hashtags}`;
 
-		// Send notification message (ASCII only)
-		await bot.api.sendMessage(
-			chatId,
-			`=== TIME TO POST ===\n\n` +
-				`Title: ${title}\n\n` +
-				`Desc: ${description}\n\n` +
-				`Tags: ${hashtags}\n\n` +
-				`--- Copy below ---`
-		);
-
-		// Send copyable caption
-		await bot.api.sendMessage(chatId, fullCaption);
-
-		// Send video file using InputFile
+		// Send video with full caption for easy copy-paste
 		const { InputFile } = await import('grammy');
 		await bot.api.sendVideo(chatId, new InputFile(videoPath), {
-			caption: 'Video to post on TikTok',
+			caption: `🔔 ĐẾN GIỜ ĐĂNG${repostLabel}\n\n${tiktokCaption}`,
 			supports_streaming: true,
 		});
 
@@ -122,12 +118,10 @@ async function processNotification(job) {
 			try {
 				await bot.api.sendMessage(
 					chatId,
-					`Error posting video!\nTitle: ${title.slice(
+					`❌ Lỗi đăng video!\nPost ID: ${postId.slice(
 						0,
-						30
-					)}...\nError: ${error.message
-						.replace(/[^\x00-\x7F]/g, '')
-						.slice(0, 100)}`
+						8
+					)}\nLỗi: ${error.message.replace(/[^\x00-\x7F]/g, '').slice(0, 100)}`
 				);
 			} catch (e) {
 				console.error('[Worker] Failed to send error msg:', e.message);
