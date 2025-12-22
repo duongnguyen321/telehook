@@ -14,6 +14,7 @@ import {
 	deleteScheduledPost,
 	updatePostContent,
 	DATA_DIR,
+	db,
 } from '../utils/storage.js';
 import { formatVietnameseTime } from '../utils/timeParser.js';
 import {
@@ -21,8 +22,78 @@ import {
 	setDefaultChatId,
 	triggerRepostCheck,
 } from '../services/scheduler.js';
-import { generateContentOptions } from '../services/ai.js';
+import {
+	generateContentOptions,
+	getCategories,
+	getCategoryOptions,
+	generateContentFromCategories,
+	getCategoryName,
+	getOptionLabel,
+} from '../services/ai.js';
 import { downloadVideo, queueDownload } from '../utils/downloader.js';
+
+// Temporary storage for category selections during content generation
+// Key: `${chatId}_${postId}`, Value: { POSE: 'FRONT', ACTION: 'SHOWING', ... }
+const categorySelections = new Map();
+
+/**
+ * Build category selection keyboard
+ * @param {string} postId
+ * @param {number} page
+ * @param {Object} selections - Current selections
+ * @returns {InlineKeyboard}
+ */
+function buildCategoryKeyboard(postId, page, selections = {}) {
+	const keyboard = new InlineKeyboard();
+	const categories = getCategories();
+
+	// Add category buttons (2 per row)
+	for (let i = 0; i < categories.length; i++) {
+		const cat = categories[i];
+		const isSelected = selections[cat.key];
+		const label = isSelected
+			? `✅ ${cat.emoji} ${cat.name}`
+			: `${cat.emoji} ${cat.name}`;
+		keyboard.text(label, `cat_${postId}_${page}_${cat.key}`);
+		if (i % 2 === 1) keyboard.row();
+	}
+
+	// Add action buttons
+	keyboard.row();
+	keyboard.text('✅ Xong', `done_${postId}_${page}`);
+	keyboard.text('🔀 Random', `rand_${postId}_${page}`);
+	keyboard.row();
+	keyboard.text('❌ Hủy', `cancel_${postId}_${page}`);
+
+	return keyboard;
+}
+
+/**
+ * Build options keyboard for a category
+ * @param {string} postId
+ * @param {number} page
+ * @param {string} categoryKey
+ * @returns {InlineKeyboard}
+ */
+function buildOptionsKeyboard(postId, page, categoryKey) {
+	const keyboard = new InlineKeyboard();
+	const options = getCategoryOptions(categoryKey);
+
+	if (!options) return keyboard;
+
+	// Add option buttons (2 per row)
+	for (let i = 0; i < options.length; i++) {
+		const opt = options[i];
+		keyboard.text(opt.label, `opt_${postId}_${page}_${categoryKey}_${opt.key}`);
+		if (i % 2 === 1) keyboard.row();
+	}
+
+	// Back button
+	keyboard.row();
+	keyboard.text('⬅️ Quay lại', `back_${postId}_${page}`);
+
+	return keyboard;
+}
 
 /**
  * Send paginated queue page with video details + video file
@@ -337,20 +408,208 @@ export function setupVideoHandler(bot) {
 			return;
 		}
 
-		// Handle regenerate content (admin only)
+		// Handle regenerate content - show category selection (admin only)
 		if (data.startsWith('regen_') && isAdmin) {
 			const parts = data.split('_');
 			const postId = parts[1];
 			const currentPage = parseInt(parts[2]) || 0;
+			const selectionKey = `${chatId}_${postId}`;
 
+			// Initialize or get existing selections
+			if (!categorySelections.has(selectionKey)) {
+				categorySelections.set(selectionKey, {});
+			}
+
+			const selections = categorySelections.get(selectionKey);
+			const keyboard = buildCategoryKeyboard(postId, currentPage, selections);
+
+			// Delete video message and show category selection
+			try {
+				await ctx.api.deleteMessage(chatId, messageId);
+			} catch (e) {
+				// Ignore
+			}
+
+			await ctx.api.sendMessage(
+				chatId,
+				'📝 **CHỌN CATEGORY ĐỂ TẠO NỘI DUNG**\n\n' +
+					'Chọn các category phù hợp với video:\n' +
+					'✅ = đã chọn\n\n' +
+					'Bấm **Xong** khi đã chọn đủ, hoặc **Random** để tạo ngẫu nhiên.',
+				{ reply_markup: keyboard, parse_mode: 'Markdown' }
+			);
+			await ctx.answerCallbackQuery();
+			return;
+		}
+
+		// Handle category selection - show options (admin only)
+		if (data.startsWith('cat_') && isAdmin) {
+			const parts = data.split('_');
+			const postId = parts[1];
+			const currentPage = parseInt(parts[2]) || 0;
+			const categoryKey = parts[3];
+
+			const catName = getCategoryName(categoryKey);
+			const keyboard = buildOptionsKeyboard(postId, currentPage, categoryKey);
+
+			await ctx.editMessageText(`📝 Chọn **${catName}**:`, {
+				reply_markup: keyboard,
+				parse_mode: 'Markdown',
+			});
+			await ctx.answerCallbackQuery();
+			return;
+		}
+
+		// Handle option selection - save and return to categories (admin only)
+		if (data.startsWith('opt_') && isAdmin) {
+			const parts = data.split('_');
+			const postId = parts[1];
+			const currentPage = parseInt(parts[2]) || 0;
+			const categoryKey = parts[3];
+			const optionKey = parts[4];
+			const selectionKey = `${chatId}_${postId}`;
+
+			// Save selection
+			if (!categorySelections.has(selectionKey)) {
+				categorySelections.set(selectionKey, {});
+			}
+			const selections = categorySelections.get(selectionKey);
+			selections[categoryKey] = optionKey;
+
+			const optLabel = getOptionLabel(categoryKey, optionKey);
+			const catName = getCategoryName(categoryKey);
+
+			// Return to category selection with updated selections
+			const keyboard = buildCategoryKeyboard(postId, currentPage, selections);
+			await ctx.editMessageText(
+				'📝 **CHỌN CATEGORY ĐỂ TẠO NỘI DUNG**\n\n' +
+					`✅ Đã chọn: ${catName} → ${optLabel}\n\n` +
+					'Tiếp tục chọn hoặc bấm **Xong** để tạo nội dung.',
+				{ reply_markup: keyboard, parse_mode: 'Markdown' }
+			);
+			await ctx.answerCallbackQuery(`Đã chọn: ${optLabel}`);
+			return;
+		}
+
+		// Handle back to categories (admin only)
+		if (data.startsWith('back_') && isAdmin) {
+			const parts = data.split('_');
+			const postId = parts[1];
+			const currentPage = parseInt(parts[2]) || 0;
+			const selectionKey = `${chatId}_${postId}`;
+
+			const selections = categorySelections.get(selectionKey) || {};
+			const keyboard = buildCategoryKeyboard(postId, currentPage, selections);
+
+			await ctx.editMessageText(
+				'📝 **CHỌN CATEGORY ĐỂ TẠO NỘI DUNG**\n\n' +
+					'Chọn các category phù hợp với video:\n' +
+					'✅ = đã chọn\n\n' +
+					'Bấm **Xong** khi đã chọn đủ, hoặc **Random** để tạo ngẫu nhiên.',
+				{ reply_markup: keyboard, parse_mode: 'Markdown' }
+			);
+			await ctx.answerCallbackQuery();
+			return;
+		}
+
+		// Handle done - generate content from selections (admin only)
+		if (data.startsWith('done_') && isAdmin) {
+			const parts = data.split('_');
+			const postId = parts[1];
+			const currentPage = parseInt(parts[2]) || 0;
+			const selectionKey = `${chatId}_${postId}`;
+
+			const selections = categorySelections.get(selectionKey) || {};
+
+			// Generate content based on selections
+			let content;
+			if (Object.keys(selections).length > 0) {
+				const options = generateContentFromCategories(selections);
+				content = options[0];
+			} else {
+				// No selections, use random
+				const options = generateContentOptions();
+				content = options[0];
+			}
+
+			// Update post in database
+			const updateStmt = db.prepare(
+				`UPDATE scheduled_posts SET title = ?, description = ?, hashtags = ? WHERE id = ?`
+			);
+			updateStmt.run(
+				content.title,
+				content.description,
+				content.hashtags,
+				postId
+			);
+
+			// Cleanup
+			categorySelections.delete(selectionKey);
+
+			// Delete message and return to queue
+			try {
+				await ctx.api.deleteMessage(chatId, messageId);
+			} catch (e) {
+				// Ignore
+			}
+
+			await ctx.answerCallbackQuery(
+				`Đã tạo nội dung: "${content.title.slice(0, 20)}..."`
+			);
+			await sendQueuePage(ctx, chatId, currentPage, null, isAdmin);
+			return;
+		}
+
+		// Handle random - generate random content (admin only)
+		if (data.startsWith('rand_') && isAdmin) {
+			const parts = data.split('_');
+			const postId = parts[1];
+			const currentPage = parseInt(parts[2]) || 0;
+			const selectionKey = `${chatId}_${postId}`;
+
+			// Generate random content
 			const result = updatePostContent(postId);
+
+			// Cleanup
+			categorySelections.delete(selectionKey);
+
+			// Delete message and return to queue
+			try {
+				await ctx.api.deleteMessage(chatId, messageId);
+			} catch (e) {
+				// Ignore
+			}
+
 			if (result.success) {
-				await ctx.answerCallbackQuery('Đã đổi nội dung mới!');
-				// Refresh current page to show new content
-				await sendQueuePage(ctx, chatId, currentPage, messageId, isAdmin);
+				await ctx.answerCallbackQuery(
+					`Random: "${result.title.slice(0, 20)}..."`
+				);
 			} else {
 				await ctx.answerCallbackQuery('Lỗi: Không tìm thấy video');
 			}
+			await sendQueuePage(ctx, chatId, currentPage, null, isAdmin);
+			return;
+		}
+
+		// Handle cancel - abort category selection (admin only)
+		if (data.startsWith('cancel_') && isAdmin) {
+			const parts = data.split('_');
+			const postId = parts[1];
+			const currentPage = parseInt(parts[2]) || 0;
+			const selectionKey = `${chatId}_${postId}`;
+
+			// Cleanup
+			categorySelections.delete(selectionKey);
+
+			// Delete message and return to queue
+			try {
+				await ctx.api.deleteMessage(chatId, messageId);
+			} catch (e) {
+				// Ignore
+			}
+
+			await ctx.answerCallbackQuery('Đã hủy');
+			await sendQueuePage(ctx, chatId, currentPage, null, isAdmin);
 			return;
 		}
 

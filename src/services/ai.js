@@ -499,6 +499,165 @@ const TITLES = [
 	'Pyjama lụa mềm',
 	'Kimono Nhật Bản',
 	'Áo dài hở lưng',
+
+	// === MISSING KEYWORDS - TÓC (20) ===
+	'Tóc ngắn cá tính',
+	'Tóc ngắn vẫn sexy',
+	'Short hair tomboy hot',
+	'Tóc dài thướt tha',
+	'Tóc dài xõa vai',
+	'Long hair goddess',
+	'Tóc xõa gợi cảm',
+	'Buộc tóc đuôi ngựa',
+	'Ponytail sexy đây',
+	'Tóc buộc lộ cổ',
+	'Cột tóc cao quyến rũ',
+	'Nắm tóc em đi anh',
+	'Tóc em mềm mại',
+	'Vuốt tóc sexy quá',
+	'Tóc bay bay gợi cảm',
+	'Kéo tóc em nha anh',
+	'Tóc ướt vẫn hot',
+	'Tóc rối trên giường',
+	'Mái tóc em thơm',
+	'Thả tóc cho anh xem',
+
+	// === MISSING KEYWORDS - ĐỊA ĐIỂM (25) ===
+	'Selfie trước gương',
+	'Mirror mirror sexy',
+	'Tự sướng trước gương',
+	'Gương soi body em',
+	'Soi gương thấy hot',
+	'Karaoke đêm nay',
+	'Phòng hát cùng em',
+	'Quẩy karaoke nóng',
+	'Đèn mờ phòng hát',
+	'Ở khách sạn với em',
+	'Hotel room đêm nay',
+	'Check-in rồi làm gì?',
+	'Phòng khách sạn nóng',
+	'Đêm trong hotel',
+	'Outdoor nắng đẹp',
+	'Biển xanh và em',
+	'Ngoài trời thoáng mát',
+	'Indoor ở nhà chơi',
+	'Home alone với em',
+	'Bathroom selfie hot',
+	'Trong toilet với em',
+	'Nắng chiếu body em',
+	'Trời nắng em nóng',
+	'Nắng đẹp khoe body',
+	'Bên bờ biển sexy',
+
+	// === MISSING KEYWORDS - BIỂU CẢM (20) ===
+	'Em kêu lên nha',
+	'Kêu to lên anh nghe',
+	'Ahhh như thế này',
+	'Ahh ahh anh ơi',
+	'Cười gợi cảm nha',
+	'Smile sexy của em',
+	'Nụ cười quyến rũ',
+	'Cười nhẹ đầy ý nghĩa',
+	'Quiet nhưng hot',
+	'Silent seduction',
+	'Lặng lẽ quyến rũ',
+	'Lip bite sexy',
+	'Cắn môi đi anh',
+	'Profile em sexy',
+	'Góc nghiêng gợi cảm',
+	'Top view ngực em',
+	'Top down sexy',
+	'Nhìn từ top xuống',
+	'Em im lặng thôi',
+	'Không cần kêu cũng sướng',
+
+	// === MISSING KEYWORDS - HÀNH ĐỘNG (25) ===
+	'Dance sexy đi em',
+	'Quẩy lên nha anh',
+	'Bounce cùng em',
+	'Bounce theo nhịp',
+	'Em sờ body em',
+	'Sờ soạng gợi cảm',
+	'Touch body em đi',
+	'Chạm vào em nha',
+	'Bend over đây anh',
+	'Cúi gập người sexy',
+	'Cong người gợi cảm',
+	'Lying on bed',
+	'Lying down sexy',
+	'Nằm như thế này',
+	'Flex body đẹp',
+	'Show off đi em',
+	'Xoay người cho xem',
+	'Quẩy theo beat',
+	'Dance như thế này',
+	'Nảy theo nhịp nhạc',
+	'Vuốt ve body em',
+	'Touch myself nha',
+	'Gập người về trước',
+	'Doggy style đây',
+	'Nhún nảy theo anh',
+
+	// === MISSING KEYWORDS - SỐ NGƯỜI (20) ===
+	'Solo girl đây',
+	'Anh và em thôi',
+	'Couple goals đây',
+	'Hai đứa mình chơi',
+	'Cặp đôi hot đây',
+	'Em và anh đêm nay',
+	'Together forever',
+	'Các em cùng chơi',
+	'Nhiều em chiều anh',
+	'Hội các em đây',
+	'Em chiều anh thôi',
+	'Solo em một mình',
+	'Một mình em đây',
+	'Just two of us',
+	'Hai người một giường',
+	'Couple content hot',
+	'Anh với em đây',
+	'Mình cùng nhau nha',
+	'Đôi ta yêu nhau',
+	'Hội chị em quẩy',
+
+	// === MISSING KEYWORDS - TRANG PHỤC (20) ===
+	'Đồ nhà của em',
+	'Casual vẫn hot',
+	'Mặc bình thường thôi',
+	'Đồ lót gợi cảm',
+	'Đồ lót sexy đây',
+	'Lace đồ lót đẹp',
+	'Nude body đây',
+	'Nude không che',
+	'Không mặc gì luôn',
+	'Cởi hết ra nha',
+	'Natural body nude',
+	'Nước ướt body em',
+	'Ướt nước sexy',
+	'Water và body',
+	'Beach body sẵn sàng',
+	'Biển summer hot',
+	'Đồ nhà thoải mái',
+	'Simple but hot',
+	'Tắm xong ướt đẫm',
+	'Shower và body',
+
+	// === MISSING KEYWORDS - ĐIỂM NHẤN (15) ===
+	'Mông đít em tròn',
+	'Đít em cong vút',
+	'Legs dài miên man',
+	'Long legs sexy',
+	'Face em xinh không?',
+	'Mặt xinh body đẹp',
+	'Toàn thân em đây',
+	'Full body view',
+	'Back view sexy',
+	'Lưng trần gợi cảm',
+	'Từ đầu đến chân',
+	'Whole body em đây',
+	'Toàn bộ body sexy',
+	'Em khoe back view',
+	'Góc sau body em',
 ];
 
 // 300+ descriptions - dirty talk style, gợi dục táo bạo
@@ -882,6 +1041,165 @@ const DESCRIPTIONS = [
 	'Silk ngủ đêm nay',
 	'Kimono cởi từ từ',
 	'Áo dài khoe lưng',
+
+	// === MISSING KEYWORDS DESC - TÓC (20) ===
+	'Tóc ngắn nhưng vẫn sexy',
+	'Em để tóc ngắn cho gọn',
+	'Short hair của em đẹp không?',
+	'Tóc dài thướt tha trên vai',
+	'Long hair xõa trên giường',
+	'Tóc em dài lắm anh ơi',
+	'Em thích thướt tha thế này',
+	'Buộc tóc ponytail cho gọn',
+	'Đuôi ngựa sexy của em',
+	'Tóc buộc cao lộ cổ đẹp',
+	'Anh nắm tóc em đi',
+	'Kéo tóc em về phía anh',
+	'Tóc em mềm mại và thơm',
+	'Vuốt tóc em sexy nha',
+	'Tóc bay trong gió',
+	'Tóc xõa trên gối',
+	'Mái tóc rối sau khi làm',
+	'Tóc ướt sau khi tắm',
+	'Thả tóc ra cho anh xem',
+	'Tóc em đẹp không anh?',
+
+	// === MISSING KEYWORDS DESC - ĐỊA ĐIỂM (25) ===
+	'Selfie trước gương cho anh',
+	'Mirror shot gợi cảm nha',
+	'Soi gương thấy body em',
+	'Trước gương sexy như này',
+	'Gương cho thấy cả hai góc',
+	'Karaoke đêm nay đi anh',
+	'Phòng hát tối và nóng',
+	'Quẩy karaoke cùng em',
+	'Đèn mờ sexy trong phòng hát',
+	'Khách sạn đêm nay nhé',
+	'Hotel room chờ anh',
+	'Check-in rồi anh đến đi',
+	'Trong phòng khách sạn nè',
+	'Đêm nay trong hotel cùng em',
+	'Outdoor nắng đẹp khoe body',
+	'Biển xanh và body em',
+	'Ngoài trời thoáng mát sexy',
+	'Em thích outdoor như này',
+	'Indoor ở nhà với em',
+	'Home alone đợi anh',
+	'Bathroom sau khi tắm',
+	'Trong toilet hot nha',
+	'Nắng chiếu lên body em',
+	'Trời nắng làm em nóng',
+	'Bên bờ biển với anh',
+
+	// === MISSING KEYWORDS DESC - BIỂU CẢM (20) ===
+	'Em kêu to cho anh nghe',
+	'Kêu lên nha không ai nghe đâu',
+	'Ahhh sướng quá anh ơi',
+	'Ahh ahh như thế này đi',
+	'Em cười gợi cảm cho anh',
+	'Smile sexy nha anh',
+	'Nụ cười của em đây',
+	'Cười nhẹ nhưng đầy ý nghĩa',
+	'Quiet nhưng body nói hết',
+	'Silent seduction là style em',
+	'Lặng lẽ nhưng sexy',
+	'Lip bite gợi cảm nha',
+	'Cắn môi nhìn anh thế này',
+	'Profile em sexy không?',
+	'Góc nghiêng của em đây',
+	'Top view nhìn xuống ngực',
+	'Top down angle sexy',
+	'Nhìn từ trên xuống thấy hết',
+	'Im lặng nhưng mắt nói hết',
+	'Không kêu nhưng sướng',
+
+	// === MISSING KEYWORDS DESC - HÀNH ĐỘNG (25) ===
+	'Dance sexy cùng em',
+	'Quẩy lên nha anh',
+	'Bounce theo nhịp nhạc',
+	'Bounce cùng em đi',
+	'Em sờ body em thế này',
+	'Sờ soạng bản thân gợi cảm',
+	'Touch body em đi anh',
+	'Chạm vào em nha',
+	'Bend over cho anh xem',
+	'Cúi gập người gợi cảm',
+	'Cong người sexy như này',
+	'Lying on bed đợi anh',
+	'Lying down gợi cảm',
+	'Nằm thế này đợi anh',
+	'Flex body đẹp cho anh',
+	'Show off body đi em',
+	'Xoay người cho anh xem đủ góc',
+	'Quẩy theo beat nha',
+	'Dance như thế này đi',
+	'Nảy theo nhịp sexy',
+	'Vuốt ve body em đây',
+	'Touch myself cho anh xem',
+	'Gập người về phía trước',
+	'Doggy style anh thích không?',
+	'Nhún nảy theo nhịp anh',
+
+	// === MISSING KEYWORDS DESC - SỐ NGƯỜI (20) ===
+	'Solo girl content đây',
+	'Chỉ có anh và em thôi',
+	'Couple goals của mình',
+	'Hai đứa mình chơi nhé',
+	'Cặp đôi sexy đây',
+	'Em và anh đêm nay nha',
+	'Together with you forever',
+	'Các em cùng chơi với anh',
+	'Nhiều em chiều anh một mình',
+	'Hội các em sexy đây',
+	'Em chiều anh một mình thôi',
+	'Solo em với camera',
+	'Một mình em đây nè',
+	'Just the two of us',
+	'Hai người một giường thôi',
+	'Couple content hot đây',
+	'Anh với em mình chơi nhé',
+	'Mình cùng nhau nha anh',
+	'Đôi ta yêu nhau mãi',
+	'Chị em cùng quẩy',
+
+	// === MISSING KEYWORDS DESC - TRANG PHỤC (20) ===
+	'Đồ nhà thoải mái sexy',
+	'Casual but still hot',
+	'Mặc bình thường nhưng vẫn gợi cảm',
+	'Đồ lót ren sexy nha',
+	'Đồ lót mới mua cho anh',
+	'Lace đồ lót đẹp không?',
+	'Nude body em đây',
+	'Nude không che gì hết',
+	'Không mặc gì cho anh xem',
+	'Cởi hết ra đây nè',
+	'Natural body nude đẹp',
+	'Nước ướt đẫm body em',
+	'Ướt nước sexy như này',
+	'Water và body em đây',
+	'Beach body ready nha',
+	'Biển summer sexy đây',
+	'Đồ nhà nhưng vẫn hot',
+	'Simple but hot đó anh',
+	'Tắm xong ướt đẫm body',
+	'Shower xong body thơm',
+
+	// === MISSING KEYWORDS DESC - ĐIỂM NHẤN (15) ===
+	'Mông đít em tròn không?',
+	'Đít em cong sexy',
+	'Legs dài miên man đây',
+	'Long legs sexy của em',
+	'Face em xinh không anh?',
+	'Mặt xinh body cũng đẹp',
+	'Toàn thân em đây nè',
+	'Full body không che',
+	'Back view sexy của em',
+	'Lưng trần gợi cảm nha',
+	'Từ đầu đến chân đều hot',
+	'Whole body em cho anh',
+	'Toàn bộ body sexy đây',
+	'Em khoe back view nha',
+	'Góc sau body em đẹp',
 ];
 
 // 40+ hashtag sets - đa dạng chủ đề, trending hashtags
@@ -1044,4 +1362,322 @@ export function suggestPostingTime() {
 	if (hour < 18) return { hour: 21, reason: 'Night peak time' };
 	if (hour < 22) return { hour: 23, reason: 'Late night content' };
 	return { hour: 0, reason: 'Midnight vibes' };
+}
+
+// ==================== CATEGORY-BASED CONTENT SYSTEM ====================
+
+/**
+ * Category-based content filtering
+ * Each category has options with keywords to filter existing TITLES/DESCRIPTIONS
+ * This avoids content duplication - all content comes from TITLES and DESCRIPTIONS arrays
+ */
+const CATEGORIES = {
+	// Tư thế / Góc camera
+	POSE: {
+		name: 'Tư thế',
+		emoji: '📷',
+		options: {
+			FRONT: { label: 'Trước', keywords: ['trước', 'mặt', 'nhìn', 'ngực'] },
+			BACK: { label: 'Sau', keywords: ['sau', 'lưng', 'mông', 'quay'] },
+			TOP: { label: 'Trên', keywords: ['trên', 'xuống', 'rãnh', 'top'] },
+			BOTTOM: { label: 'Dưới', keywords: ['dưới', 'lên', 'chân', 'low'] },
+			SIDE: {
+				label: 'Nghiêng',
+				keywords: ['nghiêng', 'cong', 'đường cong', 'profile'],
+			},
+		},
+	},
+
+	// Hành động
+	ACTION: {
+		name: 'Hành động',
+		emoji: '🎬',
+		options: {
+			SHOWING: { label: 'Khoe', keywords: ['khoe', 'show', 'flex', 'xem'] },
+			BOUNCING: { label: 'Nhún', keywords: ['nhún', 'bounce', 'nảy', 'lắc'] },
+			DANCING: {
+				label: 'Lắc',
+				keywords: ['lắc', 'dance', 'nhảy', 'quẩy', 'xoay'],
+			},
+			LYING: { label: 'Nằm', keywords: ['nằm', 'giường', 'lying', 'ngủ'] },
+			BENDING: { label: 'Cúi', keywords: ['cúi', 'bend', 'gập', 'doggy'] },
+			TOUCHING: { label: 'Sờ', keywords: ['sờ', 'chạm', 'vuốt', 'touch'] },
+		},
+	},
+
+	// Biểu cảm
+	EXPRESSION: {
+		name: 'Biểu cảm',
+		emoji: '😮',
+		options: {
+			MOANING: { label: 'Kêu', keywords: ['kêu', 'rên', 'sướng', 'ahh', 'ơi'] },
+			SILENT: { label: 'Im lặng', keywords: ['im', 'lặng', 'quiet', 'silent'] },
+			SMILING: { label: 'Cười', keywords: ['cười', 'smile', 'vui'] },
+			SEDUCTIVE: {
+				label: 'Gợi tình',
+				keywords: ['mắt', 'nhìn', 'gợi', 'quyến rũ'],
+			},
+			BITING: { label: 'Cắn môi', keywords: ['cắn', 'môi', 'liếm', 'lip'] },
+		},
+	},
+
+	// Địa điểm
+	LOCATION: {
+		name: 'Địa điểm',
+		emoji: '🏠',
+		options: {
+			MIRROR: { label: 'Trước gương', keywords: ['gương', 'mirror', 'selfie'] },
+			KARAOKE: { label: 'Karaoke', keywords: ['karaoke', 'phòng hát'] },
+			OUTDOOR: {
+				label: 'Ngoài trời',
+				keywords: ['ngoài', 'outdoor', 'beach', 'biển'],
+			},
+			INDOOR: {
+				label: 'Trong nhà',
+				keywords: ['nhà', 'phòng', 'indoor', 'home'],
+			},
+			BED: {
+				label: 'Trên giường',
+				keywords: ['giường', 'bed', 'nằm', 'gối', 'chăn'],
+			},
+			BATHROOM: {
+				label: 'Phòng tắm',
+				keywords: ['tắm', 'bathroom', 'shower', 'ướt'],
+			},
+			HOTEL: {
+				label: 'Khách sạn',
+				keywords: ['khách sạn', 'hotel', 'check-in'],
+			},
+		},
+	},
+
+	// Thời gian
+	TIME: {
+		name: 'Thời gian',
+		emoji: '🌙',
+		options: {
+			DAY: { label: 'Ban ngày', keywords: ['ngày', 'nắng', 'sáng', 'day'] },
+			NIGHT: {
+				label: 'Đêm',
+				keywords: ['đêm', 'khuya', 'night', 'midnight', 'tối'],
+			},
+			UNKNOWN: { label: 'Không rõ', keywords: [] }, // Match anything
+		},
+	},
+
+	// Số người
+	PEOPLE: {
+		name: 'Số người',
+		emoji: '👥',
+		options: {
+			SOLO_FEMALE: { label: '1 nữ', keywords: ['em', 'một mình', 'solo'] },
+			MANY_MALE_1_FEMALE: {
+				label: 'Nhiều nam 1 nữ',
+				keywords: ['nhiều anh', 'các anh', 'nhóm'],
+			},
+			MANY_FEMALE: {
+				label: 'Nhiều nữ',
+				keywords: ['chị em', 'hội', 'girls', 'các em'],
+			},
+			COUPLE: {
+				label: 'Cặp đôi',
+				keywords: ['anh và em', 'couple', 'hai đứa'],
+			},
+		},
+	},
+
+	// Trang phục
+	OUTFIT: {
+		name: 'Trang phục',
+		emoji: '👙',
+		options: {
+			BIKINI: {
+				label: 'Bikini',
+				keywords: ['bikini', 'đồ bơi', 'beach', 'summer'],
+			},
+			LINGERIE: {
+				label: 'Nội y',
+				keywords: ['nội y', 'lingerie', 'lace', 'ren', 'đồ lót'],
+			},
+			COSPLAY: {
+				label: 'Cosplay',
+				keywords: ['cosplay', 'bunny', 'maid', 'nurse', 'nữ sinh'],
+			},
+			CASUAL: {
+				label: 'Thường',
+				keywords: ['đồ nhà', 'casual', 'bình thường'],
+			},
+			NAKED: {
+				label: 'Không mặc',
+				keywords: ['cởi', 'nude', 'trần', 'không mặc'],
+			},
+			WET: { label: 'Ướt', keywords: ['ướt', 'wet', 'nước', 'tắm'] },
+		},
+	},
+
+	// Tóc
+	HAIR: {
+		name: 'Tóc',
+		emoji: '💇',
+		options: {
+			SHORT: { label: 'Ngắn', keywords: ['tóc ngắn', 'short hair'] },
+			LONG: { label: 'Dài', keywords: ['tóc dài', 'long hair', 'thướt tha'] },
+			LOOSE: { label: 'Xõa', keywords: ['xõa', 'tóc xõa', 'vai'] },
+			TIED: { label: 'Buộc', keywords: ['buộc', 'ponytail', 'đuôi ngựa'] },
+		},
+	},
+
+	// Điểm nhấn / Main focus
+	FOCUS: {
+		name: 'Điểm nhấn',
+		emoji: '🎯',
+		options: {
+			CHEST: { label: 'Ngực', keywords: ['ngực', 'vòng 1', 'rãnh', 'căng'] },
+			BUTT: { label: 'Mông', keywords: ['mông', 'vòng 3', 'đít'] },
+			WAIST: { label: 'Eo', keywords: ['eo', 'vòng eo', 'bé xíu'] },
+			LEGS: { label: 'Chân', keywords: ['chân', 'đùi', 'legs'] },
+			FACE: { label: 'Mặt', keywords: ['mặt', 'face', 'xinh'] },
+			FULL_BODY: {
+				label: 'Toàn thân',
+				keywords: ['body', 'full', 'toàn thân', '3 vòng'],
+			},
+			BACK_BODY: { label: 'Lưng', keywords: ['lưng', 'back'] },
+		},
+	},
+};
+
+/**
+ * Filter content from array by keywords
+ * @param {string[]} contentArray - Array of titles or descriptions
+ * @param {string[]} keywords - Keywords to match
+ * @returns {string[]} Filtered content
+ */
+function filterByKeywords(contentArray, keywords) {
+	if (!keywords || keywords.length === 0) {
+		return contentArray; // Return all if no keywords (for "unknown" options)
+	}
+
+	const filtered = contentArray.filter((content) => {
+		const lowerContent = content.toLowerCase();
+		return keywords.some((kw) => lowerContent.includes(kw.toLowerCase()));
+	});
+
+	// If no matches, return original array to avoid empty results
+	return filtered.length > 0 ? filtered : contentArray;
+}
+
+/**
+ * Get all available categories for UI display
+ * @returns {Array<{key: string, name: string, emoji: string}>}
+ */
+export function getCategories() {
+	return Object.entries(CATEGORIES).map(([key, cat]) => ({
+		key,
+		name: cat.name,
+		emoji: cat.emoji,
+	}));
+}
+
+/**
+ * Get options for a specific category
+ * @param {string} categoryKey - e.g. 'POSE', 'ACTION', 'EXPRESSION'
+ * @returns {Array<{key: string, label: string}>|null}
+ */
+export function getCategoryOptions(categoryKey) {
+	const category = CATEGORIES[categoryKey];
+	if (!category) return null;
+
+	return Object.entries(category.options).map(([key, opt]) => ({
+		key,
+		label: opt.label,
+	}));
+}
+
+/**
+ * Generate content based on selected categories
+ * Filters existing TITLES and DESCRIPTIONS by keywords from selected categories
+ * @param {Object} selectedCategories - e.g. { POSE: 'FRONT', ACTION: 'SHOWING', ... }
+ * @returns {Array<{title: string, description: string, hashtags: string}>}
+ */
+export function generateContentFromCategories(selectedCategories) {
+	// Collect all keywords from selected categories
+	const allKeywords = [];
+
+	for (const [categoryKey, optionKey] of Object.entries(selectedCategories)) {
+		const category = CATEGORIES[categoryKey];
+		if (!category) continue;
+
+		const option = category.options[optionKey];
+		if (!option) continue;
+
+		allKeywords.push(...(option.keywords || []));
+	}
+
+	// If no valid selections, fall back to random
+	if (allKeywords.length === 0) {
+		return generateContentOptions();
+	}
+
+	// Filter titles and descriptions by keywords
+	const filteredTitles = filterByKeywords(TITLES, allKeywords);
+	const filteredDescriptions = filterByKeywords(DESCRIPTIONS, allKeywords);
+
+	// Generate 3 options from filtered content
+	const options = [];
+	const usedTitles = new Set();
+	const usedDescs = new Set();
+
+	for (let i = 0; i < 3; i++) {
+		// Pick unique title
+		let title;
+		let attempts = 0;
+		do {
+			title = filteredTitles[Math.floor(Math.random() * filteredTitles.length)];
+			attempts++;
+		} while (usedTitles.has(title) && attempts < 20);
+		usedTitles.add(title);
+
+		// Pick unique description
+		let description;
+		attempts = 0;
+		do {
+			description =
+				filteredDescriptions[
+					Math.floor(Math.random() * filteredDescriptions.length)
+				];
+			attempts++;
+		} while (usedDescs.has(description) && attempts < 20);
+		usedDescs.add(description);
+
+		options.push({
+			title,
+			description,
+			hashtags: random(HASHTAG_SETS),
+		});
+	}
+
+	return options;
+}
+
+/**
+ * Get category name by key (for display)
+ * @param {string} categoryKey
+ * @returns {string}
+ */
+export function getCategoryName(categoryKey) {
+	const category = CATEGORIES[categoryKey];
+	return category ? `${category.emoji} ${category.name}` : categoryKey;
+}
+
+/**
+ * Get option label by category and option key
+ * @param {string} categoryKey
+ * @param {string} optionKey
+ * @returns {string}
+ */
+export function getOptionLabel(categoryKey, optionKey) {
+	const category = CATEGORIES[categoryKey];
+	if (!category) return optionKey;
+	const option = category.options[optionKey];
+	return option ? option.label : optionKey;
 }
