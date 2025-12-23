@@ -696,6 +696,457 @@ export const TITLES = [
 	'Pose trước ống kính khoe ngực mông cho anh xem đêm nay',
 	'Selfie trong nhà tắm khoe mông ướt cho anh xem đêm nay',
 	'Chụp ảnh khoe dáng gợi cảm cho anh xem trên giường đêm',
+
+	// === CROSS-MAPPING: OUTFIT + LOCATION + POSITION + HAIR ===
+	// Cô giáo + các tư thế + tóc
+	'Cô giáo tóc dài quỳ gối trên giường khoe ngực cho anh xem',
+	'Cô giáo tóc chấm lưng nằm ngửa trên sofa khoe ngực anh',
+	'Cô giáo tóc ướt chổng mông trên giường khoe cho anh đêm',
+	'Cô giáo tóc ngắn cưỡi ngựa trên giường khoe ngực anh',
+	'Cô giáo tóc dài cúi người khoe mông trên bàn cho anh',
+	'Cô giáo tóc ngang vai ngồi xổm khoe đùi trên ghế anh',
+
+	// Y tá + các tư thế + tóc
+	'Y tá tóc dài quỳ gối trong phòng khoe ngực cho anh xem',
+	'Y tá tóc búi nằm ngửa trên giường khoe ngực cho anh',
+	'Y tá tóc ướt chổng mông trong phòng khám khoe mông anh',
+	'Y tá tóc chấm lưng cưỡi ngựa trên giường khoe ngực anh',
+	'Y tá tóc ngắn cúi người khoe mông trong phòng cho anh',
+	'Y tá tóc dài ngồi xổm khoe đùi trong phòng tắm anh',
+
+	// Học sinh + các tư thế + tóc
+	'Nữ sinh tóc dài quỳ gối trên giường khoe ngực cho anh',
+	'Nữ sinh tóc ngắn nằm ngửa trên sofa khoe ngực anh xem',
+	'Học sinh tóc đuôi ngựa chổng mông trên giường khoe anh',
+	'Nữ sinh tóc chấm lưng cưỡi ngựa khoe ngực trên giường',
+	'Học sinh tóc ngang vai cúi người khoe mông cho anh đêm',
+	'Nữ sinh tóc dài ngồi xổm trên cầu thang khoe đùi anh',
+
+	// Thư ký + các tư thế + tóc
+	'Thư ký tóc búi quỳ gối trong văn phòng khoe ngực anh',
+	'Thư ký tóc dài nằm ngửa trên bàn làm việc khoe ngực',
+	'Thư ký tóc chấm lưng chổng mông trên bàn khoe mông anh',
+	'Thư ký tóc ngắn cưỡi ngựa trên ghế văn phòng khoe ngực',
+	'Thư ký tóc ngang vai cúi người khoe mông cho anh xem',
+	'Thư ký tóc ướt ngồi xổm trong toilet khoe đùi anh',
+
+	// Hầu gái + các tư thế + tóc
+	'Hầu gái tóc dài quỳ gối lau nhà khoe mông cho anh xem',
+	'Hầu gái tóc ngắn nằm ngửa trên giường chủ khoe ngực',
+	'Hầu gái tóc chấm lưng chổng mông dọn phòng khoe anh',
+	'Hầu gái tóc ướt cưỡi ngựa trên giường khoe ngực anh',
+	'Hầu gái tóc ngang vai cúi người khoe mông trong bếp',
+
+	// Bikini + các địa điểm + tư thế + tóc
+	'Bikini tóc dài quỳ gối trên bãi biển khoe mông cho anh',
+	'Bikini tóc ướt nằm ngửa bên hồ bơi khoe ngực cho anh',
+	'Bikini tóc chấm lưng chổng mông trên bãi cát khoe anh',
+	'Bikini tóc ngắn cưỡi ngựa bên hồ bơi khoe ngực anh',
+	'Bikini tóc ngang vai cúi người bên biển khoe mông anh',
+	'Bikini tóc dài ngồi xổm trên sân thượng khoe đùi anh',
+	'Bikini tóc bay bên biển nằm sấp khoe mông cho anh xem',
+
+	// Nội y + các địa điểm + tư thế + tóc
+	'Nội y ren tóc dài quỳ gối trên giường khoe ngực anh',
+	'Đồ ngủ lụa tóc ướt nằm ngửa trên giường khoe ngực',
+	'Nội y tóc chấm lưng chổng mông trên sofa khoe mông',
+	'Đồ ngủ tóc ngắn cưỡi ngựa trên giường khoe ngực anh',
+	'Nội y ren tóc ngang vai cúi người khoe mông trên thảm',
+	'Đồ lót tóc dài ngồi xổm trước gương khoe đùi cho anh',
+	'Nội y tóc siêu dài nằm sấp trên giường khoe mông anh',
+
+	// KTV / Karaoke + các tư thế + tóc
+	'Tiếp viên tóc dài quỳ gối trong phòng hát khoe ngực',
+	'Tiếp viên tóc ngắn nằm ngửa trên sofa karaoke khoe',
+	'KTV tóc chấm lưng chổng mông trong phòng hát khoe anh',
+	'Tiếp viên tóc ướt cưỡi ngựa trên sofa khoe ngực anh',
+	'Tiếp viên tóc ngang vai cúi người khoe mông phòng hát',
+
+	// Áo dài + các địa điểm + tư thế + tóc
+	'Áo dài tóc dài quỳ gối trên giường khoe ngực cho anh',
+	'Áo dài tóc chấm lưng nằm ngửa trên sofa khoe ngực',
+	'Áo dài tóc ướt chổng mông trên giường khoe mông anh',
+	'Áo dài tóc ngắn ngồi xổm trên cầu thang khoe đùi anh',
+
+	// Đồ bó sát + các địa điểm + tư thế + tóc
+	'Đồ bó sát tóc dài quỳ gối trong phòng tập khoe mông',
+	'Tight tóc ngắn nằm ngửa trên thảm gym khoe ngực anh',
+	'Đồ bó tóc chấm lưng chổng mông squat khoe mông cho anh',
+	'Legging tóc ướt cưỡi ngựa trên giường khoe mông anh',
+	'Đồ bó sát tóc ngang vai cúi người khoe mông phòng tập',
+
+	// Da bóng / Leather + các tư thế + tóc
+	'Đồ da tóc dài quỳ gối trên giường khoe mông cho anh',
+	'Leather tóc ngắn nằm ngửa trên sofa khoe ngực anh',
+	'Da bóng tóc chấm lưng chổng mông trên giường khoe anh',
+	'Đồ da tóc ướt cưỡi ngựa trên ghế khoe mông cho anh',
+
+	// Lưới / Mesh + các địa điểm + tư thế + tóc
+	'Đồ lưới tóc dài quỳ gối trên giường khoe ngực cho anh',
+	'Mesh tóc ngắn nằm ngửa trên sofa khoe ngực mông anh',
+	'Xuyên thấu tóc chấm lưng chổng mông trên giường khoe',
+	'Đồ lưới tóc ướt cưỡi ngựa trên giường khoe ngực anh',
+
+	// === CROSS-MAPPING: LOCATION + POSITION + HAIR ===
+	// Giường + các tư thế + tóc (đa dạng hơn)
+	'Trên giường tóc dài tới mông quỳ gối khoe ngực anh',
+	'Trên giường tóc chấm lưng nằm ngửa khoe rãnh ngực',
+	'Trên giường tóc ngang vai chổng mông khoe vòng 3 anh',
+	'Trên giường tóc ướt cưỡi ngựa khoe ngực mông cho anh',
+	'Trên giường tóc ngắn cúi người khoe mông đêm nay anh',
+
+	// Sofa + các tư thế + tóc
+	'Trên sofa tóc dài quỳ gối khoe mông cho anh xem',
+	'Trên sofa tóc chấm lưng nằm ngửa khoe ngực cho anh',
+	'Trên sofa tóc ngắn chổng mông khoe vòng 3 cho anh',
+	'Trên sofa tóc ướt cưỡi ngựa khoe ngực mông anh xem',
+	'Trên sofa tóc ngang vai ngồi xổm khoe đùi cho anh',
+
+	// Cầu thang + các tư thế + tóc
+	'Trên cầu thang tóc dài quỳ gối khoe mông cho anh đêm',
+	'Trên bậc thang tóc chấm lưng ngồi xổm khoe đùi anh',
+	'Trên cầu thang tóc ngắn cúi người khoe mông cho anh',
+	'Trên cầu thang tóc ướt nằm sấp khoe mông cho anh xem',
+
+	// Biển / Hồ bơi + các tư thế + tóc
+	'Bên biển tóc dài quỳ gối trên cát khoe mông cho anh',
+	'Bên hồ bơi tóc ướt nằm ngửa khoe ngực cho anh xem',
+	'Bên biển tóc chấm lưng chổng mông khoe mông cho anh',
+	'Bên hồ bơi tóc ngắn ngồi xổm khoe đùi cho anh đêm',
+
+	// Phòng tắm + các tư thế + tóc
+	'Trong bồn tắm tóc ướt quỳ gối khoe ngực cho anh xem',
+	'Dưới vòi sen tóc dài nằm ngửa khoe ngực cho anh',
+	'Trong phòng tắm tóc ướt chổng mông khoe mông cho anh',
+	'Bên bồn tắm tóc ướt ngồi xổm khoe đùi cho anh xem',
+
+	// Xe hơi + các tư thế + tóc
+	'Trong xe tóc dài quỳ gối khoe ngực cho anh xem',
+	'Trên ghế xe tóc ngắn nằm ngửa khoe ngực cho anh',
+	'Trong ô tô tóc chấm lưng cúi người khoe mông cho anh',
+
+	// Bar / Club + các tư thế + tóc
+	'Trong bar tóc dài quỳ gối khoe mông cho anh xem',
+	'Tại club tóc ngắn ngồi xổm khoe đùi cho anh đêm nay',
+	'Trong pub tóc ướt cúi người khoe mông cho anh xem',
+
+	// Văn phòng + các tư thế + tóc
+	'Trong văn phòng tóc dài quỳ gối khoe ngực cho anh',
+	'Trên bàn làm việc tóc ngắn nằm ngửa khoe ngực anh',
+	'Trong phòng họp tóc chấm lưng chổng mông khoe mông',
+
+	// Bếp + các tư thế + tóc
+	'Trong bếp tóc dài quỳ gối khoe mông cho anh xem',
+	'Trên bàn ăn tóc ngắn nằm ngửa khoe ngực cho anh',
+	'Bên tủ lạnh tóc ướt cúi người khoe mông cho anh xem',
+
+	// Phòng tập / Gym + các tư thế + tóc
+	'Trong gym tóc dài quỳ gối squat khoe mông cho anh',
+	'Trên thảm tập tóc ngắn nằm ngửa khoe ngực cho anh',
+	'Trong phòng tập tóc ướt chổng mông khoe mông cho anh',
+
+	// === DEEP CROSS-MAPPING: OUTFIT + POSITION CỤ THỂ ===
+	// Thư ký + các tư thế cụ thể
+	'Thư ký chổng mông trên bàn làm việc khoe vòng 3 cho anh',
+	'Thư ký quỳ gối bú anh dưới bàn khoe môi mọng đêm nay',
+	'Thư ký nằm ngửa trên bàn khoe ngực cho sếp xem nóng',
+	'Thư ký cưỡi ngựa trên ghế sếp khoe mông đêm nay nóng',
+	'Thư ký doggy từ sau trên bàn khoe mông cho anh xem',
+	'Thư ký oral quỳ gối cho sếp khoe môi mọng trong phòng',
+
+	// Cô giáo + các tư thế cụ thể
+	'Cô giáo chổng mông trên bàn giáo viên khoe vòng 3 anh',
+	'Cô giáo quỳ gối bú anh trong lớp khoe môi đỏ nóng',
+	'Cô giáo nằm ngửa trên bàn khoe ngực cho anh xem',
+	'Cô giáo cưỡi ngựa trên ghế khoe ngực cho anh nóng',
+	'Cô giáo doggy từ phía sau khoe mông tròn cho anh',
+	'Cô giáo oral thổi kèn cho anh khoe môi trong lớp học',
+
+	// Y tá + các tư thế cụ thể
+	'Y tá chổng mông trên giường bệnh khoe vòng 3 cho anh',
+	'Y tá quỳ gối bú anh trong phòng khám khoe môi mọng',
+	'Y tá nằm ngửa trên giường bệnh khoe ngực căng nóng',
+	'Y tá cưỡi ngựa trên giường khoe ngực cho bệnh nhân',
+	'Y tá doggy từ sau trong phòng khoe mông cho anh xem',
+	'Y tá oral cho bệnh nhân khoe môi đỏ trong phòng đêm',
+
+	// Học sinh + các tư thế cụ thể
+	'Nữ sinh chổng mông trên bàn học khoe vòng 3 cho anh',
+	'Nữ sinh quỳ gối bú anh trong lớp khoe môi hồng nóng',
+	'Nữ sinh nằm ngửa trên giường ký túc khoe ngực căng',
+	'Nữ sinh cưỡi ngựa trên giường khoe ngực cho anh xem',
+	'Nữ sinh doggy từ phía sau khoe mông tròn trắng anh',
+
+	// Hầu gái + các tư thế cụ thể
+	'Hầu gái chổng mông lau nhà khoe vòng 3 cho chủ xem',
+	'Hầu gái quỳ gối phục vụ chủ khoe môi mọng nóng bỏng',
+	'Hầu gái nằm ngửa trên giường chủ khoe ngực căng anh',
+	'Hầu gái cưỡi ngựa phục vụ chủ khoe ngực đêm nay nóng',
+	'Hầu gái doggy trong phòng ngủ khoe mông cho chủ xem',
+
+	// Bikini + các tư thế cụ thể + địa điểm
+	'Bikini chổng mông trên bãi biển khoe vòng 3 cho anh',
+	'Bikini quỳ gối trên cát khoe mông tròn cho anh xem',
+	'Bikini nằm ngửa bên hồ bơi khoe ngực căng cho anh',
+	'Bikini cưỡi ngựa bên biển khoe ngực nóng bỏng anh',
+	'Bikini doggy trên bãi cát khoe mông cong cho anh',
+
+	// Nội y + các tư thế cụ thể + địa điểm
+	'Nội y chổng mông trên giường khoe vòng 3 cho anh xem',
+	'Đồ ngủ quỳ gối bú anh trên giường khoe môi đỏ nóng',
+	'Nội y nằm ngửa trên sofa khoe ngực căng cho anh đêm',
+	'Đồ lót cưỡi ngựa trên giường khoe ngực mông cho anh',
+	'Nội y ren doggy trên thảm khoe mông căng cho anh xem',
+	'Đồ ngủ oral thổi kèn cho anh khoe môi trên giường',
+
+	// === DEEP CROSS-MAPPING: ACTIVITY + POSITION ===
+	// Quỳ + Bú/Oral combinations
+	'Quỳ gối bú anh trên giường khoe môi đỏ mọng đêm nay',
+	'Quỳ xuống bú liếm cho anh khoe lưỡi nóng trên thảm',
+	'Quỳ gối oral cho anh sướng khoe môi trong phòng ngủ',
+	'Quỳ bú thổi kèn cho anh khoe môi đỏ đêm nay nóng',
+	'Quỳ xuống ngậm cho anh khoe môi mọng trên giường',
+
+	// Nằm + 69 combinations
+	'Nằm ngửa 69 với anh khoe ngực mông trên giường đêm',
+	'Nằm tư thế 69 bú liếm khoe toàn thân cho anh xem',
+	'Nằm 69 thổi kèn cho anh khoe mông ngực trên giường',
+	'Nằm ngửa oral 69 khoe môi nóng với anh đêm nay',
+
+	// Cưỡi + Lắc combinations
+	'Cưỡi ngựa lắc hông khoe mông ngực cho anh xem',
+	'Cưỡi lên lắc mông khoe vòng 3 cho anh trên giường',
+	'Ride lắc hông quyến rũ khoe ngực mông cho anh nóng',
+	'Cưỡi ngựa nhún nhảy khoe ngực cho anh xem đêm nay',
+
+	// Chổng + Từ sau combinations
+	'Chổng mông từ sau khoe vòng 3 căng cho anh xem',
+	'Doggy chổng mông khoe mông cong cho anh trên giường',
+	'Chổng từ phía sau khoe mông tròn cho anh đêm nay',
+	'Doggy style chổng mông khoe vòng 3 nóng bỏng anh',
+
+	// === DEEP CROSS-MAPPING: LOCATION + POSITION CỤ THỂ ===
+	// Giường + tất cả positions
+	'Trên giường doggy chổng mông khoe vòng 3 cho anh',
+	'Trên giường quỳ bú cho anh khoe môi đỏ mọng đêm',
+	'Trên giường 69 nằm ngửa khoe toàn thân cho anh',
+	'Trên giường cưỡi ngựa lắc khoe mông ngực anh xem',
+
+	// Sofa + tất cả positions
+	'Trên sofa doggy chổng mông khoe vòng 3 cho anh',
+	'Trên sofa quỳ bú cho anh khoe môi mọng đêm nay',
+	'Trên sofa nằm ngửa 69 khoe ngực mông cho anh',
+	'Trên sofa cưỡi ngựa lắc hông khoe ngực anh xem',
+
+	// Bàn làm việc + positions
+	'Trên bàn làm việc doggy khoe mông cho sếp xem',
+	'Trên bàn quỳ bú cho sếp khoe môi đỏ mọng nóng',
+	'Trên bàn nằm ngửa khoe ngực cho anh xem đêm nay',
+
+	// Xe hơi + positions
+	'Trong xe doggy ghế sau khoe mông cho anh xem',
+	'Trong xe quỳ bú cho anh khoe môi đỏ trên ghế xe',
+	'Trong xe cưỡi ngựa ghế lái khoe ngực cho anh nóng',
+
+	// Cầu thang + positions
+	'Trên cầu thang doggy chổng mông khoe vòng 3 anh',
+	'Trên bậc thang quỳ gối khoe mông cho anh xem',
+	'Trên cầu thang nằm sấp khoe mông căng cho anh',
+
+	// === DEEP CROSS-MAPPING: BODY FOCUS + POSITIONS ===
+	// Ngực + các positions
+	'Khoe ngực căng tràn quỳ gối trên giường cho anh',
+	'Khoe rãnh ngực sâu nằm ngửa trên sofa cho anh đêm',
+	'Khoe ngực to tròn cưỡi ngựa trên giường cho anh',
+	'Ngực căng đẫy chổng mông trên giường cho anh xem',
+	'Vòng 1 căng tràn quỳ bú cho anh khoe môi đêm nay',
+
+	// Mông + các positions
+	'Khoe mông tròn căng chổng mông trên giường cho anh',
+	'Mông cong vút doggy từ sau khoe cho anh xem',
+	'Vòng 3 căng đầy cưỡi ngựa lắc cho anh xem nóng',
+	'Mông đẹp quỳ gối khoe cho anh xem trên giường đêm',
+	'Khoe mông to tròn nằm sấp trên giường cho anh xem',
+
+	// Đùi + các positions
+	'Khoe đùi thon dài quỳ gối trên giường cho anh xem',
+	'Đùi trắng mịn dang chân nằm ngửa khoe cho anh đêm',
+	'Khoe đùi nuột nà ngồi xổm trên sofa cho anh xem',
+
+	// Eo + các positions
+	'Eo thon bụng phẳng cưỡi ngựa khoe cho anh xem',
+	'Khoe eo con kiến chổng mông trên giường cho anh',
+	'Vòng eo thon gọn nằm ngửa khoe cho anh xem nóng',
+
+	// === COMBO: OUTFIT + LOCATION + POSITION + BODY ===
+	'Thư ký chổng mông trên bàn khoe mông tròn cho sếp',
+	'Cô giáo quỳ bú trên lớp khoe ngực căng cho anh xem',
+	'Y tá doggy trong phòng khám khoe mông cho bệnh nhân',
+	'Nữ sinh nằm ngửa 69 trên giường khoe ngực cho anh',
+	'Hầu gái cưỡi ngựa trên giường chủ khoe mông nóng',
+	'Bikini chổng mông bên biển khoe vòng 3 căng anh',
+	'Nội y quỳ bú trên giường khoe ngực căng cho anh',
+
+	// === TÓC + POSITION + BODY FOCUS ===
+	'Tóc dài quỳ bú khoe ngực căng cho anh xem đêm nay',
+	'Tóc ướt chổng mông khoe mông tròn cho anh trên giường',
+	'Tóc chấm lưng nằm ngửa 69 khoe ngực mông cho anh',
+	'Tóc ngắn cưỡi ngựa khoe ngực căng cho anh đêm nay',
+	'Tóc siêu dài doggy khoe lưng trần mông cho anh xem',
+	'Tóc ngang vai quỳ gối khoe ngực cho anh xem đêm nay',
+
+	// === MULTI-COMBO: ACTIVITY + OUTFIT + HAIR + BODY ===
+	// Tắm + Đồ ngủ + Tóc ướt + Body
+	'Tắm xong đồ ngủ tóc ướt khoe mông cho anh đêm nay nóng',
+	'Sau tắm nội y ren tóc ướt khoe ngực cho anh xem nóng',
+	'Vừa tắm đồ ngủ lụa tóc ướt khoe mông trên giường anh',
+	'Tắm xong quấn khăn tóc ướt khoe ngực cho anh đêm nay',
+	'Sau khi tắm đồ lót tóc ướt khoe mông cho anh xem',
+	'Vừa gội đầu nội y tóc ướt khoe ngực mông cho anh',
+	'Tắm xong bikini tóc ướt khoe mông bên hồ bơi anh',
+	'Sau shower đồ ngủ tóc ướt khoe ngực cho anh đêm',
+
+	// Nhảy + Lắc hông + Tóc + Body
+	'Nhảy lắc hông tóc dài khoe ngực cho anh xem đêm nay',
+	'Dance lắc mông tóc dài bay khoe ngực nóng bỏng anh',
+	'Nhảy quẩy lắc hông tóc siêu dài khoe mông cho anh',
+	'Quẩy lắc mông tóc ướt khoe ngực cho anh xem',
+	'Dance cover lắc hông tóc chấm lưng khoe mông anh',
+	'Nhảy trend lắc mông tóc tới mông khoe lưng cho anh',
+	'Lắc hông theo nhạc tóc dài bay khoe ngực mông anh',
+	'Quẩy lắc mông tóc ngang vai khoe ngực cho anh đêm',
+	'Nhảy sexy lắc hông tóc dài khoe mông căng cho anh',
+	'Dance nóng lắc mông tóc ướt khoe ngực cho anh xem',
+
+	// Tóc siêu dài + Activity + Body
+	'Tóc siêu dài lắc mông khoe lưng trần cho anh xem',
+	'Tóc tới mông quẩy lắc khoe đường cong cho anh nóng',
+	'Tóc chấm mông nhảy khoe lưng mông cho anh xem',
+	'Tóc siêu dài cưỡi ngựa khoe lưng trần cho anh nóng',
+	'Tóc tới mông chổng mông khoe lưng cho anh xem',
+	'Tóc chấm lưng doggy khoe lưng trần cho anh đêm nay',
+	'Tóc dài miên man nằm ngửa khoe ngực cho anh xem',
+	'Tóc siêu dài quỳ gối khoe lưng mông cho anh đêm',
+
+	// === MULTI-COMBO: LOCATION + POSITION + HAIR + BODY ===
+	// Ngoài trời + Positions + Tóc
+	'Ngoài trời doggy tóc dài khoe mông cho anh xem nóng',
+	'Bên biển chổng mông tóc ướt khoe vòng 3 cho anh',
+	'Ngoài vườn nằm ngửa tóc dài khoe ngực cho anh đêm',
+	'Sân thượng doggy tóc bay khoe mông cho anh xem nóng',
+	'Ngoài ban công cưỡi ngựa tóc dài khoe ngực cho anh',
+	'Bên hồ bơi chổng mông tóc ướt khoe mông cho anh',
+	'Ngoài công viên quỳ gối tóc dài khoe mông cho anh',
+	'Bãi biển doggy tóc siêu dài khoe lưng mông cho anh',
+	'Ngoài trời nằm ngửa tóc chấm lưng khoe ngực anh',
+
+	// === ROLE + POSITION + LOCATION PHÙ HỢP ===
+	// Thư ký + Văn phòng
+	'Thư ký doggy trên bàn văn phòng khoe mông cho sếp',
+	'Thư ký quỳ bú dưới bàn làm việc khoe môi cho sếp',
+	'Thư ký chổng mông trong phòng họp khoe vòng 3 sếp',
+	'Thư ký cưỡi ngựa trên ghế sếp khoe ngực trong office',
+	'Thư ký nằm ngửa trên bàn văn phòng khoe ngực cho sếp',
+	'Thư ký 69 với sếp trong phòng làm việc đêm nay',
+
+	// Cô giáo + Lớp học
+	'Cô giáo doggy trên bàn giáo viên khoe mông trong lớp',
+	'Cô giáo quỳ bú trong lớp học vắng khoe môi cho anh',
+	'Cô giáo chổng mông cạnh bảng đen khoe vòng 3 anh',
+	'Cô giáo cưỡi ngựa trên ghế giáo viên khoe ngực',
+	'Cô giáo nằm ngửa trên bàn trong lớp khoe ngực anh',
+	'Cô giáo 69 với học sinh trong phòng học tư đêm',
+
+	// Y tá + Bệnh viện / Phòng khám
+	'Y tá doggy trong phòng khám khoe mông cho bệnh nhân',
+	'Y tá quỳ bú trong phòng bệnh khoe môi cho anh đêm',
+	'Y tá chổng mông trên giường bệnh khoe vòng 3 anh',
+	'Y tá cưỡi ngựa trên giường bệnh viện khoe ngực',
+	'Y tá nằm ngửa trong phòng khám khoe ngực cho anh',
+	'Y tá 69 với bệnh nhân trong phòng riêng đêm nay',
+
+	// Nữ sinh + Ký túc / Trường
+	'Nữ sinh doggy trong ký túc xá khoe mông cho anh',
+	'Nữ sinh quỳ bú trong phòng học khoe môi cho anh',
+	'Nữ sinh chổng mông trong toilet trường khoe mông',
+	'Nữ sinh cưỡi ngựa trên giường ký túc khoe ngực',
+	'Nữ sinh nằm ngửa sau giờ học khoe ngực cho anh',
+
+	// Hầu gái + Nhà chủ
+	'Hầu gái doggy trong phòng ngủ chủ khoe mông cho chủ',
+	'Hầu gái quỳ phục vụ trong phòng khách khoe môi',
+	'Hầu gái chổng mông lau nhà khoe vòng 3 cho chủ',
+	'Hầu gái cưỡi ngựa trên giường chủ khoe ngực đêm',
+	'Hầu gái nằm ngửa trong bếp khoe ngực cho chủ xem',
+
+	// Tiếp viên + Karaoke
+	'Tiếp viên doggy trong phòng hát khoe mông cho khách',
+	'Tiếp viên quỳ bú trong phòng karaoke khoe môi',
+	'Tiếp viên chổng mông trên sofa phòng VIP khoe mông',
+	'Tiếp viên cưỡi ngựa trong phòng hát khoe ngực khách',
+	'Tiếp viên nằm ngửa trên ghế karaoke khoe ngực',
+
+	// Bikini + Biển / Hồ bơi
+	'Bikini doggy bên biển cát trắng khoe mông cho anh',
+	'Bikini quỳ gối bên hồ bơi khoe mông tròn cho anh',
+	'Bikini chổng mông trên ghế dài resort khoe vòng 3',
+	'Bikini cưỡi ngựa bên biển hoàng hôn khoe ngực anh',
+	'Bikini nằm ngửa bên hồ bơi vô cực khoe ngực',
+
+	// Nội y + Phòng ngủ
+	'Nội y ren doggy trên giường êm khoe mông cho anh',
+	'Đồ ngủ quỳ bú trên giường king size khoe môi anh',
+	'Nội y lụa chổng mông trên nệm mềm khoe vòng 3',
+	'Đồ lót cưỡi ngựa trên giường đôi khoe ngực anh',
+	'Nội y nằm ngửa trên chăn ấm khoe ngực cho anh',
+
+	// === HAIR + ACTIVITY + BODY COMBO ===
+	// Tóc ướt combos
+	'Tóc ướt sau tắm lắc mông khoe ngực cho anh đêm',
+	'Tóc ướt nhảy quẩy khoe mông tròn cho anh xem nóng',
+	'Tóc ướt cưỡi ngựa khoe ngực căng cho anh đêm nay',
+	'Tóc ướt chổng mông khoe vòng 3 cho anh xem nóng',
+	'Tóc ướt quỳ gối khoe ngực mông cho anh đêm nay',
+
+	// Tóc dài + Activity + Body đa dạng
+	'Tóc dài thướt tha uốn éo khoe ngực mông cho anh',
+	'Tóc dài bay bay nhảy khoe đường cong cho anh đêm',
+	'Tóc dài xõa vai cưỡi ngựa khoe ngực cho anh nóng',
+	'Tóc dài buông lơi chổng mông khoe lưng cho anh',
+	'Tóc dài rũ lưng quỳ gối khoe mông cho anh đêm',
+
+	// Tóc chấm mông / siêu dài combos
+	'Tóc chấm mông lắc hông khoe lưng trần cho anh xem',
+	'Tóc tới mông doggy khoe lưng dáng cho anh đêm',
+	'Tóc siêu dài cưỡi ngựa khoe lưng mông cho anh',
+	'Tóc chấm lưng nằm ngửa khoe ngực cho anh đêm nay',
+	'Tóc dài qua mông quỳ gối khoe lưng cho anh xem',
+
+	// === OUTFIT + ACTIVITY + HAIR + LOCATION ===
+	// Nội y đi tắm tóc ướt trong phòng tắm
+	'Nội y sau tắm tóc ướt khoe mông trong phòng tắm anh',
+	'Đồ ngủ vừa gội tóc ướt khoe ngực bên bồn tắm',
+	'Bikini tắm xong tóc ướt khoe mông bên hồ bơi anh',
+
+	// Đồ bó sát tập gym tóc buộc trong phòng tập
+	'Đồ bó squat tóc buộc khoe mông trong gym cho anh',
+	'Legging tập lắc hông tóc đuôi ngựa khoe mông gym',
+	'Tight squat nâng mông tóc buộc cao khoe vòng 3 gym',
+
+	// Áo dài truyền thống tóc dài elegant
+	'Áo dài tóc dài thướt tha khoe đường cong cho anh',
+	'Áo dài truyền thống tóc xõa khoe lưng cho anh đêm',
+	'Áo dài hở lưng tóc chấm mông khoe dáng cho anh',
+
+	// Leather/Da bóng tóc ngắn cá tính
+	'Đồ da tóc ngắn cá tính doggy khoe mông cho anh',
+	'Leather tóc ngắn cưỡi ngựa khoe ngực cho anh đêm',
+	'Da bóng tóc nhuộm chổng mông khoe vòng 3 cho anh',
+
+	// Massage spa tóc buộc khoe lưng
+	'Massage tóc buộc khoe lưng trần cho anh đêm nay',
+	'Spa tóc búi cao khoe vai lưng cho anh xem nóng',
+	'Xoa bóp tóc cột khoe cổ vai cho anh đêm nay',
 ];
 // === ENHANCED DESCRIPTIONS (≥4 filters, dirty talk style) ===
 export const DESCRIPTIONS = [
@@ -1019,7 +1470,7 @@ export const DESCRIPTIONS = [
 	// === POSITION VARIATIONS: QUỲ / NGỒI XỔM / NẰM NGỬA / NẰM SẤP ===
 	// Quỳ gối + nhiều filter
 	'Quỳ gối cho anh khoe mông trên giường đêm nay nóng bỏng',
-	'Em quỳ xuống gợi cảm khoe ngực mông cho anh xem đêm',
+	'Em quỳ xuống gợi cảm khoe ngực mông cho anh xem',
 	'Tư thế quỳ gối quyến rũ khoe đường cong cho anh đêm nay',
 	'Quỳ trên thảm tóc dài xõa khoe mông cho anh xem nóng',
 	'Trườn trên giường gợi cảm khoe lưng mông cho anh đêm',
@@ -1110,6 +1561,236 @@ export const DESCRIPTIONS = [
 	'Oral quỳ gối khoe môi mọng cho anh xem đêm nay nóng',
 	'Trên bậc thang quỳ khoe mông tóc dài cho anh đêm nay',
 	'Nằm sấp võng lưng tóc tới mông khoe cho anh đêm nay',
+
+	// === CROSS-MAPPING DESCRIPTIONS: OUTFIT + POSITION + HAIR ===
+	// Cô giáo
+	'Cô giáo tóc dài quỳ gối khoe ngực cho anh xem đêm nay',
+	'Cô giáo tóc ngắn nằm ngửa khoe ngực cho anh đêm nay',
+	'Cô giáo tóc ướt chổng mông khoe cho anh xem nóng bỏng',
+	'Cô giáo tóc chấm lưng cưỡi ngựa khoe ngực cho anh',
+
+	// Y tá
+	'Y tá tóc dài quỳ gối khoe ngực cho anh xem đêm nay',
+	'Y tá tóc búi nằm ngửa khoe ngực cho anh đêm nay nóng',
+	'Y tá tóc ướt chổng mông khoe mông cho anh xem nóng',
+	'Y tá tóc ngắn cưỡi ngựa khoe ngực cho anh đêm nay',
+
+	// Học sinh / Nữ sinh
+	'Nữ sinh tóc dài quỳ gối khoe ngực cho anh xem đêm nay',
+	'Nữ sinh tóc ngắn nằm ngửa khoe ngực cho anh đêm nay',
+	'Học sinh tóc đuôi ngựa chổng mông khoe cho anh xem',
+	'Nữ sinh tóc chấm lưng cưỡi ngựa khoe ngực cho anh',
+
+	// Thư ký
+	'Thư ký tóc búi quỳ gối khoe ngực cho anh xem đêm nay',
+	'Thư ký tóc dài nằm ngửa khoe ngực cho anh đêm nay',
+	'Thư ký tóc ngắn chổng mông khoe mông cho anh xem nóng',
+	'Thư ký tóc ướt cưỡi ngựa khoe ngực cho anh đêm nay',
+
+	// Hầu gái
+	'Hầu gái tóc dài quỳ gối khoe mông cho anh xem đêm nay',
+	'Hầu gái tóc ngắn nằm ngửa khoe ngực cho anh đêm nay',
+	'Hầu gái tóc ướt chổng mông khoe mông cho anh xem nóng',
+
+	// Bikini
+	'Bikini tóc dài quỳ gối khoe mông cho anh xem đêm nay',
+	'Bikini tóc ướt nằm ngửa khoe ngực cho anh đêm nay',
+	'Bikini tóc chấm lưng chổng mông khoe cho anh xem nóng',
+	'Bikini tóc ngắn cưỡi ngựa khoe ngực cho anh đêm nay',
+
+	// Nội y
+	'Nội y tóc dài quỳ gối khoe ngực cho anh xem đêm nay',
+	'Đồ ngủ tóc ướt nằm ngửa khoe ngực cho anh đêm nay',
+	'Nội y ren tóc chấm lưng chổng mông khoe cho anh xem',
+	'Đồ lót tóc ngắn cưỡi ngựa khoe ngực cho anh đêm nay',
+
+	// KTV / Tiếp viên
+	'Tiếp viên tóc dài quỳ gối khoe ngực cho anh đêm nay',
+	'Tiếp viên tóc ướt nằm ngửa khoe ngực cho anh xem',
+	'KTV tóc chấm lưng chổng mông khoe mông cho anh đêm',
+
+	// Áo dài
+	'Áo dài tóc dài quỳ gối khoe ngực cho anh xem đêm nay',
+	'Áo dài tóc chấm lưng nằm ngửa khoe ngực cho anh đêm',
+	'Áo dài tóc ướt chổng mông khoe mông cho anh xem nóng',
+
+	// Đồ bó sát / Gym
+	'Đồ bó tóc dài quỳ gối squat khoe mông cho anh đêm nay',
+	'Legging tóc ngắn nằm ngửa khoe ngực cho anh đêm nay',
+	'Tight tóc ướt chổng mông khoe mông cho anh xem nóng',
+
+	// Da bóng / Leather
+	'Đồ da tóc dài quỳ gối khoe mông cho anh xem đêm nay',
+	'Leather tóc ngắn nằm ngửa khoe ngực cho anh đêm nay',
+	'Da bóng tóc ướt chổng mông khoe mông cho anh xem',
+
+	// === CROSS-MAPPING DESCRIPTIONS: LOCATION + POSITION + HAIR ===
+	// Giường
+	'Trên giường tóc dài quỳ gối khoe ngực cho anh đêm nay',
+	'Trên giường tóc chấm lưng nằm ngửa khoe rãnh ngực anh',
+	'Trên giường tóc ướt chổng mông khoe vòng 3 cho anh',
+	'Trên giường tóc ngắn cưỡi ngựa khoe ngực mông anh',
+
+	// Sofa
+	'Trên sofa tóc dài quỳ gối khoe mông cho anh đêm nay',
+	'Trên sofa tóc ngắn nằm ngửa khoe ngực cho anh xem',
+	'Trên sofa tóc ướt chổng mông khoe mông cho anh đêm',
+
+	// Cầu thang
+	'Trên cầu thang tóc dài quỳ gối khoe mông cho anh đêm',
+	'Trên bậc thang tóc chấm lưng ngồi xổm khoe đùi anh',
+	'Trên cầu thang tóc ướt nằm sấp khoe mông cho anh',
+
+	// Biển / Hồ bơi
+	'Bên biển tóc dài quỳ gối khoe mông cho anh xem',
+	'Bên hồ bơi tóc ướt nằm ngửa khoe ngực cho anh đêm',
+	'Bên biển tóc chấm lưng chổng mông khoe mông anh',
+
+	// Phòng tắm
+	'Trong bồn tắm tóc ướt quỳ gối khoe ngực cho anh đêm',
+	'Dưới vòi sen tóc dài nằm ngửa khoe ngực cho anh',
+	'Trong phòng tắm tóc ướt chổng mông khoe mông anh',
+
+	// Xe hơi
+	'Trong xe tóc dài quỳ gối khoe ngực cho anh xem',
+	'Trên ghế xe tóc ngắn nằm ngửa khoe ngực cho anh',
+
+	// Văn phòng
+	'Trong văn phòng tóc dài quỳ gối khoe ngực cho anh',
+	'Trên bàn làm việc tóc ngắn nằm ngửa khoe ngực anh',
+
+	// Bếp
+	'Trong bếp tóc dài quỳ gối khoe mông cho anh xem',
+	'Trên bàn ăn tóc ngắn nằm ngửa khoe ngực cho anh',
+
+	// Gym
+	'Trong gym tóc dài quỳ gối squat khoe mông cho anh',
+	'Trên thảm tập tóc ngắn nằm ngửa khoe ngực cho anh',
+
+	// === DEEP CROSS-MAPPING DESCRIPTIONS: OUTFIT + POSITION ===
+	// Thư ký
+	'Thư ký chổng mông cho sếp khoe vòng 3 đêm nay nóng',
+	'Thư ký quỳ bú dưới bàn khoe môi cho sếp xem nóng',
+	'Thư ký doggy trên bàn khoe mông cho sếp xem',
+	'Thư ký nằm ngửa trên bàn khoe ngực cho sếp nóng',
+	'Thư ký cưỡi sếp trên ghế khoe ngực mông cho anh',
+
+	// Cô giáo
+	'Cô giáo chổng mông cho anh khoe vòng 3 trong lớp',
+	'Cô giáo quỳ bú anh khoe môi đỏ mọng đêm nay nóng',
+	'Cô giáo doggy trên bàn khoe mông cho anh xem',
+	'Cô giáo nằm ngửa khoe ngực căng cho anh xem nóng',
+	'Cô giáo oral thổi kèn cho anh khoe môi trong lớp',
+
+	// Y tá
+	'Y tá chổng mông cho bệnh nhân khoe vòng 3 nóng',
+	'Y tá quỳ bú trong phòng khám khoe môi cho anh',
+	'Y tá doggy khoe mông cho bệnh nhân xem đêm nay',
+	'Y tá nằm ngửa khoe ngực căng cho anh xem nóng',
+	'Y tá oral cho bệnh nhân khoe môi đỏ mọng nóng',
+
+	// Nữ sinh
+	'Nữ sinh chổng mông cho anh khoe vòng 3 đêm nay',
+	'Nữ sinh quỳ bú anh khoe môi hồng nóng bỏng',
+	'Nữ sinh doggy khoe mông tròn cho anh xem',
+	'Nữ sinh nằm ngửa khoe ngực căng cho anh nóng',
+
+	// Hầu gái
+	'Hầu gái chổng mông cho chủ khoe vòng 3 nóng bỏng',
+	'Hầu gái quỳ phục vụ chủ khoe môi mọng đêm nay',
+	'Hầu gái doggy khoe mông cho chủ xem đêm nay nóng',
+	'Hầu gái cưỡi chủ khoe ngực mông đêm nay nóng',
+
+	// Bikini
+	'Bikini chổng mông bên biển khoe vòng 3 cho anh',
+	'Bikini quỳ trên cát khoe mông tròn cho anh xem',
+	'Bikini doggy bên hồ bơi khoe mông cho anh nóng',
+	'Bikini nằm ngửa khoe ngực căng cho anh đêm nay',
+
+	// Nội y
+	'Nội y chổng mông trên giường khoe vòng 3 cho anh',
+	'Đồ ngủ quỳ bú anh khoe môi đỏ mọng đêm nay nóng',
+	'Nội y doggy trên thảm khoe mông căng cho anh xem',
+	'Đồ lót nằm ngửa khoe ngực căng cho anh đêm nay',
+	'Nội y oral thổi kèn cho anh khoe môi trên giường',
+
+	// === ACTIVITY + POSITION DESCRIPTIONS ===
+	// Quỳ + Bú
+	'Quỳ gối bú anh khoe môi đỏ mọng đêm nay nóng bỏng',
+	'Quỳ xuống bú liếm cho anh khoe lưỡi nóng đêm nay',
+	'Quỳ bú thổi kèn cho anh khoe môi đỏ trên giường',
+	'Quỳ oral cho anh sướng khoe môi mọng đêm nay nóng',
+
+	// Nằm + 69
+	'Nằm ngửa 69 với anh khoe ngực mông đêm nay nóng',
+	'Nằm 69 bú liếm khoe toàn thân cho anh xem nóng',
+	'Nằm tư thế 69 khoe ngực mông cho anh đêm nay',
+
+	// Cưỡi + Lắc
+	'Cưỡi ngựa lắc hông khoe mông ngực cho anh đêm nay',
+	'Cưỡi lên lắc mông khoe vòng 3 cho anh nóng bỏng',
+	'Ride lắc hông khoe ngực mông cho anh xem đêm nay',
+
+	// Chổng + Doggy
+	'Chổng mông doggy khoe vòng 3 căng cho anh đêm nay',
+	'Doggy chổng mông khoe mông cong cho anh xem nóng',
+	'Chổng từ sau khoe mông tròn cho anh đêm nay nóng',
+
+	// === LOCATION + POSITION DESCRIPTIONS ===
+	// Giường
+	'Trên giường doggy chổng mông khoe vòng 3 cho anh',
+	'Trên giường quỳ bú cho anh khoe môi mọng đêm nay',
+	'Trên giường 69 nằm ngửa khoe ngực mông cho anh',
+	'Trên giường cưỡi lắc khoe mông ngực cho anh xem',
+
+	// Sofa
+	'Trên sofa doggy chổng mông khoe vòng 3 cho anh',
+	'Trên sofa quỳ bú cho anh khoe môi mọng đêm nay',
+	'Trên sofa 69 nằm ngửa khoe ngực mông cho anh',
+
+	// Bàn / Văn phòng
+	'Trên bàn doggy khoe mông cho sếp xem đêm nay',
+	'Trên bàn quỳ bú cho sếp khoe môi đỏ mọng nóng',
+
+	// Xe hơi
+	'Trong xe doggy ghế sau khoe mông cho anh đêm nay',
+	'Trong xe quỳ bú cho anh khoe môi đỏ nóng bỏng',
+	'Trong xe cưỡi ghế lái khoe ngực cho anh đêm nay',
+
+	// Cầu thang
+	'Trên cầu thang doggy khoe mông cho anh xem',
+	'Trên bậc thang quỳ gối khoe mông cho anh đêm nay',
+
+	// === BODY FOCUS + POSITION DESCRIPTIONS ===
+	// Ngực + positions
+	'Khoe ngực căng quỳ gối cho anh xem đêm nay nóng',
+	'Ngực to tròn nằm ngửa khoe rãnh ngực cho anh',
+	'Vòng 1 căng cưỡi ngựa khoe cho anh xem đêm nay',
+	'Ngực căng đẫy chổng mông khoe cho anh xem nóng',
+
+	// Mông + positions
+	'Khoe mông tròn chổng mông cho anh xem đêm nay',
+	'Mông cong doggy từ sau khoe cho anh xem nóng',
+	'Vòng 3 căng cưỡi ngựa lắc cho anh xem đêm nay',
+	'Mông đẹp quỳ gối khoe cho anh xem trên giường',
+
+	// Đùi + positions
+	'Khoe đùi thon quỳ gối cho anh xem đêm nay nóng',
+	'Đùi trắng mịn dang chân nằm ngửa khoe cho anh',
+	'Đùi nuột nà ngồi xổm khoe cho anh xem đêm nay',
+
+	// Eo + positions
+	'Eo thon cưỡi ngựa khoe cho anh xem đêm nay nóng',
+	'Vòng eo thon chổng mông khoe cho anh xem nóng',
+
+	// === COMBO DESCRIPTIONS ===
+	'Thư ký doggy trên bàn khoe mông tròn cho sếp',
+	'Cô giáo quỳ bú khoe ngực căng cho anh xem',
+	'Y tá doggy khoe mông cho bệnh nhân xem đêm nay',
+	'Nữ sinh 69 nằm ngửa khoe ngực cho anh đêm nay',
+	'Hầu gái cưỡi chủ khoe mông ngực nóng bỏng đêm',
+	'Bikini doggy bên biển khoe vòng 3 căng cho anh',
+	'Nội y quỳ bú khoe ngực căng cho anh xem đêm nay',
 ];
 
 // 40+ hashtag sets - TẤT CẢ phải có #xuhuong #fyp (bắt buộc)
