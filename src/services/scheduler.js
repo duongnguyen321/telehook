@@ -75,13 +75,13 @@ async function processNotification(post) {
 		});
 
 		// Mark notification as sent BEFORE logging success
-		markNotificationSent(postId);
+		await markNotificationSent(postId);
 
 		console.log(`[Scheduler] Sent notification: ${postId.slice(0, 8)}`);
 		return { success: true, postId };
 	} catch (error) {
 		console.error(`[Scheduler] Failed ${postId.slice(0, 8)}:`, error.message);
-		updatePostStatus(postId, 'failed', error.message);
+		await updatePostStatus(postId, 'failed', error.message);
 
 		if (bot) {
 			try {
@@ -107,7 +107,7 @@ async function processNotification(post) {
  */
 async function checkAndProcessDuePosts() {
 	try {
-		const duePosts = getDuePosts();
+		const duePosts = await getDuePosts();
 
 		if (duePosts.length === 0) {
 			return;
@@ -137,14 +137,14 @@ async function checkAndScheduleReposts() {
 		return;
 	}
 
-	const pendingCount = getPendingCount();
+	const pendingCount = await getPendingCount();
 	console.log(`[Repost] Checking... Pending posts: ${pendingCount}`);
 
-	if (needsRepost(defaultChatId)) {
+	if (await needsRepost(defaultChatId)) {
 		console.log(
 			'[Repost] No videos scheduled for tomorrow, scheduling reposts...'
 		);
-		const scheduled = scheduleReposts(defaultChatId);
+		const scheduled = await scheduleReposts(defaultChatId);
 
 		if (scheduled.length > 0 && bot) {
 			// Notify user
@@ -212,7 +212,7 @@ export function startWorker() {
  * Get scheduler stats (simplified - just counts from database)
  */
 export async function getQueueStats() {
-	const pendingCount = getPendingCount();
+	const pendingCount = await getPendingCount();
 	return { waiting: 0, delayed: pendingCount, active: 0, total: pendingCount };
 }
 

@@ -1484,84 +1484,85 @@ export const DESCRIPTIONS = [
 	'Nhìn từ trên cao thấy hết',
 ];
 
-// 40+ hashtag sets - đa dạng chủ đề, trending hashtags
+// 40+ hashtag sets - TẤT CẢ phải có #xuhuong #fyp (bắt buộc)
+// Thay #sexy bằng #quyenru #bimat để tránh bộ lọc
 export const HASHTAG_SETS = [
-	// Hot & Sexy
-	'#fyp #sexy #hotgirl #18plus #body #vietnam #viral',
-	'#fyp #gaixinh #sexy #hot #model #tiktokvn #trend',
-	'#fyp #hotgirl #sexy #beautiful #goddess #vietnam',
-	'#fyp #sexy #body #goals #hotgirl #asian #viral',
-	'#fyp #gaixinh #18plus #hot #sexy #tiktokvietnam',
+	// Hot & Quyến rũ (thay sexy)
+	'#xuhuong #fyp #gaixinh #vietnamesegirl #quyenru #bimat #viral',
+	'#xuhuong #fyp #gaixinh #hotgirl #body #quyenru #tiktokvn',
+	'#xuhuong #fyp #vietnamesegirl #quyenru #beautiful #goddess',
+	'#xuhuong #fyp #gaixinh #body #goals #quyenru #asian',
+	'#xuhuong #fyp #vietnamesegirl #18plus #hot #tiktokvietnam',
 
-	// Night & Vibes
-	'#fyp #nightlife #sexy #hot #vibes #mood #viral',
-	'#fyp #midnight #sexy #content #hot #vibes #trend',
-	'#fyp #sexy #late #night #content #hot #viral',
-	'#fyp #latenight #insomnia #hot #sexy #vietnam',
-	'#fyp #nightowl #sexy #vibes #mood #aesthetic',
+	// Buổi sáng (7:00, 9:30)
+	'#xuhuong #fyp #gaixinh #buoisang #nangluong #tuoitan #vietnam',
+	'#xuhuong #fyp #vietnamesegirl #sangtaobuoisang #trend #cuoixinh',
+	'#xuhuong #fyp #gaixinh #goodmorning #quyenru #smile #viral',
+	'#xuhuong #fyp #vietnamesegirl #trendsang #nhaynhay #vui',
+	'#xuhuong #fyp #gaixinh #morningvibes #quyenru #energy',
+
+	// Buổi trưa (11:30, 13:30)
+	'#xuhuong #fyp #gaixinh #vietnamesegirl #traffic #buoitrua #viral',
+	'#xuhuong #fyp #hotgirl #nghitrua #visual #quyenru #tiktokvn',
+	'#xuhuong #fyp #vietnamesegirl #lunchbreak #quyenru #chill',
+	'#xuhuong #fyp #gaixinh #slowmotion #nhenang #bimat',
+	'#xuhuong #fyp #vietnamesegirl #relaxing #quyenru #vietnam',
+
+	// Buổi chiều (16:30, 18:30)
+	'#xuhuong #fyp #gaixinh #xuongpho #outfit #quyenru #dichoi',
+	'#xuhuong #fyp #vietnamesegirl #haihuc #tuongtac #vui #viral',
+	'#xuhuong #fyp #gaixinh #cuoichieu #donve #bimat #tiktokvn',
+	'#xuhuong #fyp #vietnamesegirl #streetstyle #quyenru #fashion',
+	'#xuhuong #fyp #gaixinh #chill #afterwork #quyenru #vietnam',
+
+	// Prime Time (20:00 - Giờ vàng)
+	'#xuhuong #fyp #gaixinh #vietnamesegirl #primetime #quyenru #viral',
+	'#xuhuong #fyp #hotgirl #giovang #bimat #edit #tiktokvn',
+	'#xuhuong #fyp #vietnamesegirl #toinay #quyenru #hot #trend',
+	'#xuhuong #fyp #gaixinh #evening #quyenru #goddess #vietnam',
+	'#xuhuong #fyp #vietnamesegirl #toidiemphuc #bimat #viral',
+
+	// Đêm khuya (22:00, 23:30)
+	'#xuhuong #fyp #gaixinh #demkhuya #quyenru #anhsangmo #bimat',
+	'#xuhuong #fyp #vietnamesegirl #cudem #midnight #quyenru #viral',
+	'#xuhuong #fyp #gaixinh #latenight #bimat #mood #tiktokvn',
+	'#xuhuong #fyp #vietnamesegirl #nightowl #quyenru #vibes',
+	'#xuhuong #fyp #gaixinh #khuya #quyenru #insomnia #vietnam',
 
 	// Baddie & Queen
-	'#fyp #baddie #sexy #hot #slay #queen #goddess',
-	'#fyp #badgirl #sexy #hot #fire #trending #fyp',
-	'#fyp #queen #slay #sexy #confident #boss #viral',
-	'#fyp #bosslady #sexy #powerful #hot #trending',
-	'#fyp #goddess #divine #sexy #hot #beautiful',
+	'#xuhuong #fyp #gaixinh #baddie #quyenru #slay #queen',
+	'#xuhuong #fyp #vietnamesegirl #boss #confident #quyenru #viral',
+	'#xuhuong #fyp #gaixinh #goddess #divine #bimat #beautiful',
+	'#xuhuong #fyp #vietnamesegirl #powerful #quyenru #trending',
+	'#xuhuong #fyp #gaixinh #queen #fire #quyenru #tiktokvn',
 
 	// Body & Aesthetic
-	'#fyp #sexy #body #aesthetic #hot #style #model',
-	'#fyp #body #goals #sexy #hot #model #vietnam',
-	'#fyp #curves #body #sexy #hot #real #natural',
-	'#fyp #bodygoals #fit #sexy #hot #aesthetic',
-	'#fyp #bodypositivity #sexy #real #confidence',
-
-	// Vietnamese Hot Girl
-	'#fyp #hotgirl #sexy #asian #beauty #viral #trend',
-	'#fyp #gaixinh #sexy #confident #hot #beautiful',
-	'#fyp #hotgirlvietnam #sexy #trendy #viral',
-	'#fyp #vietnamesegirl #sexy #hot #trending',
-	'#fyp #asianbabe #sexy #hot #vietnam #viral',
-
-	// Single & Flirty
-	'#fyp #gaixinh #sexy #single #available #dm #hot',
-	'#fyp #single #flirty #sexy #hot #available',
-	'#fyp #dmmepls #sexy #single #hot #viral',
-	'#fyp #relationships #single #hot #sexy #vibes',
-	'#fyp #crush #flirty #sexy #hot #trending',
-
-	// Real & Natural
-	'#fyp #sexy #real #natural #body #hot #viral',
-	'#fyp #hotgirl #sexy #natural #real #body #viral',
-	'#fyp #nofilter #real #sexy #natural #hot',
-	'#fyp #authentic #real #sexy #natural #beauty',
-	'#fyp #rawbeauty #noedits #sexy #hot #real',
-
-	// Trending & Viral
-	'#fyp #18plus #sexy #hot #content #tiktokvn #viral',
-	'#fyp #18plus #hot #sexy #viral #trend #vietnam',
-	'#fyp #trending #hot #sexy #viral #fypage',
-	'#fyp #foryoupage #hot #sexy #trending #viral',
-	'#xuhuong #khampha #goicam #hot #tiktokvietnam #xuhuong2025',
+	'#xuhuong #fyp #gaixinh #body #aesthetic #quyenru #style',
+	'#xuhuong #fyp #vietnamesegirl #curves #real #natural #viral',
+	'#xuhuong #fyp #gaixinh #bodygoals #fit #quyenru #bimat',
+	'#xuhuong #fyp #vietnamesegirl #bodypositivity #confidence',
+	'#xuhuong #fyp #gaixinh #nofilter #real #quyenru #vietnam',
 
 	// Roleplay & Cosplay
-	'#xuhuong #nhapvai #cosplay #cogiao #yta #hau #goicam',
-	'#xuhuong #hocsinh #cogiao #goicam #dongphuc #vietnam',
-	'#xuhuong #bangai #nguoiyeu #gocnhin #henho #goicam',
-	'#xuhuong #thuky #vanphong #congso #goicam #sep',
-	'#xuhuong #phongtap #theduc #mongto #yoga #goicam #gai',
+	'#xuhuong #fyp #gaixinh #nhapvai #cosplay #quyenru #bimat',
+	'#xuhuong #fyp #vietnamesegirl #dongphuc #cogiao #yta #tiktokvn',
+	'#xuhuong #fyp #gaixinh #phongtap #yoga #quyenru #vietnam',
+	'#xuhuong #fyp #vietnamesegirl #vanphong #thuky #bimat #viral',
+	'#xuhuong #fyp #gaixinh #henho #bangai #quyenru #trend',
 
 	// Vibez
-	'#xuhuong #bongtoi #bian #goicam #dem #camxuc',
-	'#xuhuong #dethuong #ngotngao #becung #goicam #gai',
-	'#xuhuong #sangchanh #giauco #dangcap #goicam #nuhoang',
-	'#xuhuong #hoangdai #tiectung #dienloan #goicam #vui',
-	'#xuhuong #thugian #nha #amap #goicam #giuong',
+	'#xuhuong #fyp #gaixinh #bongtoi #bian #quyenru #dem',
+	'#xuhuong #fyp #vietnamesegirl #dethuong #ngotngao #bimat',
+	'#xuhuong #fyp #gaixinh #sangchanh #dangcap #quyenru #nuhoang',
+	'#xuhuong #fyp #vietnamesegirl #thugian #nha #bimat #giuong',
+	'#xuhuong #fyp #gaixinh #hoangdai #dienloan #quyenru #vui',
 
 	// Specifics
-	'#xuhuong #aodai #vietnam #truyenthong #goicam #gai',
-	'#xuhuong #bikini #bien #he #nong #uot',
-	'#xuhuong #mat #moi #khuonmat #cancanh #goicam',
-	'#xuhuong #chan #legs #tay #cothe #goicam',
-	'#xuhuong #nhay #cover #xuhuong #goicam #chuyendong',
+	'#xuhuong #fyp #gaixinh #aodai #vietnam #truyenthong #quyenru',
+	'#xuhuong #fyp #vietnamesegirl #bikini #bien #he #viral',
+	'#xuhuong #fyp #gaixinh #mat #moi #khuonmat #bimat',
+	'#xuhuong #fyp #vietnamesegirl #chan #legs #quyenru #cothe',
+	'#xuhuong #fyp #gaixinh #nhay #cover #quyenru #chuyendong',
 ];
 
 // Global tracking to avoid duplicates across all generated content

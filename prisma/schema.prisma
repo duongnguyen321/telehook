@@ -5,18 +5,25 @@ generator client {
   provider = "prisma-client-js"
 }
 
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
 model ScheduledPost {
-  id          String  @id
-  chatId      BigInt  @map("chat_id")
-  videoPath   String  @map("video_path")
-  title       String
-  description String
-  hashtags    String
-  scheduledAt String  @map("scheduled_at")
-  status      String  @default("pending")
-  error       String?
-  createdAt   String? @default(dbgenerated("CURRENT_TIMESTAMP")) @map("created_at")
-  isRepost    Int     @default(0) @map("is_repost")
+  id               String  @id
+  chatId           BigInt  @map("chat_id")
+  videoPath        String  @map("video_path")
+  title            String
+  description      String
+  hashtags         String
+  scheduledAt      String  @map("scheduled_at")
+  status           String  @default("pending")
+  error            String?
+  createdAt        String? @default(dbgenerated("CURRENT_TIMESTAMP")) @map("created_at")
+  isRepost         Int     @default(0) @map("is_repost")
+  telegramFileId   String? @map("telegram_file_id")
+  notificationSent Int     @default(0) @map("notification_sent")
 
   @@index([status])
   @@index([scheduledAt])

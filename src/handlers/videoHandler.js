@@ -16,7 +16,7 @@ import {
 	updatePostFileId,
 	cleanOrphanedPosts,
 	DATA_DIR,
-	db,
+	prisma,
 } from '../utils/storage.js';
 import { formatVietnameseTime } from '../utils/timeParser.js';
 import {
@@ -125,7 +125,7 @@ async function sendQueuePage(
 	isAdmin = false
 ) {
 	const { InputFile } = await import('grammy');
-	const posts = getPendingPostsByChat(chatId);
+	const posts = await getPendingPostsByChat(chatId);
 	const TIKTOK_USERNAME = process.env.TIKTOK_USERNAME || '';
 	const tiktokLink = TIKTOK_USERNAME
 		? `\n\n🔥 Follow: https://tiktok.com/@${TIKTOK_USERNAME}`
@@ -221,7 +221,7 @@ async function sendQueuePage(
 
 		// Save file_id for future use if we uploaded from disk
 		if (!post.telegramFileId && sentMessage.video?.file_id) {
-			updatePostFileId(post.id, sentMessage.video.file_id);
+			await updatePostFileId(post.id, sentMessage.video.file_id);
 		}
 	} catch (e) {
 		console.error('[Queue] Error sending video:', e.message);
@@ -235,7 +235,7 @@ async function sendQueuePage(
 async function processVideoAfterDownload(ctx, video, videoPath, chatId) {
 	try {
 		// Track video
-		trackDownloadedVideo(
+		await trackDownloadedVideo(
 			video.file_id,
 			chatId,
 			videoPath,
@@ -246,7 +246,7 @@ async function processVideoAfterDownload(ctx, video, videoPath, chatId) {
 		const [content] = generateContentOptions();
 
 		// Auto schedule
-		const post = addScheduledPost({
+		const post = await addScheduledPost({
 			chatId,
 			videoPath,
 			title: content.title,
@@ -256,7 +256,7 @@ async function processVideoAfterDownload(ctx, video, videoPath, chatId) {
 		});
 
 		await scheduleUpload(post, new Date(post.scheduledAt));
-		updateVideoStatus(video.file_id, 'scheduled');
+		await updateVideoStatus(video.file_id, 'scheduled');
 
 		const time = formatVietnameseTime(new Date(post.scheduledAt));
 		console.log(`[Video] Scheduled: ${time}`);
@@ -295,7 +295,7 @@ export function setupVideoHandler(bot) {
 		setDefaultChatId(chatId);
 
 		// Check for duplicate
-		if (isVideoDuplicate(video.file_id)) {
+		if (await isVideoDuplicate(video.file_id)) {
 			console.log(`[Video] Duplicate, skipping`);
 			return;
 		}
@@ -417,7 +417,7 @@ export function setupVideoHandler(bot) {
 			const postId = parts[1];
 			const currentPage = parseInt(parts[2]) || 0;
 
-			const result = deleteScheduledPost(postId, chatId);
+			const result = await deleteScheduledPost(postId, chatId);
 			if (result.success) {
 				await safeAnswer(`Đã xóa! Đã reschedule ${result.rescheduled} video`);
 				// Delete confirmation message
@@ -649,16 +649,15 @@ export function setupVideoHandler(bot) {
 
 			const content = options[choiceIndex];
 
-			// Update post in database
-			const updateStmt = db.prepare(
-				`UPDATE scheduled_posts SET title = ?, description = ?, hashtags = ? WHERE id = ?`
-			);
-			updateStmt.run(
-				content.title,
-				content.description,
-				content.hashtags,
-				postId
-			);
+			// Update post in database using Prisma
+			await prisma.scheduledPost.update({
+				where: { id: postId },
+				data: {
+					title: content.title,
+					description: content.description,
+					hashtags: content.hashtags,
+				},
+			});
 
 			// Cleanup
 			categorySelections.delete(selectionKey);
@@ -685,7 +684,7 @@ export function setupVideoHandler(bot) {
 			const selectionKey = `${chatId}_${postId}`;
 
 			// Generate random content
-			const result = updatePostContent(postId);
+			const result = await updatePostContent(postId);
 
 			// Cleanup
 			categorySelections.delete(selectionKey);
@@ -715,7 +714,7 @@ export function setupVideoHandler(bot) {
 			const selectionKey = `${chatId}_${postId}`;
 
 			// Generate random content
-			const result = updatePostContent(postId);
+			const result = await updatePostContent(postId);
 
 			// Cleanup
 			categorySelections.delete(selectionKey);
@@ -763,7 +762,7 @@ export function setupVideoHandler(bot) {
 		if (data.startsWith('posted_')) {
 			const postId = data.replace('posted_', '');
 
-			updatePostStatus(postId, 'posted');
+			await updatePostStatus(postId, 'posted');
 
 			// Edit message to remove the button and show confirmation
 			try {
@@ -824,8 +823,8 @@ async function handleCommand(ctx, command) {
 	}
 
 	if (command === '/stats') {
-		const stats = getArchiveStats(chatId);
-		const videoStats = getVideoStats(chatId);
+		const stats = await getArchiveStats(chatId);
+		const videoStats = await getVideoStats(chatId);
 		await ctx.reply(
 			`Stats:\n` +
 				`Downloaded: ${videoStats?.total || 0}\n` +
@@ -837,7 +836,7 @@ async function handleCommand(ctx, command) {
 	}
 
 	if (command === '/videos') {
-		const posts = getPendingPostsByChat(chatId);
+		const posts = await getPendingPostsByChat(chatId);
 		if (!posts?.length) {
 			await ctx.reply('Không có video nào trong lịch' + tiktokLink);
 			return;
@@ -876,7 +875,7 @@ async function handleCommand(ctx, command) {
 
 	if (command === '/reschedule') {
 		await ctx.reply('Rescheduling all pending videos with new content...');
-		const count = rescheduleAllPending(chatId);
+		const count = await rescheduleAllPending(chatId);
 		await ctx.reply(
 			`Done! Rescheduled ${count} videos:\n- New schedule (9/day)\n- New Vietnamese content`
 		);
@@ -885,7 +884,7 @@ async function handleCommand(ctx, command) {
 
 	if (command === '/fix') {
 		await ctx.reply('🔧 Đang kiểm tra và dọn dẹp dữ liệu...');
-		const result = cleanOrphanedPosts(chatId);
+		const result = await cleanOrphanedPosts(chatId);
 		if (result.deleted > 0) {
 			await ctx.reply(
 				`✅ Đã xóa ${result.deleted} record không có video file.\n` +

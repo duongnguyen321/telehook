@@ -1,7 +1,8 @@
-import { Database } from 'bun:sqlite';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
+import crypto from 'crypto';
+import { prisma } from './prisma.js';
 import {
 	nowGMT7,
 	toGMT7,
@@ -13,7 +14,6 @@ import {
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 export const DATA_DIR = path.join(__dirname, '../../data');
 export const VIDEOS_DIR = path.join(DATA_DIR, 'videos');
-const DB_PATH = path.join(DATA_DIR, 'tiktok_bot.db');
 
 /**
  * Convert relative video path (filename) to absolute path
@@ -46,112 +46,6 @@ if (!fs.existsSync(VIDEOS_DIR)) {
 	fs.mkdirSync(VIDEOS_DIR, { recursive: true });
 }
 
-// Initialize database
-const db = new Database(DB_PATH);
-
-// Create tables
-db.run(`
-  CREATE TABLE IF NOT EXISTS scheduled_posts (
-    id TEXT PRIMARY KEY,
-    chat_id INTEGER NOT NULL,
-    video_path TEXT NOT NULL,
-    title TEXT NOT NULL,
-    description TEXT NOT NULL,
-    hashtags TEXT NOT NULL,
-    scheduled_at TEXT NOT NULL,
-    status TEXT DEFAULT 'pending' CHECK(status IN ('pending', 'posted', 'failed')),
-    error TEXT,
-    created_at TEXT DEFAULT CURRENT_TIMESTAMP,
-    is_repost INTEGER DEFAULT 0,
-    telegram_file_id TEXT
-  )
-`);
-
-// Migration: Add telegram_file_id column if not exists
-try {
-	db.run(`ALTER TABLE scheduled_posts ADD COLUMN telegram_file_id TEXT`);
-} catch (e) {
-	// Column already exists, ignore
-}
-
-// Migration: Add notification_sent column if not exists (to prevent duplicate notifications)
-try {
-	db.run(
-		`ALTER TABLE scheduled_posts ADD COLUMN notification_sent INTEGER DEFAULT 0`
-	);
-} catch (e) {
-	// Column already exists, ignore
-}
-
-// Posted videos archive for repost system
-db.run(`
-  CREATE TABLE IF NOT EXISTS video_archive (
-    id TEXT PRIMARY KEY,
-    chat_id INTEGER NOT NULL,
-    video_path TEXT NOT NULL,
-    title TEXT NOT NULL,
-    description TEXT NOT NULL,
-    hashtags TEXT NOT NULL,
-    views INTEGER DEFAULT 0,
-    likes INTEGER DEFAULT 0,
-    posted_at TEXT NOT NULL,
-    last_repost_at TEXT,
-    repost_count INTEGER DEFAULT 0
-  )
-`);
-
-// Repost tracking - to know which videos have been reposted in current cycle
-db.run(`
-  CREATE TABLE IF NOT EXISTS repost_cycle (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    video_id TEXT NOT NULL,
-    repost_date TEXT NOT NULL,
-    cycle_number INTEGER DEFAULT 1
-  )
-`);
-
-// Settings table
-db.run(`
-  CREATE TABLE IF NOT EXISTS settings (
-    key TEXT PRIMARY KEY,
-    value TEXT
-  )
-`);
-
-// Downloaded videos tracking - prevent duplicates
-db.run(`
-  CREATE TABLE IF NOT EXISTS downloaded_videos (
-    file_id TEXT PRIMARY KEY,
-    chat_id INTEGER NOT NULL,
-    video_path TEXT NOT NULL,
-    file_size INTEGER,
-    downloaded_at TEXT DEFAULT CURRENT_TIMESTAMP,
-    status TEXT DEFAULT 'pending' CHECK(status IN ('pending', 'scheduled', 'posted', 'deleted'))
-  )
-`);
-
-db.run(
-	`CREATE INDEX IF NOT EXISTS idx_downloaded_videos_chat ON downloaded_videos(chat_id)`
-);
-
-// Initialize default settings
-const initSetting = db.prepare(
-	`INSERT OR IGNORE INTO settings (key, value) VALUES (?, ?)`
-);
-initSetting.run('videos_per_day', '2');
-initSetting.run('current_repost_cycle', '0');
-initSetting.run('repost_index', '0');
-
-db.run(
-	`CREATE INDEX IF NOT EXISTS idx_scheduled_posts_status ON scheduled_posts(status)`
-);
-db.run(
-	`CREATE INDEX IF NOT EXISTS idx_scheduled_posts_scheduled_at ON scheduled_posts(scheduled_at)`
-);
-db.run(
-	`CREATE INDEX IF NOT EXISTS idx_video_archive_views ON video_archive(views DESC)`
-);
-
 // ==================== SETTINGS ====================
 
 /**
@@ -159,10 +53,9 @@ db.run(
  * @param {string} key
  * @returns {string | null}
  */
-export function getSetting(key) {
-	const stmt = db.prepare(`SELECT value FROM settings WHERE key = ?`);
-	const row = stmt.get(key);
-	return row ? row.value : null;
+export async function getSetting(key) {
+	const setting = await prisma.setting.findUnique({ where: { key } });
+	return setting?.value ?? null;
 }
 
 /**
@@ -170,12 +63,29 @@ export function getSetting(key) {
  * @param {string} key
  * @param {string} value
  */
-export function setSetting(key, value) {
-	const stmt = db.prepare(
-		`INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)`
-	);
-	stmt.run(key, value);
+export async function setSetting(key, value) {
+	await prisma.setting.upsert({
+		where: { key },
+		update: { value },
+		create: { key, value },
+	});
 }
+
+// Initialize default settings
+async function initSettings() {
+	const defaults = [
+		['videos_per_day', '2'],
+		['current_repost_cycle', '0'],
+		['repost_index', '0'],
+	];
+	for (const [key, value] of defaults) {
+		const existing = await prisma.setting.findUnique({ where: { key } });
+		if (!existing) {
+			await prisma.setting.create({ data: { key, value } });
+		}
+	}
+}
+initSettings().catch(console.error);
 
 // ==================== SCHEDULED POSTS ====================
 
@@ -194,36 +104,51 @@ export function setSetting(key, value) {
  */
 
 /**
+ * Map Prisma model to internal format
+ */
+function mapScheduledPost(row) {
+	if (!row) return null;
+	return {
+		id: row.id,
+		chatId: Number(row.chatId),
+		videoPath: getVideoFullPath(row.videoPath),
+		title: row.title,
+		description: row.description,
+		hashtags: row.hashtags,
+		scheduledAt: row.scheduledAt,
+		status: row.status,
+		error: row.error,
+		isRepost: row.isRepost === 1,
+		telegramFileId: row.telegramFileId || null,
+	};
+}
+
+/**
  * Add a new scheduled post with smart scheduling (1-2 videos/day)
  * @param {Omit<ScheduledPost, 'id' | 'status'>} post
- * @returns {ScheduledPost}
+ * @returns {Promise<ScheduledPost>}
  */
-export function addScheduledPost(post) {
+export async function addScheduledPost(post) {
 	const id = crypto.randomUUID();
-	const scheduledAt = getSmartScheduleSlot();
+	const scheduledAt = await getSmartScheduleSlot();
 
-	const stmt = db.prepare(`
-    INSERT INTO scheduled_posts (id, chat_id, video_path, title, description, hashtags, scheduled_at, status, is_repost)
-    VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', ?)
-  `);
+	// Store relative path only
+	const relativePath = getVideoRelativePath(post.videoPath);
 
-	stmt.run(
-		id,
-		post.chatId,
-		getVideoRelativePath(post.videoPath), // Store relative path only
-		post.title,
-		post.description,
-		post.hashtags,
-		scheduledAt,
-		post.isRepost ? 1 : 0
-	);
+	const created = await prisma.scheduledPost.create({
+		data: {
+			id,
+			chatId: BigInt(post.chatId),
+			videoPath: relativePath,
+			title: post.title,
+			description: post.description,
+			hashtags: post.hashtags,
+			scheduledAt,
+			isRepost: post.isRepost ? 1 : 0,
+		},
+	});
 
-	return {
-		id,
-		...post,
-		scheduledAt,
-		status: 'pending',
-	};
+	return mapScheduledPost(created);
 }
 
 // Track recently used slots to prevent race conditions
@@ -233,48 +158,53 @@ const recentlyUsedSlots = new Set();
 /**
  * Get smart schedule slot for next video
  * 9 videos/day: 3 per timeslot at 10:00, 15:00, 21:00 (GMT+7)
- * @returns {string} ISO date string
+ * @returns {Promise<string>} ISO date string
  */
-export function getSmartScheduleSlot() {
-	const VIDEOS_PER_SLOT = 3;
-	const TIME_SLOTS = [10, 15, 21]; // 10AM, 3PM, 9PM in GMT+7
-	const SLOTS_PER_DAY = VIDEOS_PER_SLOT * TIME_SLOTS.length; // 9 total
+export async function getSmartScheduleSlot() {
+	// 9 videos/day at optimal times (GMT+7)
+	// 07:00, 09:30, 11:30, 13:30, 16:30, 18:30, 20:00, 22:00, 23:30
+	const DAILY_SLOTS = [
+		[7, 0], // Thức dậy, chuẩn bị đi làm
+		[9, 30], // Giờ nghỉ giải lao buổi sáng
+		[11, 30], // Nghỉ trưa - traffic cao nhất
+		[13, 30], // Trước ca chiều
+		[16, 30], // Giờ uể oải, chờ về
+		[18, 30], // Đi làm về / chuẩn bị ăn tối
+		[20, 0], // PRIME TIME - Giờ vàng
+		[22, 0], // Thời gian riêng tư
+		[23, 30], // "Cú đêm" - nam 20-30 hoạt động mạnh
+	];
+	const SLOTS_PER_DAY = DAILY_SLOTS.length; // 9 total
 	const now = nowGMT7();
 
 	// Get all scheduled slots from DB - convert each to GMT+7 slot key
-	const stmt = db.prepare(
-		`SELECT scheduled_at FROM scheduled_posts WHERE status = 'pending' ORDER BY scheduled_at DESC`
-	);
-	const dbRows = stmt.all();
+	const dbRows = await prisma.scheduledPost.findMany({
+		where: { status: 'pending' },
+		orderBy: { scheduledAt: 'desc' },
+		select: { scheduledAt: true },
+	});
 
 	// Count slots per GOLDEN HOUR (not actual hour)
 	// 9:30-10:30 -> 10 slot, 14:30-15:30 -> 15 slot, 20:30-21:30 -> 21 slot
 	const slotCounts = new Map();
 
-	function getGoldenHourSlot(date) {
+	function getSlotHour(date) {
 		const d = toGMT7(date);
 		const hour = d.getHours();
 		const minute = d.getMinutes();
 		const dateKey = getDateKey(d);
 
-		// Map to golden hour based on time
-		let goldenHour;
-		if ((hour === 9 && minute >= 30) || (hour === 10 && minute <= 30)) {
-			goldenHour = 10;
-		} else if ((hour === 14 && minute >= 30) || (hour === 15 && minute <= 30)) {
-			goldenHour = 15;
-		} else if ((hour === 20 && minute >= 30) || (hour === 21 && minute <= 30)) {
-			goldenHour = 21;
-		} else {
-			// Default: use actual hour
-			goldenHour = hour;
+		// Find which slot this time belongs to
+		for (const [slotH, slotM] of DAILY_SLOTS) {
+			if (hour === slotH && Math.abs(minute - slotM) <= 15) {
+				return `${dateKey}-${slotH}-${slotM}`;
+			}
 		}
-
-		return `${dateKey}-${goldenHour}`;
+		return `${dateKey}-${hour}-${minute}`;
 	}
 
 	for (const r of dbRows) {
-		const key = getGoldenHourSlot(new Date(r.scheduled_at));
+		const key = getSlotHour(new Date(r.scheduledAt));
 		slotCounts.set(key, (slotCounts.get(key) || 0) + 1);
 	}
 
@@ -302,32 +232,19 @@ export function getSmartScheduleSlot() {
 
 		if (dayTotal < SLOTS_PER_DAY) {
 			// Find available slot
-			for (const slotHour of TIME_SLOTS) {
-				const slotKey = `${dateKey}-${slotHour}`;
+			for (const [slotHour, slotMinute] of DAILY_SLOTS) {
+				const slotKey = `${dateKey}-${slotHour}-${slotMinute}`;
 				const slotCount = slotCounts.get(slotKey) || 0;
 
-				if (slotCount < VIDEOS_PER_SLOT) {
-					// Create the actual schedule time
-					// Position: 0 = -30min, 1 = 0min (golden hour), 2 = +30min
-					const minuteOffsets = [-30, 0, 30];
-					const minuteOffset = minuteOffsets[slotCount];
-
-					// Calculate hour and minute
-					let scheduleHour = slotHour;
-					let scheduleMinute = minuteOffset;
-
-					if (minuteOffset < 0) {
-						scheduleHour = slotHour - 1;
-						scheduleMinute = 30; // -30 means previous hour :30
-					}
-
+				if (slotCount < 1) {
+					// Each slot only holds 1 video now
 					const scheduleTime = createGMT7Time(
 						checkDate.getFullYear(),
 						checkDate.getMonth() + 1,
 						checkDate.getDate(),
-						scheduleHour
+						slotHour
 					);
-					scheduleTime.setMinutes(scheduleMinute);
+					scheduleTime.setMinutes(slotMinute);
 
 					// Make sure it's in the future
 					if (scheduleTime > new Date()) {
@@ -339,7 +256,7 @@ export function getSmartScheduleSlot() {
 						setTimeout(() => recentlyUsedSlots.delete(slotKey), 30000);
 
 						console.log(
-							`[Schedule] Slot: ${slotKey}:${String(minuteOffset).padStart(
+							`[Schedule] Slot: ${slotHour}:${String(slotMinute).padStart(
 								2,
 								'0'
 							)} (GMT+7)`
@@ -363,21 +280,19 @@ export function getSmartScheduleSlot() {
  * 9 videos/day: 3 per golden hour (9:30/10:00/10:30, 14:30/15:00/15:30, 20:30/21:00/21:30)
  * Videos are sorted by timestamp in filename (number before first underscore)
  * @param {number} chatId
- * @returns {number} Number of posts rescheduled
+ * @returns {Promise<number>} Number of posts rescheduled
  */
-export function rescheduleAllPending(chatId) {
+export async function rescheduleAllPending(chatId) {
 	// Import content generator dynamically to avoid circular deps
-	const { generateContentOptions } = require('../services/ai.js');
+	const { generateContentOptions } = await import('../services/ai.js');
 
 	// Clear cache
 	recentlyUsedSlots.clear();
 
 	// Get all pending posts
-	const stmt = db.prepare(`
-		SELECT * FROM scheduled_posts 
-		WHERE chat_id = ? AND status = 'pending'
-	`);
-	let posts = stmt.all(chatId);
+	let posts = await prisma.scheduledPost.findMany({
+		where: { chatId: BigInt(chatId), status: 'pending' },
+	});
 
 	if (posts.length === 0) {
 		return 0;
@@ -391,24 +306,24 @@ export function rescheduleAllPending(chatId) {
 			const match = filename.match(/^(\d+)_/);
 			return match ? parseInt(match[1], 10) : 0;
 		};
-		return getTimestamp(a.video_path) - getTimestamp(b.video_path);
+		return getTimestamp(a.videoPath) - getTimestamp(b.videoPath);
 	});
 
 	console.log(
 		`[Reschedule] Rescheduling ${posts.length} pending posts (sorted by filename timestamp)...`
 	);
 
-	// Define all time slots (hour, minute) in a day
+	// Define all time slots (hour, minute) in a day - Optimized for TikTok
 	const DAILY_SLOTS = [
-		[9, 30],
-		[10, 0],
-		[10, 30], // Morning golden hour
-		[14, 30],
-		[15, 0],
-		[15, 30], // Afternoon golden hour
-		[20, 30],
-		[21, 0],
-		[21, 30], // Evening golden hour
+		[7, 0], // Thức dậy, chuẩn bị đi làm
+		[9, 30], // Giờ nghỉ giải lao buổi sáng
+		[11, 30], // Nghỉ trưa - traffic cao nhất
+		[13, 30], // Trước ca chiều
+		[16, 30], // Giờ uể oải, chờ về
+		[18, 30], // Đi làm về / chuẩn bị ăn tối
+		[20, 0], // PRIME TIME - Giờ vàng
+		[22, 0], // Thời gian riêng tư
+		[23, 30], // "Cú đêm" - nam 20-30 hoạt động mạnh
 	];
 
 	// Start from now
@@ -435,10 +350,6 @@ export function rescheduleAllPending(chatId) {
 	}
 
 	// Update all posts with new schedule AND new content
-	const updateStmt = db.prepare(
-		`UPDATE scheduled_posts SET scheduled_at = ?, title = ?, description = ?, hashtags = ? WHERE id = ?`
-	);
-
 	let count = 0;
 	for (const post of posts) {
 		const [hour, minute] = DAILY_SLOTS[slotIndex];
@@ -455,13 +366,15 @@ export function rescheduleAllPending(chatId) {
 		// Generate new random content
 		const [content] = generateContentOptions();
 
-		updateStmt.run(
-			scheduleTime.toISOString(),
-			content.title,
-			content.description,
-			content.hashtags,
-			post.id
-		);
+		await prisma.scheduledPost.update({
+			where: { id: post.id },
+			data: {
+				scheduledAt: scheduleTime.toISOString(),
+				title: content.title,
+				description: content.description,
+				hashtags: content.hashtags,
+			},
+		});
 		count++;
 
 		const timeStr = `${
@@ -488,18 +401,16 @@ export function rescheduleAllPending(chatId) {
  * Reschedule all pending posts - ONLY update times, keep existing content
  * Used when deleting a video to fill the schedule gap
  * @param {number} chatId
- * @returns {number} Number of posts rescheduled
+ * @returns {Promise<number>} Number of posts rescheduled
  */
-export function rescheduleTimesOnly(chatId) {
+export async function rescheduleTimesOnly(chatId) {
 	// Clear cache
 	recentlyUsedSlots.clear();
 
 	// Get all pending posts
-	const stmt = db.prepare(`
-		SELECT * FROM scheduled_posts 
-		WHERE chat_id = ? AND status = 'pending'
-	`);
-	let posts = stmt.all(chatId);
+	let posts = await prisma.scheduledPost.findMany({
+		where: { chatId: BigInt(chatId), status: 'pending' },
+	});
 
 	if (posts.length === 0) {
 		return 0;
@@ -512,24 +423,24 @@ export function rescheduleTimesOnly(chatId) {
 			const match = filename.match(/^(\d+)_/);
 			return match ? parseInt(match[1], 10) : 0;
 		};
-		return getTimestamp(a.video_path) - getTimestamp(b.video_path);
+		return getTimestamp(a.videoPath) - getTimestamp(b.videoPath);
 	});
 
 	console.log(
 		`[Reschedule] Rescheduling times for ${posts.length} posts (keeping content)...`
 	);
 
-	// Define all time slots (hour, minute) in a day
+	// Define all time slots (hour, minute) in a day - Optimized for TikTok
 	const DAILY_SLOTS = [
-		[9, 30],
-		[10, 0],
-		[10, 30],
-		[14, 30],
-		[15, 0],
-		[15, 30],
-		[20, 30],
-		[21, 0],
-		[21, 30],
+		[7, 0], // Thức dậy, chuẩn bị đi làm
+		[9, 30], // Giờ nghỉ giải lao buổi sáng
+		[11, 30], // Nghỉ trưa - traffic cao nhất
+		[13, 30], // Trước ca chiều
+		[16, 30], // Giờ uể oải, chờ về
+		[18, 30], // Đi làm về / chuẩn bị ăn tối
+		[20, 0], // PRIME TIME - Giờ vàng
+		[22, 0], // Thời gian riêng tư
+		[23, 30], // "Cú đêm" - nam 20-30 hoạt động mạnh
 	];
 
 	// Start from now
@@ -555,10 +466,6 @@ export function rescheduleTimesOnly(chatId) {
 	}
 
 	// Update ONLY scheduled_at, keep title/description/hashtags
-	const updateStmt = db.prepare(
-		`UPDATE scheduled_posts SET scheduled_at = ? WHERE id = ?`
-	);
-
 	let count = 0;
 	for (const post of posts) {
 		const [hour, minute] = DAILY_SLOTS[slotIndex];
@@ -571,7 +478,10 @@ export function rescheduleTimesOnly(chatId) {
 		);
 		scheduleTime.setMinutes(minute);
 
-		updateStmt.run(scheduleTime.toISOString(), post.id);
+		await prisma.scheduledPost.update({
+			where: { id: post.id },
+			data: { scheduledAt: scheduleTime.toISOString() },
+		});
 		count++;
 
 		// Move to next slot
@@ -588,39 +498,31 @@ export function rescheduleTimesOnly(chatId) {
 
 /**
  * Get pending posts that are due AND haven't had notification sent yet
- * @returns {ScheduledPost[]}
+ * @returns {Promise<ScheduledPost[]>}
  */
-export function getDuePosts() {
+export async function getDuePosts() {
 	const now = new Date().toISOString();
-	const stmt = db.prepare(`
-    SELECT * FROM scheduled_posts
-    WHERE status = 'pending' AND scheduled_at <= ? AND (notification_sent IS NULL OR notification_sent = 0)
-    ORDER BY scheduled_at ASC
-  `);
+	const posts = await prisma.scheduledPost.findMany({
+		where: {
+			status: 'pending',
+			scheduledAt: { lte: now },
+			notificationSent: 0, // Only get posts that haven't been notified
+		},
+		orderBy: { scheduledAt: 'asc' },
+	});
 
-	return stmt.all(now).map((row) => ({
-		id: row.id,
-		chatId: row.chat_id,
-		videoPath: getVideoFullPath(row.video_path),
-		title: row.title,
-		description: row.description,
-		hashtags: row.hashtags,
-		scheduledAt: row.scheduled_at,
-		status: row.status,
-		error: row.error,
-		isRepost: row.is_repost === 1,
-	}));
+	return posts.map(mapScheduledPost);
 }
 
 /**
  * Mark a post as having its notification sent (prevents duplicate notifications)
  * @param {string} postId
  */
-export function markNotificationSent(postId) {
-	const stmt = db.prepare(
-		`UPDATE scheduled_posts SET notification_sent = 1 WHERE id = ?`
-	);
-	stmt.run(postId);
+export async function markNotificationSent(postId) {
+	await prisma.scheduledPost.update({
+		where: { id: postId },
+		data: { notificationSent: 1 },
+	});
 	console.log(
 		`[Storage] Marked notification sent for post ${postId.slice(0, 8)}`
 	);
@@ -629,26 +531,11 @@ export function markNotificationSent(postId) {
 /**
  * Get a single post by ID (fresh data from database)
  * @param {string} postId
- * @returns {ScheduledPost | null}
+ * @returns {Promise<ScheduledPost | null>}
  */
-export function getPostById(postId) {
-	const stmt = db.prepare(`SELECT * FROM scheduled_posts WHERE id = ?`);
-	const row = stmt.get(postId);
-
-	if (!row) return null;
-
-	return {
-		id: row.id,
-		chatId: row.chat_id,
-		videoPath: getVideoFullPath(row.video_path),
-		title: row.title,
-		description: row.description,
-		hashtags: row.hashtags,
-		scheduledAt: row.scheduled_at,
-		status: row.status,
-		error: row.error,
-		isRepost: row.is_repost === 1,
-	};
+export async function getPostById(postId) {
+	const row = await prisma.scheduledPost.findUnique({ where: { id: postId } });
+	return mapScheduledPost(row);
 }
 
 /**
@@ -657,19 +544,17 @@ export function getPostById(postId) {
  * @param {'pending' | 'posted' | 'failed'} status
  * @param {string} [error]
  */
-export function updatePostStatus(id, status, error = null) {
-	const stmt = db.prepare(
-		`UPDATE scheduled_posts SET status = ?, error = ? WHERE id = ?`
-	);
-	stmt.run(status, error, id);
+export async function updatePostStatus(id, status, error = null) {
+	await prisma.scheduledPost.update({
+		where: { id },
+		data: { status, error },
+	});
 
 	// If posted successfully, archive the video for future repost
 	if (status === 'posted') {
-		const post = db
-			.prepare(`SELECT * FROM scheduled_posts WHERE id = ?`)
-			.get(id);
-		if (post && !post.is_repost) {
-			archiveVideo(post);
+		const post = await prisma.scheduledPost.findUnique({ where: { id } });
+		if (post && post.isRepost !== 1) {
+			await archiveVideo(post);
 		}
 	}
 }
@@ -680,26 +565,23 @@ export function updatePostStatus(id, status, error = null) {
  * Archive a posted video for repost system
  * @param {Object} post
  */
-function archiveVideo(post) {
-	const existing = db
-		.prepare(`SELECT id FROM video_archive WHERE video_path = ?`)
-		.get(post.video_path);
+async function archiveVideo(post) {
+	const existing = await prisma.videoArchive.findFirst({
+		where: { videoPath: post.videoPath },
+	});
 	if (existing) return; // Already archived
 
-	const stmt = db.prepare(`
-    INSERT INTO video_archive (id, chat_id, video_path, title, description, hashtags, views, likes, posted_at)
-    VALUES (?, ?, ?, ?, ?, ?, 0, 0, ?)
-  `);
-
-	stmt.run(
-		crypto.randomUUID(),
-		post.chat_id,
-		post.video_path,
-		post.title,
-		post.description,
-		post.hashtags,
-		new Date().toISOString()
-	);
+	await prisma.videoArchive.create({
+		data: {
+			id: crypto.randomUUID(),
+			chatId: post.chatId,
+			videoPath: post.videoPath,
+			title: post.title,
+			description: post.description,
+			hashtags: post.hashtags,
+			postedAt: new Date().toISOString(),
+		},
+	});
 }
 
 /**
@@ -708,48 +590,52 @@ function archiveVideo(post) {
  * @param {number} views
  * @param {number} likes
  */
-export function updateVideoStats(videoPath, views, likes) {
-	const stmt = db.prepare(
-		`UPDATE video_archive SET views = ?, likes = ? WHERE video_path = ?`
-	);
-	stmt.run(views, likes, videoPath);
+export async function updateVideoStats(videoPath, views, likes) {
+	await prisma.videoArchive.updateMany({
+		where: { videoPath },
+		data: { views, likes },
+	});
 }
 
 /**
  * Get videos for repost - 3 oldest videos not yet reposted in current cycle
  * @param {number} chatId
- * @returns {Array|null}
+ * @returns {Promise<Array|null>}
  */
-export function getVideosForRepost(chatId) {
-	const currentCycle = parseInt(getSetting('current_repost_cycle') || '0');
+export async function getVideosForRepost(chatId) {
+	const currentCycle = parseInt(
+		(await getSetting('current_repost_cycle')) || '0'
+	);
+
+	// Get IDs of videos already reposted in this cycle
+	const repostedInCycle = await prisma.repostCycle.findMany({
+		where: { cycleNumber: currentCycle },
+		select: { videoId: true },
+	});
+	const repostedIds = repostedInCycle.map((r) => r.videoId);
 
 	// Get 3 oldest videos not yet reposted in this cycle
-	const available = db
-		.prepare(
-			`
-    SELECT va.* FROM video_archive va
-    WHERE va.chat_id = ?
-    AND va.id NOT IN (
-      SELECT video_id FROM repost_cycle WHERE cycle_number = ?
-    )
-    ORDER BY va.posted_at ASC
-    LIMIT 3
-  `
-		)
-		.all(chatId, currentCycle);
+	const available = await prisma.videoArchive.findMany({
+		where: {
+			chatId: BigInt(chatId),
+			id: { notIn: repostedIds },
+		},
+		orderBy: { postedAt: 'asc' },
+		take: 3,
+	});
 
 	if (available.length === 0) {
 		// All videos reposted - start new cycle
-		const totalVideos = db
-			.prepare(`SELECT COUNT(*) as count FROM video_archive WHERE chat_id = ?`)
-			.get(chatId).count;
+		const totalVideos = await prisma.videoArchive.count({
+			where: { chatId: BigInt(chatId) },
+		});
 
 		if (totalVideos === 0) {
 			return null; // No videos to repost
 		}
 
 		// Start new cycle
-		setSetting('current_repost_cycle', String(currentCycle + 1));
+		await setSetting('current_repost_cycle', String(currentCycle + 1));
 		return getVideosForRepost(chatId); // Recursive call with new cycle
 	}
 
@@ -760,47 +646,54 @@ export function getVideosForRepost(chatId) {
  * Mark videos as reposted in current cycle
  * @param {string[]} videoIds
  */
-export function markAsReposted(videoIds) {
-	const currentCycle = parseInt(getSetting('current_repost_cycle') || '0');
-	const stmt = db.prepare(
-		`INSERT INTO repost_cycle (video_id, repost_date, cycle_number) VALUES (?, ?, ?)`
+export async function markAsReposted(videoIds) {
+	const currentCycle = parseInt(
+		(await getSetting('current_repost_cycle')) || '0'
 	);
-
 	const today = new Date().toISOString().split('T')[0];
+
 	for (const id of videoIds) {
-		stmt.run(id, today, currentCycle);
+		await prisma.repostCycle.create({
+			data: {
+				videoId: id,
+				repostDate: today,
+				cycleNumber: currentCycle,
+			},
+		});
 	}
 }
 
 /**
  * Check if we need to schedule reposts (no pending posts for tomorrow)
  * @param {number} chatId
- * @returns {boolean}
+ * @returns {Promise<boolean>}
  */
-export function needsRepost(chatId) {
+export async function needsRepost(chatId) {
 	const tomorrow = new Date();
 	tomorrow.setDate(tomorrow.getDate() + 1);
 	const tomorrowStr = tomorrow.toISOString().split('T')[0];
 
-	// Check if there are pending posts for tomorrow
-	const stmt = db.prepare(`
-    SELECT COUNT(*) as count FROM scheduled_posts 
-    WHERE chat_id = ? AND status = 'pending' AND DATE(scheduled_at) >= ?
-  `);
+	// Check if there are pending posts for tomorrow or later
+	const count = await prisma.scheduledPost.count({
+		where: {
+			chatId: BigInt(chatId),
+			status: 'pending',
+			scheduledAt: { gte: tomorrowStr },
+		},
+	});
 
-	const result = stmt.get(chatId, tomorrowStr);
-	return result.count === 0;
+	return count === 0;
 }
 
 /**
  * Schedule repost videos with new random content
  * @param {number} chatId
  */
-export function scheduleReposts(chatId) {
+export async function scheduleReposts(chatId) {
 	// Import content generator dynamically to avoid circular deps
-	const { generateContentOptions } = require('../services/ai.js');
+	const { generateContentOptions } = await import('../services/ai.js');
 
-	const videos = getVideosForRepost(chatId);
+	const videos = await getVideosForRepost(chatId);
 
 	if (!videos || videos.length === 0) {
 		console.log('[Repost] No videos available for repost');
@@ -813,9 +706,9 @@ export function scheduleReposts(chatId) {
 		// Generate new random content for repost
 		const [content] = generateContentOptions();
 
-		const post = addScheduledPost({
-			chatId: video.chat_id,
-			videoPath: getVideoFullPath(video.video_path),
+		const post = await addScheduledPost({
+			chatId: Number(video.chatId),
+			videoPath: getVideoFullPath(video.videoPath),
 			title: content.title,
 			description: content.description,
 			hashtags: content.hashtags,
@@ -823,7 +716,7 @@ export function scheduleReposts(chatId) {
 		});
 
 		scheduled.push(post);
-		markAsReposted([video.id]);
+		await markAsReposted([video.id]);
 
 		console.log(`[Repost] Scheduled: "${content.title.slice(0, 20)}..."`);
 	}
@@ -835,79 +728,62 @@ export function scheduleReposts(chatId) {
 
 /**
  * Get pending posts count
- * @returns {number}
+ * @returns {Promise<number>}
  */
-export function getPendingCount() {
-	const stmt = db.prepare(
-		`SELECT COUNT(*) as count FROM scheduled_posts WHERE status = 'pending'`
-	);
-	return stmt.get().count;
+export async function getPendingCount() {
+	return prisma.scheduledPost.count({ where: { status: 'pending' } });
 }
 
 /**
  * Get all pending posts for a chat
  * @param {number} chatId
- * @returns {ScheduledPost[]}
+ * @returns {Promise<ScheduledPost[]>}
  */
-export function getPendingPostsByChat(chatId) {
-	const stmt = db.prepare(`
-    SELECT * FROM scheduled_posts
-    WHERE chat_id = ? AND status = 'pending'
-    ORDER BY scheduled_at ASC
-  `);
+export async function getPendingPostsByChat(chatId) {
+	const posts = await prisma.scheduledPost.findMany({
+		where: { chatId: BigInt(chatId), status: 'pending' },
+		orderBy: { scheduledAt: 'asc' },
+	});
 
-	return stmt.all(chatId).map((row) => ({
-		id: row.id,
-		chatId: row.chat_id,
-		videoPath: getVideoFullPath(row.video_path),
-		title: row.title,
-		description: row.description,
-		hashtags: row.hashtags,
-		scheduledAt: row.scheduled_at,
-		status: row.status,
-		isRepost: row.is_repost === 1,
-		telegramFileId: row.telegram_file_id || null,
-	}));
+	return posts.map(mapScheduledPost);
 }
 
 /**
  * Delete a scheduled post, its video file, and reschedule remaining posts
  * @param {string} postId - The post ID to delete
  * @param {number} chatId - Chat ID for rescheduling
- * @returns {{success: boolean, rescheduled: number}}
+ * @returns {Promise<{success: boolean, rescheduled: number}>}
  */
-export function deleteScheduledPost(postId, chatId) {
+export async function deleteScheduledPost(postId, chatId) {
 	// Get the post first
-	const post = db
-		.prepare(`SELECT * FROM scheduled_posts WHERE id = ?`)
-		.get(postId);
+	const post = await prisma.scheduledPost.findUnique({ where: { id: postId } });
 
 	if (!post) {
 		return { success: false, rescheduled: 0 };
 	}
 
 	// Delete video file if exists
-	const fullPath = getVideoFullPath(post.video_path);
+	const fullPath = getVideoFullPath(post.videoPath);
 	if (fs.existsSync(fullPath)) {
 		try {
 			fs.unlinkSync(fullPath);
-			console.log(`[Delete] Removed video file: ${post.video_path}`);
+			console.log(`[Delete] Removed video file: ${post.videoPath}`);
 		} catch (e) {
 			console.error(`[Delete] Failed to remove file: ${e.message}`);
 		}
 	}
 
 	// Delete from downloaded_videos if exists (by video path)
-	db.prepare(`DELETE FROM downloaded_videos WHERE video_path = ?`).run(
-		post.video_path
-	);
+	await prisma.downloadedVideo.deleteMany({
+		where: { videoPath: post.videoPath },
+	});
 
 	// Delete from scheduled_posts
-	db.prepare(`DELETE FROM scheduled_posts WHERE id = ?`).run(postId);
+	await prisma.scheduledPost.delete({ where: { id: postId } });
 	console.log(`[Delete] Removed post from database: ${postId}`);
 
 	// Reschedule remaining posts to fill the gap (keep existing content)
-	const rescheduled = rescheduleTimesOnly(chatId);
+	const rescheduled = await rescheduleTimesOnly(chatId);
 
 	return { success: true, rescheduled };
 }
@@ -917,35 +793,34 @@ export function deleteScheduledPost(postId, chatId) {
  * @param {string} postId
  * @param {string} fileId
  */
-export function updatePostFileId(postId, fileId) {
-	const stmt = db.prepare(
-		`UPDATE scheduled_posts SET telegram_file_id = ? WHERE id = ?`
-	);
-	stmt.run(fileId, postId);
+export async function updatePostFileId(postId, fileId) {
+	await prisma.scheduledPost.update({
+		where: { id: postId },
+		data: { telegramFileId: fileId },
+	});
 	console.log(`[Cache] Saved file_id for post ${postId}`);
 }
 
 /**
  * Clean orphaned posts where video file no longer exists
  * @param {number} chatId
- * @returns {{deleted: number, rescheduled: number}}
+ * @returns {Promise<{deleted: number, rescheduled: number}>}
  */
-export function cleanOrphanedPosts(chatId) {
-	const posts = db
-		.prepare(
-			`SELECT id, video_path FROM scheduled_posts WHERE chat_id = ? AND status = 'pending'`
-		)
-		.all(chatId);
+export async function cleanOrphanedPosts(chatId) {
+	const posts = await prisma.scheduledPost.findMany({
+		where: { chatId: BigInt(chatId), status: 'pending' },
+		select: { id: true, videoPath: true },
+	});
 
 	let deleted = 0;
 	for (const post of posts) {
-		const fullPath = getVideoFullPath(post.video_path);
+		const fullPath = getVideoFullPath(post.videoPath);
 		if (!fs.existsSync(fullPath)) {
 			// Delete record
-			db.prepare(`DELETE FROM scheduled_posts WHERE id = ?`).run(post.id);
-			db.prepare(`DELETE FROM downloaded_videos WHERE video_path = ?`).run(
-				post.video_path
-			);
+			await prisma.scheduledPost.delete({ where: { id: post.id } });
+			await prisma.downloadedVideo.deleteMany({
+				where: { videoPath: post.videoPath },
+			});
 			console.log(`[Fix] Removed orphaned record: ${post.id}`);
 			deleted++;
 		}
@@ -954,7 +829,7 @@ export function cleanOrphanedPosts(chatId) {
 	// Reschedule remaining posts
 	let rescheduled = 0;
 	if (deleted > 0) {
-		rescheduled = rescheduleTimesOnly(chatId);
+		rescheduled = await rescheduleTimesOnly(chatId);
 	}
 
 	return { deleted, rescheduled };
@@ -963,16 +838,14 @@ export function cleanOrphanedPosts(chatId) {
 /**
  * Update post content (title, description, hashtags) with new random content
  * @param {string} postId - The post ID to update
- * @returns {{success: boolean, title: string, description: string, hashtags: string}}
+ * @returns {Promise<{success: boolean, title: string, description: string, hashtags: string}>}
  */
-export function updatePostContent(postId) {
+export async function updatePostContent(postId) {
 	// Import content generator dynamically to avoid circular deps
-	const { generateContentOptions } = require('../services/ai.js');
+	const { generateContentOptions } = await import('../services/ai.js');
 
 	// Check if post exists
-	const post = db
-		.prepare(`SELECT * FROM scheduled_posts WHERE id = ?`)
-		.get(postId);
+	const post = await prisma.scheduledPost.findUnique({ where: { id: postId } });
 
 	if (!post) {
 		return { success: false, title: '', description: '', hashtags: '' };
@@ -982,10 +855,14 @@ export function updatePostContent(postId) {
 	const [content] = generateContentOptions();
 
 	// Update the post
-	const stmt = db.prepare(
-		`UPDATE scheduled_posts SET title = ?, description = ?, hashtags = ? WHERE id = ?`
-	);
-	stmt.run(content.title, content.description, content.hashtags, postId);
+	await prisma.scheduledPost.update({
+		where: { id: postId },
+		data: {
+			title: content.title,
+			description: content.description,
+			hashtags: content.hashtags,
+		},
+	});
 
 	console.log(
 		`[Update] New content for ${postId}: "${content.title.slice(0, 25)}..."`
@@ -1002,14 +879,18 @@ export function updatePostContent(postId) {
 /**
  * Get archive stats
  * @param {number} chatId
- * @returns {{total: number, totalViews: number}}
+ * @returns {Promise<{total: number, totalViews: number}>}
  */
-export function getArchiveStats(chatId) {
-	const stmt = db.prepare(`
-    SELECT COUNT(*) as total, COALESCE(SUM(views), 0) as totalViews 
-    FROM video_archive WHERE chat_id = ?
-  `);
-	return stmt.get(chatId);
+export async function getArchiveStats(chatId) {
+	const result = await prisma.videoArchive.aggregate({
+		where: { chatId: BigInt(chatId) },
+		_count: true,
+		_sum: { views: true },
+	});
+	return {
+		total: result._count || 0,
+		totalViews: result._sum?.views || 0,
+	};
 }
 
 // ==================== VIDEO TRACKING ====================
@@ -1017,13 +898,13 @@ export function getArchiveStats(chatId) {
 /**
  * Check if video was already downloaded
  * @param {string} fileId - Telegram file_id
- * @returns {boolean}
+ * @returns {Promise<boolean>}
  */
-export function isVideoDuplicate(fileId) {
-	const stmt = db.prepare(
-		`SELECT file_id FROM downloaded_videos WHERE file_id = ?`
-	);
-	return !!stmt.get(fileId);
+export async function isVideoDuplicate(fileId) {
+	const existing = await prisma.downloadedVideo.findUnique({
+		where: { fileId },
+	});
+	return !!existing;
 }
 
 /**
@@ -1033,12 +914,21 @@ export function isVideoDuplicate(fileId) {
  * @param {string} videoPath
  * @param {number} fileSize
  */
-export function trackDownloadedVideo(fileId, chatId, videoPath, fileSize) {
-	const stmt = db.prepare(`
-    INSERT OR REPLACE INTO downloaded_videos (file_id, chat_id, video_path, file_size, status)
-    VALUES (?, ?, ?, ?, 'pending')
-  `);
-	stmt.run(fileId, chatId, getVideoRelativePath(videoPath), fileSize);
+export async function trackDownloadedVideo(
+	fileId,
+	chatId,
+	videoPath,
+	fileSize
+) {
+	const relativePath = getVideoRelativePath(videoPath);
+	await prisma.downloadedVideo.create({
+		data: {
+			fileId,
+			chatId: BigInt(chatId),
+			videoPath: relativePath,
+			fileSize,
+		},
+	});
 }
 
 /**
@@ -1046,65 +936,69 @@ export function trackDownloadedVideo(fileId, chatId, videoPath, fileSize) {
  * @param {string} fileId
  * @param {'pending' | 'scheduled' | 'posted' | 'deleted'} status
  */
-export function updateVideoStatus(fileId, status) {
-	const stmt = db.prepare(
-		`UPDATE downloaded_videos SET status = ? WHERE file_id = ?`
-	);
-	stmt.run(status, fileId);
+export async function updateVideoStatus(fileId, status) {
+	await prisma.downloadedVideo.update({
+		where: { fileId },
+		data: { status },
+	});
 }
 
 /**
  * Get all downloaded videos for a chat
  * @param {number} chatId
- * @returns {Array}
+ * @returns {Promise<Array>}
  */
-export function getDownloadedVideos(chatId) {
-	const stmt = db.prepare(`
-    SELECT * FROM downloaded_videos 
-    WHERE chat_id = ? 
-    ORDER BY downloaded_at DESC
-    LIMIT 50
-  `);
-	return stmt.all(chatId);
+export async function getDownloadedVideos(chatId) {
+	return prisma.downloadedVideo.findMany({
+		where: { chatId: BigInt(chatId) },
+		orderBy: { downloadedAt: 'desc' },
+	});
 }
 
 /**
  * Delete a downloaded video record and file
  * @param {string} fileId
- * @returns {boolean}
+ * @returns {Promise<boolean>}
  */
-export function deleteDownloadedVideo(fileId) {
-	const video = db
-		.prepare(`SELECT video_path FROM downloaded_videos WHERE file_id = ?`)
-		.get(fileId);
-	if (video) {
-		// Delete file if exists
-		const fullPath = getVideoFullPath(video.video_path);
-		if (fs.existsSync(fullPath)) {
-			fs.unlinkSync(fullPath);
-		}
-		// Delete record
-		db.prepare(`DELETE FROM downloaded_videos WHERE file_id = ?`).run(fileId);
-		return true;
+export async function deleteDownloadedVideo(fileId) {
+	const video = await prisma.downloadedVideo.findUnique({ where: { fileId } });
+
+	if (!video) {
+		return false;
 	}
-	return false;
+
+	// Delete file
+	const fullPath = getVideoFullPath(video.videoPath);
+	if (fs.existsSync(fullPath)) {
+		fs.unlinkSync(fullPath);
+	}
+
+	// Delete record
+	await prisma.downloadedVideo.delete({ where: { fileId } });
+	return true;
 }
 
 /**
  * Get video stats
  * @param {number} chatId
- * @returns {{total: number, pending: number, scheduled: number, posted: number}}
+ * @returns {Promise<{total: number, pending: number, scheduled: number, posted: number}>}
  */
-export function getVideoStats(chatId) {
-	const stmt = db.prepare(`
-    SELECT 
-      COUNT(*) as total,
-      SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) as pending,
-      SUM(CASE WHEN status = 'scheduled' THEN 1 ELSE 0 END) as scheduled,
-      SUM(CASE WHEN status = 'posted' THEN 1 ELSE 0 END) as posted
-    FROM downloaded_videos WHERE chat_id = ?
-  `);
-	return stmt.get(chatId);
+export async function getVideoStats(chatId) {
+	const [total, pending, scheduled, posted] = await Promise.all([
+		prisma.downloadedVideo.count({ where: { chatId: BigInt(chatId) } }),
+		prisma.downloadedVideo.count({
+			where: { chatId: BigInt(chatId), status: 'pending' },
+		}),
+		prisma.downloadedVideo.count({
+			where: { chatId: BigInt(chatId), status: 'scheduled' },
+		}),
+		prisma.downloadedVideo.count({
+			where: { chatId: BigInt(chatId), status: 'posted' },
+		}),
+	]);
+
+	return { total, pending, scheduled, posted };
 }
 
-export { db };
+// Export prisma for direct access if needed
+export { prisma };
