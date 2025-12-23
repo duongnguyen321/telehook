@@ -2112,30 +2112,96 @@ export function getCategoryOptions(categoryKey) {
 
 /**
  * Generate content based on selected categories
- * Filters existing TITLES and DESCRIPTIONS by keywords from selected categories
- * Scores and sorts by number of keyword matches (most relevant first)
+ * Uses progressive filtering: applies each filter one by one, starting with the filter
+ * that produces the largest result, then progressively filtering until count is reached.
  * @param {Object} selectedCategories - e.g. { POSE: 'FRONT', ACTION: 'SHOWING', ... }
- * @param {number} count - Number of options to generate (default: 3)
+ * @param {number} count - Number of options to generate (default: 6)
  * @returns {Array<{title: string, description: string, hashtags: string}>}
  */
 export function generateContentFromCategories(selectedCategories, count = 6) {
-	// Collect all keywords from selected categories
-	const allKeywords = [];
+	// Collect all keyword sets from selected categories
+	const keywordSets = [];
 
 	for (const [categoryKey, optionKey] of Object.entries(selectedCategories)) {
 		const category = CATEGORIES[categoryKey];
 		if (!category) continue;
 
 		const option = category.options[optionKey];
-		if (!option) continue;
+		if (!option || !option.keywords || option.keywords.length === 0) continue;
 
-		allKeywords.push(...(option.keywords || []));
+		keywordSets.push({
+			categoryKey,
+			optionKey,
+			keywords: option.keywords,
+		});
 	}
 
 	// If no valid selections, fall back to random
-	if (allKeywords.length === 0) {
+	if (keywordSets.length === 0) {
 		return generateContentOptions(count);
 	}
+
+	// Helper function to filter array by keywords
+	const filterByKeywordSet = (arr, keywords) => {
+		return arr.filter((item) => {
+			const lowerItem = item.toLowerCase();
+			return keywords.some((kw) => lowerItem.includes(kw.toLowerCase()));
+		});
+	};
+
+	// Helper to apply progressive filtering
+	const progressiveFilter = (sourceArray, sets, targetCount) => {
+		if (sets.length === 0) return sourceArray;
+
+		// Step 1: Apply each filter individually to find which produces the largest result
+		const filteredResults = sets.map((set) => ({
+			set,
+			filtered: filterByKeywordSet(sourceArray, set.keywords),
+		}));
+
+		// Sort by largest result first
+		filteredResults.sort((a, b) => b.filtered.length - a.filtered.length);
+
+		// Step 2: Start with the largest filtered result as main array
+		let mainArray = filteredResults[0].filtered;
+		const usedSets = new Set([filteredResults[0].set]);
+
+		// If main array is empty, return source
+		if (mainArray.length === 0) return sourceArray;
+
+		// If already at or below target count, return as is
+		if (mainArray.length <= targetCount) return mainArray;
+
+		// Step 3: Progressively apply remaining filters
+		for (let i = 1; i < filteredResults.length; i++) {
+			const currentSet = filteredResults[i].set;
+			if (usedSets.has(currentSet)) continue;
+
+			// Apply this filter to the current main array
+			const furtherFiltered = filterByKeywordSet(
+				mainArray,
+				currentSet.keywords
+			);
+
+			// Only apply if it doesn't empty the array
+			if (furtherFiltered.length > 0) {
+				mainArray = furtherFiltered;
+				usedSets.add(currentSet);
+
+				// Stop if we've reached or are below target count
+				if (mainArray.length <= targetCount) break;
+			}
+		}
+
+		return mainArray;
+	};
+
+	// Apply progressive filtering to both TITLES and DESCRIPTIONS
+	const filteredTitles = progressiveFilter(TITLES, keywordSets, count);
+	const filteredDescs = progressiveFilter(DESCRIPTIONS, keywordSets, count);
+
+	// Collect all keywords for scoring
+	const allKeywords = keywordSets.flatMap((s) => s.keywords);
 
 	// Score function: count how many keywords match in a string
 	const scoreByKeywords = (str) => {
@@ -2152,20 +2218,20 @@ export function generateContentFromCategories(selectedCategories, count = 6) {
 	// Helper to sort by score (desc) then random
 	const randomSort = (a, b) => b.score - a.score || Math.random() - 0.5;
 
-	// Score and sort titles by relevance
-	const scoredTitles = TITLES.map((t) => ({
-		text: t,
-		score: scoreByKeywords(t),
-	}))
-		.filter((t) => t.score > 0)
+	// Score and sort filtered titles by relevance
+	const scoredTitles = filteredTitles
+		.map((t) => ({
+			text: t,
+			score: scoreByKeywords(t),
+		}))
 		.sort(randomSort);
 
-	// Score and sort descriptions by relevance
-	const scoredDescs = DESCRIPTIONS.map((d) => ({
-		text: d,
-		score: scoreByKeywords(d),
-	}))
-		.filter((d) => d.score > 0)
+	// Score and sort filtered descriptions by relevance
+	const scoredDescs = filteredDescs
+		.map((d) => ({
+			text: d,
+			score: scoreByKeywords(d),
+		}))
 		.sort(randomSort);
 
 	// Generate options from scored content
@@ -2176,13 +2242,9 @@ export function generateContentFromCategories(selectedCategories, count = 6) {
 	// Try to fill up to count
 	for (let i = 0; i < count; i++) {
 		// Pick from top titles
-		// Since we sorted with random, picking sequentially is fine
 		let titleObj = scoredTitles.find((t) => !usedTitles.has(t.text));
 
-		// If we run out of matching titles, stop?
-		// Or should we fill with random high-quality ones?
-		// User wants "fit nhất", so if it doesn't fit, maybe stop or use lower score?
-		// scoredTitles only has score > 0.
+		// If we run out of matching titles, stop
 		if (!titleObj) break;
 
 		usedTitles.add(titleObj.text);
@@ -2190,9 +2252,7 @@ export function generateContentFromCategories(selectedCategories, count = 6) {
 		// Pick matching description
 		let descObj = scoredDescs.find((d) => !usedDescs.has(d.text));
 		if (!descObj) {
-			// If no matching description, pick a random one to complete the pair?
-			// Or maybe reusing a description is bad?
-			// Let's pick a random one from the pool if we really need to fill the slot for the title
+			// If no matching description, pick a random one
 			descObj = { text: random(DESCRIPTIONS), score: 0 };
 		}
 		usedDescs.add(descObj.text);
@@ -2205,9 +2265,7 @@ export function generateContentFromCategories(selectedCategories, count = 6) {
 		});
 	}
 
-	// Sort final options by combined score (and random again for variety in final presentation?)
-	// Actually no, we already randomized. Just keep them.
-	// But valid to sort by total score desc for the user to see best first
+	// Sort final options by combined score
 	options.sort((a, b) => b._score - a._score);
 
 	// Remove internal score property

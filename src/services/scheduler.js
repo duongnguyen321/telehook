@@ -1,5 +1,3 @@
-import { Queue, Worker } from 'bullmq';
-import IORedis from 'ioredis';
 import cron from 'node-cron';
 import fs from 'fs';
 import {
@@ -13,18 +11,6 @@ import {
 
 let bot = null;
 let defaultChatId = null;
-
-const QUEUE_NAME = 'tiktok-notify';
-
-// Redis connection
-const connection = new IORedis({
-	host: process.env.REDIS_HOST || 'localhost',
-	port: parseInt(process.env.REDIS_PORT || '6379'),
-	maxRetriesPerRequest: null,
-});
-
-// Create queue
-const notifyQueue = new Queue(QUEUE_NAME, { connection });
 
 /**
  * Set the bot instance for notifications
@@ -43,52 +29,27 @@ export function setDefaultChatId(chatId) {
 }
 
 /**
- * Add notification job to queue
+ * Process a single post - sends video + metadata to user for manual posting
  * @param {Object} post
- * @param {Date} scheduledAt
  */
-export async function scheduleUpload(post, scheduledAt) {
-	const delay = scheduledAt.getTime() - Date.now();
+async function processNotification(post) {
+	const {
+		id: postId,
+		chatId,
+		videoPath,
+		title,
+		description,
+		hashtags,
+		isRepost,
+	} = post;
+	const repostLabel = isRepost ? ' [REPOST]' : '';
 
-	// Only store postId and chatId - fetch fresh data when processing
-	await notifyQueue.add(
-		'notify',
-		{ postId: post.id, chatId: post.chatId },
-		{
-			delay: Math.max(0, delay),
-			removeOnComplete: true,
-			removeOnFail: false,
-		}
-	);
-
-	console.log(
-		`[Queue] Scheduled notification for post ${
-			post.id
-		} at ${scheduledAt.toLocaleString()}`
-	);
-}
-
-/**
- * Process notification job - sends video + metadata to user for manual posting
- */
-async function processNotification(job) {
-	const { postId, chatId } = job.data;
-
-	console.log(`[Worker] Processing: ${postId.slice(0, 8)}`);
+	console.log(`[Scheduler] Processing: ${postId.slice(0, 8)}`);
 
 	try {
 		if (!bot) {
 			throw new Error('Bot not initialized');
 		}
-
-		// Get fresh data from database (in case content was updated)
-		const post = getPostById(postId);
-		if (!post) {
-			throw new Error(`Post not found: ${postId}`);
-		}
-
-		const { videoPath, title, description, hashtags, isRepost } = post;
-		const repostLabel = isRepost ? ' [REPOST]' : '';
 
 		// Check if video file exists
 		if (!fs.existsSync(videoPath)) {
@@ -112,12 +73,10 @@ async function processNotification(job) {
 			reply_markup: keyboard,
 		});
 
-		// Note: Don't mark as posted yet - wait for user confirmation
-		console.log(`[Worker] Sent notification: ${postId.slice(0, 8)}`);
-
+		console.log(`[Scheduler] Sent notification: ${postId.slice(0, 8)}`);
 		return { success: true, postId };
 	} catch (error) {
-		console.error(`[Worker] Failed ${postId.slice(0, 8)}:`, error.message);
+		console.error(`[Scheduler] Failed ${postId.slice(0, 8)}:`, error.message);
 		updatePostStatus(postId, 'failed', error.message);
 
 		if (bot) {
@@ -130,11 +89,38 @@ async function processNotification(job) {
 					)}\nLỗi: ${error.message.replace(/[^\x00-\x7F]/g, '').slice(0, 100)}`
 				);
 			} catch (e) {
-				console.error('[Worker] Failed to send error msg:', e.message);
+				console.error('[Scheduler] Failed to send error msg:', e.message);
 			}
 		}
 
 		throw error;
+	}
+}
+
+/**
+ * Check for due posts and process them
+ * This runs every minute via cron
+ */
+async function checkAndProcessDuePosts() {
+	try {
+		const duePosts = getDuePosts();
+
+		if (duePosts.length === 0) {
+			return;
+		}
+
+		console.log(`[Scheduler] Found ${duePosts.length} due post(s) to process`);
+
+		for (const post of duePosts) {
+			try {
+				await processNotification(post);
+			} catch (error) {
+				// Error already logged in processNotification
+				// Continue with next post
+			}
+		}
+	} catch (error) {
+		console.error('[Scheduler] Error checking due posts:', error.message);
 	}
 }
 
@@ -157,11 +143,6 @@ async function checkAndScheduleReposts() {
 		const scheduled = scheduleReposts(defaultChatId);
 
 		if (scheduled.length > 0 && bot) {
-			// Schedule the notification jobs
-			for (const post of scheduled) {
-				await scheduleUpload(post, new Date(post.scheduledAt));
-			}
-
 			// Notify user
 			await bot.api.sendMessage(
 				defaultChatId,
@@ -173,20 +154,38 @@ async function checkAndScheduleReposts() {
 }
 
 /**
- * Start the worker to process notification jobs
+ * Schedule a post for notification (no-op now, just logs)
+ * Posts are picked up by the cron job when their time comes
+ * @param {Object} post
+ * @param {Date} scheduledAt
+ */
+export async function scheduleUpload(post, scheduledAt) {
+	console.log(
+		`[Scheduler] Post ${post.id.slice(
+			0,
+			8
+		)} scheduled for ${scheduledAt.toLocaleString()}`
+	);
+	// No need to do anything - cron will pick it up when due
+}
+
+/**
+ * Start the scheduler - uses cron to check every minute for due posts
  */
 export function startWorker() {
-	console.log('[Worker] Starting TikTok notification worker');
+	console.log('[Scheduler] Starting TikTok notification scheduler');
 
-	const worker = new Worker(QUEUE_NAME, processNotification, { connection });
-
-	worker.on('completed', (job) => {
-		console.log(`[Worker] Job ${job.id} completed`);
+	// Check for due posts every minute
+	console.log('[Scheduler] Setting up every-minute check for due posts');
+	cron.schedule('* * * * *', () => {
+		checkAndProcessDuePosts().catch(console.error);
 	});
 
-	worker.on('failed', (job, err) => {
-		console.error(`[Worker] Job ${job?.id} failed:`, err.message);
-	});
+	// Also run immediately on startup to catch any missed posts
+	console.log('[Scheduler] Running initial check for due posts...');
+	setTimeout(() => {
+		checkAndProcessDuePosts().catch(console.error);
+	}, 2000); // Wait 2s for bot to be ready
 
 	// Daily repost check at 8:00 AM
 	console.log('[Scheduler] Setting up daily repost check at 8:00 AM');
@@ -201,18 +200,16 @@ export function startWorker() {
 		checkAndScheduleReposts().catch(console.error);
 	});
 
-	return worker;
+	console.log('[Scheduler] All cron jobs scheduled successfully');
+	return null; // No worker to return
 }
 
 /**
- * Get queue stats
+ * Get scheduler stats (simplified - just counts from database)
  */
 export async function getQueueStats() {
-	const waiting = await notifyQueue.getWaitingCount();
-	const delayed = await notifyQueue.getDelayedCount();
-	const active = await notifyQueue.getActiveCount();
-
-	return { waiting, delayed, active, total: waiting + delayed + active };
+	const pendingCount = getPendingCount();
+	return { waiting: 0, delayed: pendingCount, active: 0, total: pendingCount };
 }
 
 /**
@@ -222,4 +219,12 @@ export async function triggerRepostCheck() {
 	await checkAndScheduleReposts();
 }
 
-export { notifyQueue as uploadQueue };
+/**
+ * Manually trigger due post check
+ */
+export async function triggerDuePostCheck() {
+	await checkAndProcessDuePosts();
+}
+
+// Export for compatibility (no-op queue)
+export const uploadQueue = null;
