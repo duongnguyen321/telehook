@@ -749,7 +749,8 @@ export async function getPendingPostsByChat(chatId) {
 }
 
 /**
- * Get all posts for a chat (both pending and posted), sorted by scheduledAt desc
+ * Get all posts for a chat (both pending and posted), sorted by scheduledAt asc (oldest first)
+ * Order: oldest posted → ... → last posted (DEFAULT) → first pending → ... → newest pending
  * Also returns the index of the last posted video for default page
  * @param {number} chatId
  * @returns {Promise<{posts: ScheduledPost[], lastPostedIndex: number}>}
@@ -760,13 +761,20 @@ export async function getAllPostsByChat(chatId) {
 			chatId: BigInt(chatId),
 			status: { in: ['pending', 'posted'] },
 		},
-		orderBy: { scheduledAt: 'desc' },
+		orderBy: { scheduledAt: 'asc' }, // Oldest first
 	});
 
 	const mappedPosts = posts.map(mapScheduledPost);
 
-	// Find the index of the last posted video (first 'posted' in desc order)
-	const lastPostedIndex = mappedPosts.findIndex((p) => p.status === 'posted');
+	// Find the index of the LAST posted video (highest index with status='posted')
+	// This is the boundary between posted and pending videos
+	let lastPostedIndex = -1;
+	for (let i = mappedPosts.length - 1; i >= 0; i--) {
+		if (mappedPosts[i].status === 'posted') {
+			lastPostedIndex = i;
+			break;
+		}
+	}
 
 	return {
 		posts: mappedPosts,
