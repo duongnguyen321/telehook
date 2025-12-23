@@ -5,8 +5,6 @@
  */
 
 // 350+ titles - tiếng Việt có dấu đầy đủ, dirty talk style
-// === FILTERED TITLES ===
-// === FILTERED TITLES ===
 // === ENHANCED TITLES (≥4 filters, dirty talk style) ===
 export const TITLES = [
 	// === THEME + OUTFIT + ACTIVITY + LOCATION + PEOPLE (5 cats) ===
@@ -516,6 +514,188 @@ export const TITLES = [
 
 	// === THEME + ACTIVITY + LOCATION + TIME + PEOPLE (5 cats) ===
 	'1 anh chiều bọn em trên giường đêm nay nóng bỏng mlem',
+
+	// === POSITION VARIATIONS: QUỲ / NGỒI XỔM / NẰM NGỬA / NẰM SẤP ===
+	// Quỳ gối + nhiều filter
+	'Quỳ gối trước mặt anh khoe mông trên giường đêm nay nóng',
+	'Em quỳ xuống khoe ngực cho anh xem trên thảm đêm nay',
+	'Quỳ gối gợi cảm tóc dài xõa vai khoe mông cho anh xem',
+	'Quỳ trên giường nằm ngửa một chút khoe ngực mông anh',
+	'Tư thế quỳ gối quyến rũ khoe đường cong trên sofa anh',
+	'Quỳ xuống cúi đầu khoe mông tròn cho anh xem đêm nay',
+	'Em quỳ gối tóc dài chấm lưng khoe mông trên giường anh',
+	'Quỳ trên thảm lông mịn khoe ngực mông cho anh đêm nay',
+	'Trườn trên giường gợi cảm khoe mông đêm nay nóng bỏng',
+	'Em trườn từ từ khoe lưng trần tóc dài cho anh xem',
+	'Bò trên giường quyến rũ khoe mông cho anh nhìn đêm nay',
+
+	// Ngồi xổm + nhiều filter
+	'Ngồi xổm gợi cảm khoe đùi mông trên giường cho anh đêm',
+	'Em ngồi xổm tóc dài xõa vai khoe mông cho anh xem',
+	'Tư thế ngồi xổm quyến rũ khoe đường cong cho anh đêm',
+	'Ngồi xổm trước gương khoe mông tròn đêm nay nóng bỏng',
+	'Em ngồi xổm cúi người khoe ngực cho anh trên thảm đêm',
+	'Ngồi xổm trong phòng tắm ướt khoe mông cho anh xem',
+	'Tư thế ngồi xổm bikini khoe đùi mông ngoài biển anh',
+
+	// Nằm ngửa + nhiều filter
+	'Nằm ngửa trên giường khoe ngực căng tràn cho anh đêm nay',
+	'Em nằm ngửa phơi bày toàn thân khoe ngực mông cho anh',
+	'Tư thế nằm ngửa gợi cảm khoe rãnh ngực cho anh xem',
+	'Nằm ngửa tóc dài xõa khoe ngực trên giường đêm nay',
+	'Em nằm ngửa dang chân khoe đùi cho anh xem nóng bỏng',
+	'Nằm ngửa trên sofa khoe ngực căng cho anh đêm nay',
+	'Tư thế nằm ngửa bikini khoe ngực mông cho anh xem',
+	'Nằm ngửa võng lưng khoe rãnh ngực sâu cho anh đêm nay',
+	'Em nằm ngửa trên thảm khoe toàn thân cho anh xem nóng',
+
+	// Nằm sấp + nhiều filter
+	'Nằm sấp chổng mông khoe vòng 3 trên giường cho anh đêm',
+	'Em nằm sấp tóc dài chấm mông khoe lưng cho anh xem',
+	'Tư thế nằm sấp gợi cảm khoe mông trên giường đêm nay',
+	'Nằm sấp trên giường khoe mông tròn cho anh xem nóng',
+	'Em nằm sấp võng lưng khoe đường cong cho anh đêm nay',
+	'Nằm sấp bikini khoe mông căng cho anh xem ngoài biển',
+	'Tư thế nằm sấp nội y ren khoe mông cho anh đêm nay',
+
+	// === POSITION: CHỔNG MÔNG / DOGGY ===
+	'Chổng mông cho anh xem vòng 3 căng trên giường đêm nay',
+	'Em chổng mông gợi cảm tóc dài xõa khoe cho anh xem',
+	'Tư thế chổng mông quyến rũ khoe mông trên sofa anh',
+	'Chổng mông trên giường đêm nay khoe vòng 3 nóng bỏng',
+	'Em chổng mông quỳ gối khoe cho anh xem trên thảm đêm',
+	'Chổng mông từ sau khoe mông cong cho anh đêm nay nóng',
+	'Tư thế từ sau gợi cảm khoe mông cho anh xem đêm nay',
+	'Doggy trên giường khoe mông căng cho anh xem đêm nay',
+
+	// === POSITION: CƯỠI / RIDING ===
+	'Cưỡi ngựa trên giường khoe mông cho anh xem đêm nay nóng',
+	'Em cưỡi lên trên ride quyến rũ khoe ngực cho anh đêm',
+	'Tư thế cưỡi ngựa gợi cảm khoe đường cong cho anh xem',
+	'Ngồi lên trên anh cưỡi khoe mông đêm nay nóng bỏng',
+	'Em ride trên giường khoe ngực mông cho anh xem đêm nay',
+	'Cưỡi ngựa tóc dài bay khoe lưng cho anh xem nóng bỏng',
+	'Lên trên anh cưỡi khoe mông căng đêm nay quyến rũ',
+	'Tư thế ride gợi cảm khoe ngực mông cho anh đêm nay',
+
+	// === POSITION: ORAL / 69 ===
+	'Oral cho anh đêm nay khoe môi đỏ mọng trên giường nóng',
+	'Em thổi kèn gợi cảm khoe môi cho anh xem đêm nay',
+	'Tư thế 69 nóng bỏng khoe toàn thân cho anh đêm nay',
+	'Bú liếm cho anh đêm nay khoe lưỡi nóng trên giường',
+	'Oral sex quyến rũ khoe môi mọng cho anh xem đêm nay',
+	'Em ngậm cho anh sướng khoe môi đỏ đêm nay nóng bỏng',
+
+	// === LOCATION: CẦU THANG ===
+	'Tạo dáng trên cầu thang khoe mông gợi cảm cho anh đêm',
+	'Em ngồi bậc thang khoe đùi dài cho anh xem đêm nay',
+	'Cầu thang và em tóc dài khoe mông cho anh xem nóng',
+	'Vịn tay vịn cầu thang khoe ngực cho anh đêm nay',
+	'Tư thế trên cầu thang gợi cảm khoe mông cho anh xem',
+	'Ngồi xổm trên bậc thang khoe đùi mông cho anh đêm',
+	'Quỳ trên cầu thang khoe mông cho anh xem đêm nay nóng',
+	'Cầu thang spiral và em khoe dáng cho anh xem đêm nay',
+
+	// === FOCUS: RÃNH NGỰC / KHE NGỰC ===
+	'Khoe rãnh ngực sâu cho anh xem trên giường đêm nay nóng',
+	'Rãnh ngực căng tràn gợi cảm khoe cho anh xem đêm nay',
+	'Em khoe khe ngực quyến rũ trên giường cho anh đêm nay',
+	'Ngực tràn áo lộ rãnh ngực khoe cho anh xem nóng bỏng',
+	'Góc nhìn từ trên xuống rãnh ngực sâu khoe cho anh đêm',
+	'Khe ngực gợi cảm trong áo ren khoe cho anh đêm nay',
+	'Nằm ngửa khoe rãnh ngực căng tràn cho anh xem đêm nay',
+	'Rãnh ngực sâu hun hút khoe cho anh xem trên giường đêm',
+
+	// === HAIR VARIATIONS: TÓC DÀI ĐẾN NHIỀU VỊ TRÍ ===
+	// Tóc tới mông
+	'Tóc dài tới mông quyến rũ khoe lưng trên giường cho anh',
+	'Em tóc chấm mông xõa dài khoe lưng cho anh đêm nay',
+	'Tóc dài quá mông gợi cảm khoe đường cong cho anh xem',
+	'Tóc siêu dài tới mông khoe lưng trần cho anh đêm nay',
+	'Em thả tóc dài chấm mông khoe lưng cho anh xem nóng',
+
+	// Tóc chấm lưng / giữa lưng
+	'Tóc dài chấm lưng gợi cảm khoe vai trên giường đêm nay',
+	'Em tóc giữa lưng xõa dài khoe cho anh xem nóng bỏng',
+	'Tóc dài qua lưng quyến rũ khoe đường cong cho anh đêm',
+	'Tóc chấm giữa lưng thướt tha khoe cho anh xem đêm nay',
+
+	// Tóc ngang vai
+	'Tóc ngang vai gợi cảm khoe vai trần cho anh đêm nay',
+	'Em tóc dài ngang vai khoe lưng trên giường cho anh xem',
+	'Tóc xõa ngang vai quyến rũ khoe cho anh xem đêm nay',
+	'Tóc vừa ngang vai khoe cổ gợi cảm cho anh đêm nay',
+
+	// === ACTIVITY: CÚI / GẬP NGƯỜI ===
+	'Cúi người khoe mông tròn cho anh xem trên giường đêm nay',
+	'Em cúi xuống gợi cảm khoe ngực cho anh đêm nay nóng',
+	'Gập người khoe đường cong quyến rũ cho anh xem đêm nay',
+	'Cúi người từ từ khoe mông căng cho anh trên giường đêm',
+	'Tư thế cúi gập người khoe mông cho anh xem nóng bỏng',
+	'Em cúi người tóc dài xõa khoe lưng cho anh đêm nay',
+	'Gập người xuống khoe vòng 3 căng cho anh xem đêm nay',
+	'Cúi người trước gương khoe mông cho anh xem nóng bỏng',
+
+	// === MORE COMBINATIONS: NHIỀU FILTER ===
+	// Quỳ + Tóc + Location + Focus
+	'Quỳ gối tóc dài tới mông khoe lưng trần trên giường anh',
+	'Em quỳ trên bậc thang tóc chấm lưng khoe mông cho anh',
+	'Quỳ trước gương tóc dài xõa khoe rãnh ngực cho anh đêm',
+
+	// Ngồi xổm + Tóc + Location + Focus
+	'Ngồi xổm tóc ngang vai khoe đùi trên cầu thang cho anh',
+	'Em ngồi xổm tóc tới mông khoe lưng trong phòng đêm nay',
+
+	// Nằm ngửa + Tóc + Location + Focus
+	'Nằm ngửa tóc dài chấm lưng khoe rãnh ngực cho anh đêm',
+	'Em nằm ngửa tóc siêu dài khoe toàn thân cho anh xem',
+
+	// Chổng + Tóc + Location + Focus
+	'Chổng mông tóc dài tới mông khoe lưng trên giường anh',
+	'Em chổng mông tóc chấm lưng khoe vòng 3 cho anh đêm',
+
+	// Cưỡi + Tóc + Location + Focus
+	'Cưỡi ngựa tóc dài bay khoe ngực trên giường cho anh đêm',
+	'Em ride tóc ngang vai khoe rãnh ngực cho anh xem nóng',
+
+	// Mix tất cả
+	'Quỳ gối nằm sấp khoe mông tóc dài cho anh đêm nay nóng',
+	'Ngồi xổm cúi người khoe mông ngực cho anh xem đêm nay',
+	'Nằm ngửa dang chân khoe đùi rãnh ngực cho anh đêm nay',
+	'Chổng mông võng lưng khoe vòng 3 căng cho anh đêm nay',
+	'Cưỡi ngựa lắc hông khoe mông ngực cho anh xem đêm nay',
+	'Oral quỳ gối khoe môi mọng cho anh xem đêm nay nóng',
+	'Trên cầu thang quỳ gối khoe mông tóc dài cho anh đêm',
+	'Nằm sấp trên bậc thang khoe mông cho anh xem đêm nay',
+
+	// === POSITION: GHẾ TÌNH YÊU / GHẾ TANTRA ===
+	'Ghế tình yêu cho anh chiều em khoe mông ngực đêm nay nóng',
+	'Trên ghế tantra gợi cảm khoe dáng cho anh xem đêm nay',
+	'Ghế tình dục đặc biệt khoe toàn thân cho anh đêm nay nóng',
+	'Ngồi ghế tình yêu khoe mông ngực cho anh xem đêm nay',
+	'Ghế đặc biệt gợi cảm khoe đường cong cho anh đêm nay',
+	'Trên ghế tình yêu lắc hông khoe mông cho anh xem nóng',
+	'Ghế tantra cho em uốn éo khoe dáng cho anh đêm nay',
+
+	// === POSITION: TRUYỀN THỐNG / BÌNH THƯỜNG / CƠ BẢN ===
+	'Tư thế truyền thống bình thường khoe ngực cho anh đêm nay',
+	'Cơ bản nhưng vẫn nóng bỏng khoe mông ngực cho anh đêm',
+	'Missionary trên giường khoe ngực cho anh xem đêm nay nóng',
+	'Bình thường thôi vẫn gợi cảm khoe mông cho anh đêm nay',
+	'Tư thế cơ bản quyến rũ khoe toàn thân cho anh đêm nay',
+	'Missionary cổ điển khoe đường cong cho anh xem đêm nay',
+
+	// === POSITION: KHÔNG LÀM / TẠO DÁNG / SELFIE ===
+	'Tạo dáng trước gương khoe mông ngực cho anh xem đêm nay',
+	'Thả dáng quyến rũ khoe đường cong cho anh đêm nay nóng',
+	'Pose gợi cảm trên giường khoe mông cho anh xem đêm nay',
+	'Selfie góc cao khoe rãnh ngực cho anh xem đêm nay nóng',
+	'Chụp ảnh tự sướng khoe mông ngực cho anh xem đêm nay',
+	'Tạo dáng chuyên nghiệp khoe toàn thân cho anh đêm nay',
+	'Thả dáng bên cửa sổ khoe mông cho anh xem đêm nay nóng',
+	'Pose trước ống kính khoe ngực mông cho anh xem đêm nay',
+	'Selfie trong nhà tắm khoe mông ướt cho anh xem đêm nay',
+	'Chụp ảnh khoe dáng gợi cảm cho anh xem trên giường đêm',
 ];
 // === ENHANCED DESCRIPTIONS (≥4 filters, dirty talk style) ===
 export const DESCRIPTIONS = [
@@ -835,6 +1015,101 @@ export const DESCRIPTIONS = [
 	'Sân thượng và em đêm về khoe mông cho anh xem',
 	'Núi đồi và cơ thể tự do khoe mông cho anh',
 	'Rừng thông vắng vẻ với em khoe mông cho anh',
+
+	// === POSITION VARIATIONS: QUỲ / NGỒI XỔM / NẰM NGỬA / NẰM SẤP ===
+	// Quỳ gối + nhiều filter
+	'Quỳ gối cho anh khoe mông trên giường đêm nay nóng bỏng',
+	'Em quỳ xuống gợi cảm khoe ngực mông cho anh xem đêm',
+	'Tư thế quỳ gối quyến rũ khoe đường cong cho anh đêm nay',
+	'Quỳ trên thảm tóc dài xõa khoe mông cho anh xem nóng',
+	'Trườn trên giường gợi cảm khoe lưng mông cho anh đêm',
+	'Em bò trên giường khoe mông cho anh xem đêm nay nóng',
+
+	// Ngồi xổm + nhiều filter
+	'Ngồi xổm gợi cảm khoe đùi mông cho anh xem đêm nay',
+	'Em ngồi xổm trước gương khoe mông cho anh đêm nay nóng',
+	'Tư thế ngồi xổm quyến rũ khoe đường cong cho anh xem',
+	'Ngồi xổm trong phòng tắm ướt khoe mông cho anh đêm',
+
+	// Nằm ngửa + nhiều filter
+	'Nằm ngửa trên giường khoe ngực căng tràn cho anh đêm nay',
+	'Em nằm ngửa phơi bày khoe rãnh ngực cho anh xem nóng',
+	'Tư thế nằm ngửa gợi cảm khoe toàn thân cho anh đêm nay',
+	'Nằm ngửa dang chân khoe đùi cho anh xem trên giường đêm',
+	'Em nằm ngửa võng lưng khoe ngực cho anh đêm nay nóng',
+
+	// Nằm sấp + nhiều filter
+	'Nằm sấp khoe mông căng trên giường cho anh đêm nay nóng',
+	'Em nằm sấp tóc dài xõa khoe lưng cho anh xem đêm nay',
+	'Tư thế nằm sấp gợi cảm khoe vòng 3 cho anh xem nóng',
+	'Nằm sấp võng lưng khoe mông cho anh đêm nay quyến rũ',
+
+	// === POSITION: CHỔNG MÔNG / DOGGY ===
+	'Chổng mông cho anh xem vòng 3 căng đêm nay nóng bỏng',
+	'Em chổng mông gợi cảm khoe cho anh xem trên giường đêm',
+	'Tư thế chổng mông quyến rũ khoe mông cho anh đêm nay',
+	'Từ sau nhìn mông em cong khoe cho anh xem nóng bỏng',
+
+	// === POSITION: CƯỠI / RIDING ===
+	'Cưỡi ngựa trên giường khoe mông ngực cho anh đêm nay nóng',
+	'Em ride quyến rũ khoe đường cong cho anh xem đêm nay',
+	'Tư thế cưỡi ngựa gợi cảm khoe ngực cho anh đêm nay',
+	'Lên trên anh cưỡi khoe mông căng đêm nay nóng bỏng',
+	'Ngồi lên cưỡi khoe ngực mông cho anh xem trên giường đêm',
+
+	// === POSITION: ORAL / 69 ===
+	'Oral cho anh đêm nay khoe môi mọng trên giường nóng bỏng',
+	'Em thổi kèn gợi cảm khoe môi cho anh xem đêm nay nóng',
+	'Tư thế 69 nóng bỏng khoe toàn thân cho anh xem đêm nay',
+	'Bú liếm cho anh sướng khoe lưỡi nóng trên giường đêm',
+
+	// === LOCATION: CẦU THANG ===
+	'Trên cầu thang khoe mông gợi cảm cho anh xem đêm nay',
+	'Em ngồi bậc thang khoe đùi dài cho anh đêm nay nóng',
+	'Tư thế trên cầu thang quyến rũ khoe mông cho anh xem',
+	'Vịn tay vịn cầu thang khoe ngực cho anh đêm nay nóng',
+	'Cầu thang spiral và em khoe dáng cho anh xem đêm nay',
+
+	// === FOCUS: RÃNH NGỰC / KHE NGỰC ===
+	'Khoe rãnh ngực sâu cho anh xem đêm nay nóng bỏng giường',
+	'Rãnh ngực căng tràn gợi cảm khoe cho anh đêm nay nóng',
+	'Em khoe khe ngực quyến rũ cho anh xem trên giường đêm',
+	'Ngực tràn áo lộ rãnh ngực khoe cho anh xem đêm nay',
+	'Góc nhìn từ trên rãnh ngực sâu khoe cho anh đêm nay',
+	'Khe ngực gợi cảm trong áo ren khoe cho anh xem đêm nay',
+
+	// === HAIR VARIATIONS ===
+	// Tóc tới mông
+	'Tóc dài tới mông quyến rũ khoe lưng cho anh đêm nay',
+	'Em tóc chấm mông xõa dài khoe cho anh xem trên giường',
+	'Tóc siêu dài tới mông khoe lưng trần cho anh đêm nay',
+
+	// Tóc chấm lưng / giữa lưng
+	'Tóc dài chấm lưng gợi cảm khoe cho anh xem đêm nay',
+	'Em tóc giữa lưng xõa khoe lưng cho anh đêm nay nóng',
+	'Tóc dài qua lưng quyến rũ khoe đường cong cho anh đêm',
+
+	// Tóc ngang vai
+	'Tóc ngang vai gợi cảm khoe vai trần cho anh đêm nay',
+	'Em tóc dài ngang vai khoe lưng cho anh xem trên giường',
+	'Tóc xõa ngang vai quyến rũ khoe cho anh xem đêm nay',
+
+	// === ACTIVITY: CÚI / GẬP NGƯỜI ===
+	'Cúi người khoe mông tròn cho anh xem đêm nay nóng bỏng',
+	'Em cúi xuống gợi cảm khoe ngực cho anh đêm nay nóng',
+	'Gập người khoe đường cong quyến rũ cho anh xem đêm nay',
+	'Tư thế cúi gập người khoe mông cho anh xem nóng bỏng',
+	'Cúi người trước gương khoe mông cho anh đêm nay nóng',
+
+	// === MORE COMBINATIONS ===
+	'Quỳ gối tóc dài tới mông khoe lưng cho anh đêm nay',
+	'Ngồi xổm trên cầu thang khoe đùi mông cho anh đêm nay',
+	'Nằm ngửa khoe rãnh ngực tóc dài xõa cho anh đêm nay',
+	'Chổng mông tóc chấm lưng khoe vòng 3 cho anh đêm nay',
+	'Cưỡi ngựa tóc dài bay khoe ngực cho anh xem đêm nay',
+	'Oral quỳ gối khoe môi mọng cho anh xem đêm nay nóng',
+	'Trên bậc thang quỳ khoe mông tóc dài cho anh đêm nay',
+	'Nằm sấp võng lưng tóc tới mông khoe cho anh đêm nay',
 ];
 
 // 40+ hashtag sets - TẤT CẢ phải có #xuhuong #fyp (bắt buộc)
@@ -1395,7 +1670,7 @@ export const CATEGORIES = {
 		options: {
 			TRADITIONAL: {
 				label: 'Truyền thống',
-				keywords: ['truyền thống', 'bình thường'],
+				keywords: ['truyền thống', 'bình thường', 'missionary', 'cơ bản'],
 			},
 			PRONE: {
 				label: 'Úp / Sấp',
@@ -1407,7 +1682,12 @@ export const CATEGORIES = {
 			},
 			LOVE_CHAIR: {
 				label: 'Ghế tình yêu',
-				keywords: [],
+				keywords: [
+					'ghế tình yêu',
+					'ghế tantra',
+					'ghế tình dục',
+					'ghế đặc biệt',
+				],
 			},
 			DOGGY: {
 				label: 'Doggy / Từ sau',
@@ -1415,7 +1695,7 @@ export const CATEGORIES = {
 			},
 			NO_SEX: {
 				label: 'Không làm / Tạo dáng',
-				keywords: ['tạo dáng'],
+				keywords: ['tạo dáng', 'thả dáng', 'pose', 'selfie', 'chụp ảnh'],
 			},
 			RIDING: {
 				label: 'Cưỡi / Lên trên',
