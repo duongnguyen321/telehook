@@ -163,11 +163,33 @@ async function sendQueuePage(
 	const keyboard = new InlineKeyboard();
 
 	// Navigation row
+	const navRow = [];
 	if (page > 0) {
-		keyboard.text('<< Prev', `queue_${page - 1}`);
+		navRow.push({ text: '⏮️ Start', callback_data: `queue_0` });
+		navRow.push({ text: '◀️ Prev', callback_data: `queue_${page - 1}` });
 	}
 	if (page < posts.length - 1) {
-		keyboard.text('Next >>', `queue_${page + 1}`);
+		navRow.push({ text: 'Next ▶️', callback_data: `queue_${page + 1}` });
+		navRow.push({ text: 'End ⏭️', callback_data: `queue_${posts.length - 1}` });
+	}
+	keyboard.row(...navRow);
+
+	// Fast navigation row
+	const fastNavRow = [];
+	if (page >= 10) {
+		fastNavRow.push({ text: '<< 10', callback_data: `queue_${page - 10}` });
+	}
+	if (page >= 5) {
+		fastNavRow.push({ text: '<< 5', callback_data: `queue_${page - 5}` });
+	}
+	if (page <= posts.length - 6) {
+		fastNavRow.push({ text: '5 >>', callback_data: `queue_${page + 5}` });
+	}
+	if (page <= posts.length - 11) {
+		fastNavRow.push({ text: '10 >>', callback_data: `queue_${page + 10}` });
+	}
+	if (fastNavRow.length > 0) {
+		keyboard.row(...fastNavRow);
 	}
 
 	// Admin: Add action buttons on new row

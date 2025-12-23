@@ -754,6 +754,197 @@ export const TITLES = [
 	'Mắt anh nhìn em thèm thuồng',
 	'Qua lăng kính dục vọng',
 	'Góc nào cũng muốn yêu',
+
+	// === NHẢY NHÓT TRONG NHÀ (20) ===
+	'Nhảy trong phòng ngủ nóng bỏng',
+	'Lắc hông trong nhà gợi cảm',
+	'Tập nhảy trước gương quyến rũ',
+	'Dance trong phòng em đây',
+	'Nhún nhảy một mình trong phòng',
+	'Lắc mông trong nhà cho anh xem',
+	'Nhảy trend trong phòng riêng',
+	'Choreography nóng trong phòng ngủ',
+	'Vũ điệu quyến rũ trước gương',
+	'Quẩy một mình trong phòng',
+	'Dance cover sexy tại nhà',
+	'Nhảy bằng đồ ngủ cho anh',
+	'Tập nhảy với bộ đồ hở hang',
+	'Vũ điệu giường chiếu nóng bỏng',
+	'Lắc hông nhịp nhàng trong phòng',
+	'Nhảy nhót đêm khuya một mình',
+	'Dance sexy trước ống kính',
+	'Nhảy trên giường cho anh thấy',
+	'Vũ điệu quyến rũ tại gia',
+	'Nhảy mà không mặc gì cho anh',
+
+	// === NHẢY NHÓT NGOÀI TRỜI (20) ===
+	'Nhảy giữa thiên nhiên gợi cảm',
+	'Dance trên bãi biển nóng bỏng',
+	'Lắc hông bên hồ bơi',
+	'Nhảy trên sân thượng đêm nay',
+	'Quẩy ngoài trời không quần áo',
+	'Dance trong công viên vắng vẻ',
+	'Nhảy bên bờ sông lãng mạn',
+	'Vũ điệu hoàng hôn gợi cảm',
+	'Lắc mông giữa đồng cỏ xanh',
+	'Nhảy dưới ánh trăng quyến rũ',
+	'Dance ngoài ban công lộ liễu',
+	'Nhảy ở khu du lịch vắng',
+	'Quẩy bên bể bơi ngoài trời',
+	'Nhảy trên cầu tàu hơi gió',
+	'Dance ở resort nóng bỏng',
+	'Nhảy ngoài biển bikini bé xíu',
+	'Lắc hông bên hồ sen',
+	'Dance trên đồi thông hoang vắng',
+	'Nhảy ở vườn hoa lãng mạn',
+	'Quẩy ngoài trời thoải mái cởi',
+
+	// === BOOK PHÒNG KHÁCH SẠN (25) ===
+	'Check-in khách sạn nóng bỏng',
+	'Đêm đầu tiên trong phòng VIP',
+	'Phòng khách sạn 5 sao và em',
+	'Book phòng đêm nay cùng em',
+	'Giường khách sạn êm ái và em',
+	'Phòng suite với em mộ đêm',
+	'Đêm tân hôn trong khách sạn',
+	'Khách sạn tình yêu đêm nay',
+	'Check-in với ai đêm nay?',
+	'Phòng đôi cho hai người yêu',
+	'Nghỉ dưỡng tại resort cùng em',
+	'Villa riêng tư với em',
+	'Bồn tắm trong phòng khách sạn',
+	'Tắm chung trong phòng VIP',
+	'Giường king size cho đêm dài',
+	'View thành phố từ phòng ngủ',
+	'Đêm lãng mạn trong hotel',
+	'Phòng honeymoon với em',
+	'Tiệc riêng trong phòng khách sạn',
+	'Minibar và em đêm nay',
+	'Rèm che kín phòng khách sạn',
+	'Room service và em thôi',
+	'Phòng khách sạn bí mật của mình',
+	'Đêm nóng bỏng trong hotel 4 sao',
+	'Book phòng làm chuyện người lớn',
+
+	// === MASSAGE & SPA (25) ===
+	'Em là massage girl của anh',
+	'Massage toàn thân cho anh nha',
+	'Xoa bóp nhẹ nhàng cho anh',
+	'Tay em mát lạnh lên người anh',
+	'Massage nóng đêm nay',
+	'Tinh dầu thơm và tay em',
+	'Spa tại nhà cùng em',
+	'Em giúp anh thư giãn',
+	'Xoa bóp sâu cho anh',
+	'Massage đặc biệt của em',
+	'Tay em trên lưng anh',
+	'Dầu nóng và thân em',
+	'Massage từ trên xuống dưới',
+	'Chăm sóc cơ thể anh tận tình',
+	'Xoa nhẹ từng điểm nhạy cảm',
+	'Massage ending đặc biệt',
+	'Tay em di chuyển xuống thấp',
+	'Massage fullbody cho anh',
+	'Em bóp vai cho anh nha',
+	'Dầu massage trên người em',
+	'Cơ thể em trơn với dầu',
+	'Massage cùng nhau đêm nay',
+	'Spa couple riêng tư',
+	'Xông hơi nóng cùng em',
+	'Phòng massage và em chờ anh',
+
+	// === TẮM GỘI GỢI CẢM (25) ===
+	'Tắm chung với anh không?',
+	'Bong bóng xà phòng và em',
+	'Gội đầu cho anh nha',
+	'Kỳ lưng để em giúp',
+	'Dưới vòi sen nóng với em',
+	'Bồn tắm đầy bọt và em',
+	'Tắm nước nóng cùng em nhé',
+	'Phòng tắm ướt và người em',
+	'Xả nước lên người em đi',
+	'Bọt xà phòng che khắp người',
+	'Tắm chung tiết kiệm nước nha',
+	'Vòi sen xối trên người em',
+	'Em đang tắm ướt đẫm',
+	'Gội đầu cho em được không?',
+	'Massage đầu cho em anh ơi',
+	'Xoa dầu gội lên tóc em',
+	'Bồn tắm jacuzzi nóng bỏng',
+	'Tắm bong bóng lãng mạn',
+	'Em gội đầu xong ướt hết',
+	'Tóc ướt rũ trên vai em',
+	'Phòng tắm đầy hơi nước',
+	'Kính mờ hơi nước và em',
+	'Tắm xong cơ thể thơm phức',
+	'Làn da ẩm sau khi tắm',
+	'Quấn khăn tắm chờ anh vào',
+
+	// === NGOÀI TRỜI GỢI CẢM (20) ===
+	'Em khoe dáng ngoài trời',
+	'Bikini giữa thiên nhiên',
+	'Nắng chiếu lên làn da em',
+	'Gió biển và tóc em bay',
+	'Ngoài trời mặc ít vải',
+	'Phơi nắng với bikini bé',
+	'Selfie ngoài trời gợi cảm',
+	'Hoàng hôn và thân hình em',
+	'Bình minh trên bãi biển với em',
+	'Góc chụp ngoài trời sexy',
+	'Áo tắm và cảnh đẹp',
+	'Ngoài ban công khoe dáng',
+	'Vườn nhà và em không mặc gì',
+	'Hồ bơi riêng tư với em',
+	'Sân thượng và em đêm nay',
+	'Công viên vắng vẻ với em',
+	'Núi đồi và cơ thể em',
+	'Bờ sông lãng mạn cùng em',
+	'Cánh đồng hoa và em',
+	'Rừng thông và em một mình',
+
+	// === ĐỒ DÂM ĐÃI - ĐẦM THỤC (25) ===
+	'Đầm hở vai quyến rũ',
+	'Váy xẻ cao đến bẹn',
+	'Đầm bó sát đường cong',
+	'Váy ngắn lộ nửa mông',
+	'Đầm hở lưng gợi cảm',
+	'Áo hai dây mỏng manh',
+	'Váy maxi thông thấu',
+	'Đầm cổ V sâu hút',
+	'Váy bodycon bó sát',
+	'Đồ dây nhỏ xíu trên người',
+	'Đầm dạ hội hở ngực',
+	'Váy cocktail gợi cảm',
+	'Đồ thun ôm đường cong',
+	'Áo crop top lộ eo',
+	'Quần short ngắn sát đùi',
+	'Váy tennis ngắn cũn',
+	'Đầm ngủ mỏng như không',
+	'Áo lưới xuyên thấu',
+	'Đồ thể thao bó sát',
+	'Legging lộ đường viền',
+	'Áo yếm hở lưng trần',
+	'Jumpsuit bó khít người',
+	'Đồ bơi một mảnh cao cắt',
+	'Bikini dây mảnh như không',
+	'Váy ngủ ren quyến rũ',
+
+	// === PHÒNG TẬP GYM (15) ===
+	'Tập squat mông căng tròn',
+	'Nâng tạ và thân hình tight',
+	'Phòng tập vắng chỉ có em',
+	'Mồ hôi nhễ nhại và em',
+	'Áo bra thể thao và quần bó',
+	'Deadlift với mông cong',
+	'Yoga trong phòng tập riêng',
+	'Giãn cơ gợi cảm sau tập',
+	'Tập lunges đường cong hoàn hảo',
+	'HLV cá nhân của anh đây',
+	'Máy tập và thân hình em',
+	'Gương phòng tập soi em',
+	'Tập xong đẫm mồ hôi',
+	'Quần lưng cao tập gym',
+	'Phòng tập là sàn catwalk của em',
 ];
 
 // 300+ descriptions - dirty talk style, gợi dục táo bạo
@@ -1482,6 +1673,116 @@ export const DESCRIPTIONS = [
 	'Bao quát toàn cảnh căn phòng',
 	'Góc nhìn từ trên xuống',
 	'Nhìn từ trên cao thấy hết',
+
+	// === MASSAGE & SPA DESC (20) ===
+	'Tay em massage lên người anh nhé',
+	'Thư giãn với em đêm nay',
+	'Em bóp vai cho anh mềm người',
+	'Tinh dầu nóng lên cơ thể em',
+	'Xoa từ từ xuống lưng anh',
+	'Massage ending đặc biệt cho anh',
+	'Spa riêng tư chỉ hai người',
+	'Tay em trơn dầu lướt trên da anh',
+	'Xông hơi xong em nóng ran người',
+	'Phòng massage mờ đèn ấm cúng',
+	'Em là massage girl riêng của anh',
+	'Dùng cả người massage cho anh',
+	'Dầu nóng chảy khắp người em',
+	'Cơ thể em trơn như lươn',
+	'Vuốt ve từng điểm nhạy cảm',
+	'Bàn massage và em chờ anh',
+	'Xoa bóp toàn thân không giới hạn',
+	'Spa couple cho hai ta',
+	'Xông hơi ướt đẫm mồ hôi',
+	'Tay em kỳ diệu lắm anh',
+
+	// === TẮM GỘI DESC (20) ===
+	'Tắm chung tiết kiệm nước cùng em',
+	'Bong bóng xà phòng che kín người',
+	'Em gội đầu cho anh nha',
+	'Kỳ lưng giúp em anh ơi',
+	'Nước nóng xối trên người em',
+	'Bồn tắm đầy bọt hai ta',
+	'Vòi sen nóng trên làn da trắng',
+	'Tóc ướt rũ xuống vai trần',
+	'Phòng tắm đầy hơi nước mờ ảo',
+	'Khăn tắm rơi dần xuống đất',
+	'Em vừa tắm xong thơm phức',
+	'Làn da ướt mịn màng',
+	'Tắm bồn jacuzzi nóng bỏng',
+	'Gội đầu xong muốn được khô tay anh',
+	'Bọt xà phòng trên từng đường cong',
+	'Tắm xong quấn khăn chờ anh',
+	'Nước mát lạnh trên người nóng',
+	'Kính mờ hơi nước sau lưng',
+	'Tắm cùng em có muốn không?',
+	'Cơ thể ẩm ướt sau khi tắm',
+
+	// === KHÁCH SẠN DESC (20) ===
+	'Check-in phòng VIP rồi đây anh',
+	'Giường king size cho đêm dài',
+	'Phòng suite view đẹp và em',
+	'Book phòng đêm nay cùng em',
+	'Nghỉ dưỡng resort hai người',
+	'Villa riêng tư không ai làm phiền',
+	'Đêm tân hôn trong hotel 5 sao',
+	'Phòng khách sạn và rèm kín',
+	'Giường êm ái chờ hai ta',
+	'Room service chỉ cần hai người',
+	'View thành phố từ giường ngủ',
+	'Bồn tắm trong phòng khách sạn',
+	'Honeymoon suite dành cho ta',
+	'Minibar và em anh thích không?',
+	'Đèn mờ trong phòng hotel ấm',
+	'Rèm che kín đừng ai nhìn',
+	'Phòng đôi dành cho tình yêu',
+	'Hotel đêm nay chỉ mình ta',
+	'Khách sạn tình yêu bí mật',
+	'Đêm nóng bỏng trong resort',
+
+	// === NHẢY NHÓT DESC (25) ===
+	'Nhảy trong phòng cho anh xem',
+	'Lắc hông theo nhạc đêm nay',
+	'Dance cover trend mới nhất',
+	'Quẩy một mình trong phòng riêng',
+	'Nhảy trước gương quyến rũ',
+	'Vũ điệu gợi cảm tại nhà',
+	'Nhảy mà đồ cứ rơi dần',
+	'Lắc mông theo beat nóng bỏng',
+	'Nhảy ngoài trời bikini bé xíu',
+	'Dance bên hồ bơi mát lạnh',
+	'Nhảy trên sân thượng đêm về',
+	'Quẩy bên biển cực chill',
+	'Nhảy trong công viên vắng vẻ',
+	'Lắc hông dưới ánh trăng',
+	'Nhảy slow motion quyến rũ',
+	'Vũ điệu hoàng hôn gợi cảm',
+	'Dance freestyle không giới hạn',
+	'Nhảy trend TikTok nóng bỏng',
+	'Cover dance với đồ hở hang',
+	'Nhảy trong đêm khuya một mình',
+	'Lắc hông trong phòng tập',
+	'Dance với áo bra sport',
+	'Nhảy mồ hôi nhễ nhại',
+	'Vũ điệu phòng ngủ riêng tư',
+	'Nhảy xong đẫm mồ hôi nóng',
+
+	// === NGOÀI TRỜI DESC (15) ===
+	'Khoe dáng ngoài trời thoáng mát',
+	'Bikini giữa thiên nhiên xanh',
+	'Nắng chiếu lên làn da mịn',
+	'Gió biển thổi tóc em bay',
+	'Phơi nắng với đồ bé xíu',
+	'Selfie ngoài trời gợi cảm',
+	'Hoàng hôn và thân hình quyến rũ',
+	'Bình minh bên bãi biển vắng',
+	'Áo tắm và cảnh đẹp núi rừng',
+	'Sân thượng và em đêm về',
+	'Công viên vắng chỉ mình em',
+	'Cánh đồng hoa và em mơ màng',
+	'Bờ sông lãng mạn bên em',
+	'Núi đồi và cơ thể tự do',
+	'Rừng thông vắng vẻ với em',
 ];
 
 // 40+ hashtag sets - TẤT CẢ phải có #xuhuong #fyp (bắt buộc)
@@ -1563,6 +1864,34 @@ export const HASHTAG_SETS = [
 	'#xuhuong #fyp #gaixinh #mat #moi #khuonmat #bimat',
 	'#xuhuong #fyp #vietnamesegirl #chan #legs #quyenru #cothe',
 	'#xuhuong #fyp #gaixinh #nhay #cover #quyenru #chuyendong',
+
+	// Massage & Spa
+	'#xuhuong #fyp #massage #spa #thugian #quyenru #bimat',
+	'#xuhuong #fyp #gaixinh #massagebody #dauthaoduoc #quyenru',
+	'#xuhuong #fyp #vietnamesegirl #spa #xonghoi #lamdep #viral',
+	'#xuhuong #fyp #gaixinh #massagetrillieu #relax #quyenru',
+	'#xuhuong #fyp #massage #relaxing #girl #spamoment #bimat',
+
+	// Tắm gội
+	'#xuhuong #fyp #tam #bathing #shower #quyenru #bimat',
+	'#xuhuong #fyp #gaixinh #bontam #xaphong #sexy #viral',
+	'#xuhuong #fyp #vietnamesegirl #tamtrang #skincare #uoutat',
+	'#xuhuong #fyp #gaixinh #showercap #khanluoi #quyenru',
+	'#xuhuong #fyp #bathing #relax #water #girl #bimat',
+
+	// Khách sạn & Du lịch
+	'#xuhuong #fyp #hotel #khachsan #travel #quyenru #bimat',
+	'#xuhuong #fyp #gaixinh #resort #nghiduong #staycation #viral',
+	'#xuhuong #fyp #vietnamesegirl #checkin #sangchanh #quyenru',
+	'#xuhuong #fyp #gaixinh #roomtour #hotelroom #bimat #luxury',
+	'#xuhuong #fyp #travelgirl #vacation #bikini #hotel #quyenru',
+
+	// Nhảy nhót
+	'#xuhuong #fyp #dance #cover #nhay #quyenru #trending',
+	'#xuhuong #fyp #gaixinh #dancecover #tiktokdance #viral',
+	'#xuhuong #fyp #vietnamesegirl #nhayhiendai #sexy #bimat',
+	'#xuhuong #fyp #gaixinh #dancetrend #music #quyenru',
+	'#xuhuong #fyp #dancing #choreography #girl #motion #bimat',
 ];
 
 // Global tracking to avoid duplicates across all generated content
@@ -1894,6 +2223,38 @@ export const CATEGORIES = {
 				label: 'Trong xe',
 				keywords: ['xe', 'ô tô', 'lái', 'ghế'],
 			},
+			RESORT: {
+				label: 'Resort/Villa',
+				keywords: ['resort', 'villa', 'nghỉ dưỡng', 'biệt thự'],
+			},
+			MASSAGE_ROOM: {
+				label: 'Phòng massage',
+				keywords: ['phòng massage', 'spa', 'tinh dầu'],
+			},
+			GYM: {
+				label: 'Phòng tập',
+				keywords: ['phòng tập', 'gym', 'tập', 'máy tập'],
+			},
+			ROOFTOP: {
+				label: 'Sân thượng',
+				keywords: ['sân thượng', 'rooftop', 'ban công'],
+			},
+			BEACH: {
+				label: 'Bãi biển',
+				keywords: ['biển', 'bãi biển', 'cát', 'sóng'],
+			},
+			POOL: {
+				label: 'Hồ bơi',
+				keywords: ['hồ bơi', 'bể bơi', 'pool'],
+			},
+			GARDEN: {
+				label: 'Vườn/công viên',
+				keywords: ['vườn', 'công viên', 'cây', 'hoa'],
+			},
+			STUDIO: {
+				label: 'Studio',
+				keywords: ['studio', 'chụp ảnh', 'phông'],
+			},
 		},
 	},
 
@@ -2062,6 +2423,84 @@ export const CATEGORIES = {
 			HIGH: { label: 'Góc cao', keywords: ['cao', 'trên xuống'] },
 		},
 	},
+
+	// Hoạt động đặc biệt (Mới)
+	ACTIVITY: {
+		name: 'Hoạt động',
+		emoji: '💆',
+		options: {
+			MASSAGE: {
+				label: 'Massage',
+				keywords: ['massage', 'xoa bóp', 'bấm huyệt', 'tinh dầu', 'thư giãn'],
+			},
+			SPA: {
+				label: 'Spa',
+				keywords: ['spa', 'xông hơi', 'chăm sóc', 'làm đẹp'],
+			},
+			BATHING: {
+				label: 'Tắm gội',
+				keywords: ['tắm', 'gội', 'bồn tắm', 'vòi sen', 'xà phòng', 'bong bóng'],
+			},
+			SWIMMING: {
+				label: 'Bơi lội',
+				keywords: ['bơi', 'hồ bơi', 'biển', 'nước'],
+			},
+			SUNBATHING: {
+				label: 'Phơi nắng',
+				keywords: ['phơi', 'nắng', 'tắm nắng', 'bãi biển'],
+			},
+			COOKING: {
+				label: 'Nấu ăn',
+				keywords: ['bếp', 'nấu', 'làm bếp'],
+			},
+			SLEEPING: {
+				label: 'Ngủ/nằm',
+				keywords: ['ngủ', 'nằm', 'giường', 'nghỉ ngơi'],
+			},
+			READING: {
+				label: 'Đọc sách',
+				keywords: ['đọc', 'sách', 'học'],
+			},
+		},
+	},
+
+	// Phong cách nhảy (Mới)
+	DANCE: {
+		name: 'Kiểu nhảy',
+		emoji: '💃',
+		options: {
+			INDOOR_DANCE: {
+				label: 'Nhảy trong nhà',
+				keywords: ['trong phòng', 'trong nhà', 'trước gương', 'tại nhà'],
+			},
+			OUTDOOR_DANCE: {
+				label: 'Nhảy ngoài trời',
+				keywords: [
+					'ngoài trời',
+					'bãi biển',
+					'công viên',
+					'sân thượng',
+					'hồ bơi',
+				],
+			},
+			TIKTOK_TREND: {
+				label: 'Trend TikTok',
+				keywords: ['trend', 'viral', 'cover', 'challenge'],
+			},
+			SLOW_MOTION: {
+				label: 'Slow motion',
+				keywords: ['chậm', 'slow', 'từ từ'],
+			},
+			SEXY_DANCE: {
+				label: 'Gợi cảm',
+				keywords: ['lắc hông', 'lắc mông', 'quyến rũ', 'gợi cảm'],
+			},
+			FREESTYLE: {
+				label: 'Tự do',
+				keywords: ['tự do', 'freestyle', 'tự nhiên'],
+			},
+		},
+	},
 };
 
 /**
@@ -2115,7 +2554,8 @@ export function getCategoryOptions(categoryKey) {
  * Generate content based on selected categories
  * Uses progressive filtering: applies each filter one by one, starting with the filter
  * that produces the largest result, then progressively filtering until count is reached.
- * @param {Object} selectedCategories - e.g. { POSE: 'FRONT', ACTION: 'SHOWING', ... }
+ * Supports multi-select: Logic is OR within a category, AND across categories.
+ * @param {Object} selectedCategories - e.g. { POSE: ['FRONT', 'BACK'], ACTION: ['SHOWING'] }
  * @param {number} count - Number of options to generate (default: 6)
  * @returns {Array<{title: string, description: string, hashtags: string}>}
  */
@@ -2123,18 +2563,29 @@ export function generateContentFromCategories(selectedCategories, count = 6) {
 	// Collect all keyword sets from selected categories
 	const keywordSets = [];
 
-	for (const [categoryKey, optionKey] of Object.entries(selectedCategories)) {
+	for (const [categoryKey, optionKeys] of Object.entries(selectedCategories)) {
 		const category = CATEGORIES[categoryKey];
 		if (!category) continue;
 
-		const option = category.options[optionKey];
-		if (!option || !option.keywords || option.keywords.length === 0) continue;
+		// Handle both string (single) and array (multi) input for backward compatibility
+		const keys = Array.isArray(optionKeys) ? optionKeys : [optionKeys];
 
-		keywordSets.push({
-			categoryKey,
-			optionKey,
-			keywords: option.keywords,
-		});
+		// Collect all keywords from all selected options in this category (OR logic)
+		const categoryKeywords = [];
+		for (const optionKey of keys) {
+			const option = category.options[optionKey];
+			if (option && option.keywords && option.keywords.length > 0) {
+				categoryKeywords.push(...option.keywords);
+			}
+		}
+
+		if (categoryKeywords.length > 0) {
+			keywordSets.push({
+				categoryKey,
+				optionKeys: keys,
+				keywords: categoryKeywords, // Combined keywords for this category
+			});
+		}
 	}
 
 	// If no valid selections, fall back to random
