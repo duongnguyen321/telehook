@@ -925,9 +925,9 @@ async function handleCommand(ctx, command) {
 				`/queue /stats /reschedule` +
 				tiktokLink
 		);
-		// Show queue after welcome message
+		// Show queue after welcome message (default to last posted video)
 		const isAdmin = userId === ADMIN_USER_ID;
-		await sendQueuePage(ctx, chatId, 0, null, isAdmin);
+		await sendQueuePage(ctx, chatId, -1, null, isAdmin);
 		return;
 	}
 

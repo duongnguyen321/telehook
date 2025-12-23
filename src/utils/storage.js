@@ -15,6 +15,19 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 export const DATA_DIR = path.join(__dirname, '../../data');
 export const VIDEOS_DIR = path.join(DATA_DIR, 'videos');
 
+// 9 videos/day at optimal times (GMT+7)
+// 09:00, 10:45, 12:15, 14:00, 16:00, 18:00, 20:00, 22:00, 23:45
+export const DAILY_SLOTS = [
+	[9, 0], // Mở bát ngày mới
+	[10, 45], // Giờ giải lao giữa sáng
+	[12, 15], // ĐỈNH VIEW TRƯA - Nghỉ trưa
+	[14, 0], // Đầu giờ chiều
+	[16, 0], // Giờ "trà chiều"
+	[18, 0], // Tan tầm
+	[20, 0], // PRIME TIME - Giờ vàng
+	[22, 0], // Giờ riêng tư
+	[23, 45], // KHUNG GIỜ "HÚT" NHẤT - Content táo bạo
+];
 /**
  * Convert relative video path (filename) to absolute path
  * @param {string} relativePath - filename or relative path
@@ -161,19 +174,6 @@ const recentlyUsedSlots = new Set();
  * @returns {Promise<string>} ISO date string
  */
 export async function getSmartScheduleSlot() {
-	// 9 videos/day at optimal times (GMT+7)
-	// 09:00, 10:45, 12:15, 14:00, 16:00, 18:00, 20:00, 22:00, 23:45
-	const DAILY_SLOTS = [
-		[9, 0], // Mở bát ngày mới
-		[10, 45], // Giờ giải lao giữa sáng
-		[12, 15], // ĐỈNH VIEW TRƯA - Nghỉ trưa
-		[14, 0], // Đầu giờ chiều
-		[16, 0], // Giờ "trà chiều"
-		[18, 0], // Tan tầm
-		[20, 0], // PRIME TIME - Giờ vàng
-		[22, 0], // Giờ riêng tư
-		[23, 45], // KHUNG GIỜ "HÚT" NHẤT - Content táo bạo
-	];
 	const SLOTS_PER_DAY = DAILY_SLOTS.length; // 9 total
 	const now = nowGMT7();
 
@@ -313,19 +313,6 @@ export async function rescheduleAllPending(chatId) {
 		`[Reschedule] Rescheduling ${posts.length} pending posts (sorted by filename timestamp)...`
 	);
 
-	// Define all time slots (hour, minute) in a day - Optimized for TikTok
-	const DAILY_SLOTS = [
-		[7, 0], // Thức dậy, chuẩn bị đi làm
-		[9, 30], // Giờ nghỉ giải lao buổi sáng
-		[11, 30], // Nghỉ trưa - traffic cao nhất
-		[13, 30], // Trước ca chiều
-		[16, 30], // Giờ uể oải, chờ về
-		[18, 30], // Đi làm về / chuẩn bị ăn tối
-		[20, 0], // PRIME TIME - Giờ vàng
-		[22, 0], // Thời gian riêng tư
-		[23, 30], // "Cú đêm" - nam 20-30 hoạt động mạnh
-	];
-
 	// Start from now
 	const nowGmt7 = nowGMT7();
 	let currentDate = new Date(nowGmt7);
@@ -429,19 +416,6 @@ export async function rescheduleTimesOnly(chatId) {
 	console.log(
 		`[Reschedule] Rescheduling times for ${posts.length} posts (keeping content)...`
 	);
-
-	// Define all time slots (hour, minute) in a day - Optimized for TikTok
-	const DAILY_SLOTS = [
-		[7, 0], // Thức dậy, chuẩn bị đi làm
-		[9, 30], // Giờ nghỉ giải lao buổi sáng
-		[11, 30], // Nghỉ trưa - traffic cao nhất
-		[13, 30], // Trước ca chiều
-		[16, 30], // Giờ uể oải, chờ về
-		[18, 30], // Đi làm về / chuẩn bị ăn tối
-		[20, 0], // PRIME TIME - Giờ vàng
-		[22, 0], // Thời gian riêng tư
-		[23, 30], // "Cú đêm" - nam 20-30 hoạt động mạnh
-	];
 
 	// Start from now
 	const nowGmt7 = nowGMT7();
