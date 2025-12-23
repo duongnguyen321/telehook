@@ -162,17 +162,17 @@ const recentlyUsedSlots = new Set();
  */
 export async function getSmartScheduleSlot() {
 	// 9 videos/day at optimal times (GMT+7)
-	// 07:00, 09:30, 11:30, 13:30, 16:30, 18:30, 20:00, 22:00, 23:30
+	// 09:00, 10:45, 12:15, 14:00, 16:00, 18:00, 20:00, 22:00, 23:45
 	const DAILY_SLOTS = [
-		[7, 0], // Thức dậy, chuẩn bị đi làm
-		[9, 30], // Giờ nghỉ giải lao buổi sáng
-		[11, 30], // Nghỉ trưa - traffic cao nhất
-		[13, 30], // Trước ca chiều
-		[16, 30], // Giờ uể oải, chờ về
-		[18, 30], // Đi làm về / chuẩn bị ăn tối
+		[9, 0], // Mở bát ngày mới
+		[10, 45], // Giờ giải lao giữa sáng
+		[12, 15], // ĐỈNH VIEW TRƯA - Nghỉ trưa
+		[14, 0], // Đầu giờ chiều
+		[16, 0], // Giờ "trà chiều"
+		[18, 0], // Tan tầm
 		[20, 0], // PRIME TIME - Giờ vàng
-		[22, 0], // Thời gian riêng tư
-		[23, 30], // "Cú đêm" - nam 20-30 hoạt động mạnh
+		[22, 0], // Giờ riêng tư
+		[23, 45], // KHUNG GIỜ "HÚT" NHẤT - Content táo bạo
 	];
 	const SLOTS_PER_DAY = DAILY_SLOTS.length; // 9 total
 	const now = nowGMT7();
