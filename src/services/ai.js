@@ -2378,7 +2378,7 @@ export const CATEGORIES = {
 				keywords: ['khăn tắm', 'quấn khăn', 'áo choàng tắm'],
 			},
 			NUDE: {
-				label: 'Thoải mái / Tự nhiên',
+				label: 'NUDE',
 				keywords: [
 					'thoải mái',
 					'tự do',
