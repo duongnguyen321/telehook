@@ -2951,58 +2951,7 @@ export function generateContentFromCategories(selectedCategories, count = 6) {
 		});
 	};
 
-	// Helper to apply progressive filtering
-	const progressiveFilter = (sourceArray, sets, targetCount) => {
-		if (sets.length === 0) return sourceArray;
-
-		// Step 1: Apply each filter individually to find which produces the largest result
-		const filteredResults = sets.map((set) => ({
-			set,
-			filtered: filterByKeywordSet(sourceArray, set.keywords),
-		}));
-
-		// Sort by largest result first
-		filteredResults.sort((a, b) => b.filtered.length - a.filtered.length);
-
-		// Step 2: Start with the largest filtered result as main array
-		let mainArray = filteredResults[0].filtered;
-		const usedSets = new Set([filteredResults[0].set]);
-
-		// If main array is empty, return source
-		if (mainArray.length === 0) return sourceArray;
-
-		// If already at or below target count, return as is
-		if (mainArray.length <= targetCount) return mainArray;
-
-		// Step 3: Progressively apply remaining filters
-		for (let i = 1; i < filteredResults.length; i++) {
-			const currentSet = filteredResults[i].set;
-			if (usedSets.has(currentSet)) continue;
-
-			// Apply this filter to the current main array
-			const furtherFiltered = filterByKeywordSet(
-				mainArray,
-				currentSet.keywords
-			);
-
-			// Only apply if it doesn't empty the array
-			if (furtherFiltered.length > 0) {
-				mainArray = furtherFiltered;
-				usedSets.add(currentSet);
-
-				// Stop if we've reached or are below target count
-				if (mainArray.length <= targetCount) break;
-			}
-		}
-
-		return mainArray;
-	};
-
-	// Apply progressive filtering to both TITLES and DESCRIPTIONS
-	const filteredTitles = progressiveFilter(TITLES, keywordSets, count);
-	const filteredDescs = progressiveFilter(DESCRIPTIONS, keywordSets, count);
-
-	// Collect all keywords for scoring
+	// Collect all keywords from all selected categories
 	const allKeywords = keywordSets.flatMap((s) => s.keywords);
 
 	// Score function: count how many keywords match in a string
@@ -3017,24 +2966,36 @@ export function generateContentFromCategories(selectedCategories, count = 6) {
 		return score;
 	};
 
-	// Helper to sort by score (desc) then random
-	const randomSort = (a, b) => b.score - a.score || Math.random() - 0.5;
+	// New filtering logic:
+	// 1. Get all sentences that match ANY keyword from ANY selected category
+	// 2. Score each by how many keywords it matches
+	// 3. Sort by score (descending), then slice to get top results
+	const filterAndScoreContent = (sourceArray, targetCount) => {
+		// Step 1: Filter to only items matching at least one keyword
+		const matchingItems = sourceArray.filter((item) => {
+			const lowerItem = item.toLowerCase();
+			return allKeywords.some((kw) => lowerItem.includes(kw.toLowerCase()));
+		});
 
-	// Score and sort filtered titles by relevance
-	const scoredTitles = filteredTitles
-		.map((t) => ({
-			text: t,
-			score: scoreByKeywords(t),
-		}))
-		.sort(randomSort);
+		// If no matches, return source array
+		if (matchingItems.length === 0) return sourceArray.slice(0, targetCount);
 
-	// Score and sort filtered descriptions by relevance
-	const scoredDescs = filteredDescs
-		.map((d) => ({
-			text: d,
-			score: scoreByKeywords(d),
-		}))
-		.sort(randomSort);
+		// Step 2: Score each item by keyword match count
+		const scoredItems = matchingItems.map((item) => ({
+			text: item,
+			score: scoreByKeywords(item),
+		}));
+
+		// Step 3: Sort by score descending
+		scoredItems.sort((a, b) => b.score - a.score);
+
+		// Step 4: Slice to target count
+		return scoredItems.slice(0, targetCount);
+	};
+
+	// Apply new filtering logic to both TITLES and DESCRIPTIONS
+	const scoredTitles = filterAndScoreContent(TITLES, count * 3); // Get more for variety
+	const scoredDescs = filterAndScoreContent(DESCRIPTIONS, count * 3);
 
 	// Generate options from scored content
 	const options = [];

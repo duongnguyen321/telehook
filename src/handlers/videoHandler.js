@@ -4,6 +4,7 @@ import { InlineKeyboard } from 'grammy';
 import {
 	addScheduledPost,
 	getPendingPostsByChat,
+	getAllPostsByChat,
 	getArchiveStats,
 	isVideoDuplicate,
 	trackDownloadedVideo,
@@ -180,7 +181,7 @@ async function safeEditMessage(ctx, text, keyboard) {
  * Send paginated queue page with video details + video file
  * @param {import('grammy').Context} ctx
  * @param {number} chatId
- * @param {number} page
+ * @param {number} page - Page number, or -1 to use default (last posted video)
  * @param {number|null} messageId
  * @param {boolean} isAdmin - Whether user is admin
  */
@@ -192,14 +193,14 @@ async function sendQueuePage(
 	isAdmin = false
 ) {
 	const { InputFile } = await import('grammy');
-	const posts = await getPendingPostsByChat(chatId);
+	const { posts, lastPostedIndex } = await getAllPostsByChat(chatId);
 	const TIKTOK_USERNAME = process.env.TIKTOK_USERNAME || '';
 	const tiktokLink = TIKTOK_USERNAME
 		? `\n\n🔥 Follow: https://tiktok.com/@${TIKTOK_USERNAME}`
 		: '';
 
 	if (posts.length === 0) {
-		const text = 'No pending videos' + tiktokLink;
+		const text = 'Không có video nào' + tiktokLink;
 		if (messageId) {
 			try {
 				await ctx.api.editMessageText(chatId, messageId, text);
@@ -212,15 +213,21 @@ async function sendQueuePage(
 		return;
 	}
 
-	const post = posts[page];
+	// Use default page (last posted video) if page is -1
+	const actualPage = page === -1 ? lastPostedIndex : page;
+	const post = posts[actualPage];
 	if (!post) {
 		await sendQueuePage(ctx, chatId, 0, messageId, isAdmin);
 		return;
 	}
 
 	const time = formatVietnameseTime(new Date(post.scheduledAt));
+	const statusEmoji = post.status === 'posted' ? '✅' : '⏳';
+	const statusText = post.status === 'posted' ? 'Đã đăng' : 'Chờ đăng';
 	const caption =
-		`[${page + 1}/${posts.length}] ${time}\n\n` +
+		`[${actualPage + 1}/${
+			posts.length
+		}] ${statusEmoji} ${statusText} - ${time}\n\n` +
 		`${post.title}\n\n` +
 		`${post.description}\n\n` +
 		`${post.hashtags}` +
@@ -231,39 +238,45 @@ async function sendQueuePage(
 
 	// Navigation row
 	const navRow = [];
-	if (page > 0) {
+	if (actualPage > 0) {
 		navRow.push({ text: '⏮️ Start', callback_data: `queue_0` });
-		navRow.push({ text: '◀️ Prev', callback_data: `queue_${page - 1}` });
+		navRow.push({ text: '◀️ Prev', callback_data: `queue_${actualPage - 1}` });
 	}
-	if (page < posts.length - 1) {
-		navRow.push({ text: 'Next ▶️', callback_data: `queue_${page + 1}` });
+	if (actualPage < posts.length - 1) {
+		navRow.push({ text: 'Next ▶️', callback_data: `queue_${actualPage + 1}` });
 		navRow.push({ text: 'End ⏭️', callback_data: `queue_${posts.length - 1}` });
 	}
 	keyboard.row(...navRow);
 
 	// Fast navigation row
 	const fastNavRow = [];
-	if (page >= 10) {
-		fastNavRow.push({ text: '<< 10', callback_data: `queue_${page - 10}` });
+	if (actualPage >= 10) {
+		fastNavRow.push({
+			text: '<< 10',
+			callback_data: `queue_${actualPage - 10}`,
+		});
 	}
-	if (page >= 5) {
-		fastNavRow.push({ text: '<< 5', callback_data: `queue_${page - 5}` });
+	if (actualPage >= 5) {
+		fastNavRow.push({ text: '<< 5', callback_data: `queue_${actualPage - 5}` });
 	}
-	if (page <= posts.length - 6) {
-		fastNavRow.push({ text: '5 >>', callback_data: `queue_${page + 5}` });
+	if (actualPage <= posts.length - 6) {
+		fastNavRow.push({ text: '5 >>', callback_data: `queue_${actualPage + 5}` });
 	}
-	if (page <= posts.length - 11) {
-		fastNavRow.push({ text: '10 >>', callback_data: `queue_${page + 10}` });
+	if (actualPage <= posts.length - 11) {
+		fastNavRow.push({
+			text: '10 >>',
+			callback_data: `queue_${actualPage + 10}`,
+		});
 	}
 	if (fastNavRow.length > 0) {
 		keyboard.row(...fastNavRow);
 	}
 
-	// Admin: Add action buttons on new row
-	if (isAdmin) {
+	// Admin: Add action buttons ONLY for pending videos (not posted)
+	if (isAdmin && post.status === 'pending') {
 		keyboard.row();
-		keyboard.text('✏️ Đổi nội dung', `regen_${post.id}_${page}`);
-		keyboard.text('🗑️ Xóa', `delask_${post.id}_${page}`);
+		keyboard.text('✏️ Đổi nội dung', `regen_${post.id}_${actualPage}`);
+		keyboard.text('🗑️ Xóa', `delask_${post.id}_${actualPage}`);
 	}
 
 	// Check if video file exists
@@ -804,19 +817,13 @@ export function setupVideoHandler(bot) {
 			categorySelections.delete(selectionKey);
 			generatedOptions.delete(selectionKey);
 
-			// Delete message and return to queue
-			try {
-				await ctx.api.deleteMessage(chatId, messageId);
-			} catch (e) {
-				// Ignore
-			}
-
 			if (result.success) {
 				await safeAnswer(`Random: "${result.title.slice(0, 20)}..."`);
 			} else {
 				await safeAnswer('Lỗi: Không tìm thấy video');
 			}
-			await sendQueuePage(ctx, chatId, currentPage, null, isAdmin);
+			// Reuse message bubble with messageId
+			await sendQueuePage(ctx, chatId, currentPage, messageId, isAdmin);
 			return;
 		}
 
@@ -832,21 +839,14 @@ export function setupVideoHandler(bot) {
 
 			// Cleanup
 			categorySelections.delete(selectionKey);
-			// map generatedOptions also needs cleanup if it exists? (unlikely here but safe)
-
-			// Delete message and return to queue
-			try {
-				await ctx.api.deleteMessage(chatId, messageId);
-			} catch (e) {
-				// Ignore
-			}
 
 			if (result.success) {
 				await safeAnswer(`Random: "${result.title.slice(0, 20)}..."`);
 			} else {
 				await safeAnswer('Lỗi: Không tìm thấy video');
 			}
-			await sendQueuePage(ctx, chatId, currentPage, null, isAdmin);
+			// Reuse message bubble with messageId
+			await sendQueuePage(ctx, chatId, currentPage, messageId, isAdmin);
 			return;
 		}
 
@@ -875,11 +875,15 @@ export function setupVideoHandler(bot) {
 
 			await updatePostStatus(postId, 'posted');
 
-			// Delete the notification message
+			// Edit the message to show confirmation instead of deleting
 			try {
-				await ctx.api.deleteMessage(chatId, messageId);
+				await ctx.api.editMessageText(
+					chatId,
+					messageId,
+					'✅ Đã đánh dấu video đã đăng thành công!'
+				);
 			} catch (e) {
-				// Ignore if can't delete
+				// Ignore if can't edit
 			}
 
 			await safeAnswer('✅ Đã đánh dấu đã đăng!');
@@ -928,25 +932,6 @@ async function handleCommand(ctx, command) {
 	}
 
 	if (command === '/queue') {
-		const isAdmin = userId === ADMIN_USER_ID;
-		await sendQueuePage(ctx, chatId, 0, null, isAdmin);
-		return;
-	}
-
-	if (command === '/stats') {
-		const stats = await getArchiveStats(chatId);
-		const videoStats = await getVideoStats(chatId);
-		await ctx.reply(
-			`Stats:\n` +
-				`Downloaded: ${videoStats?.total || 0}\n` +
-				`Pending: ${videoStats?.scheduled || 0}\n` +
-				`Posted: ${stats?.total || 0}` +
-				tiktokLink
-		);
-		return;
-	}
-
-	if (command === '/videos') {
 		const posts = await getPendingPostsByChat(chatId);
 		if (!posts?.length) {
 			await ctx.reply('Không có video nào trong lịch' + tiktokLink);
@@ -975,6 +960,26 @@ async function handleCommand(ctx, command) {
 			`📅 LỊCH ĐĂNG (${posts.length} video):\n\n${scheduleList}${moreText}` +
 				tiktokLink
 		);
+		return;
+	}
+
+	if (command === '/stats') {
+		const stats = await getArchiveStats(chatId);
+		const videoStats = await getVideoStats(chatId);
+		await ctx.reply(
+			`Stats:\n` +
+				`Downloaded: ${videoStats?.total || 0}\n` +
+				`Pending: ${videoStats?.scheduled || 0}\n` +
+				`Posted: ${stats?.total || 0}` +
+				tiktokLink
+		);
+		return;
+	}
+
+	if (command === '/videos') {
+		const isAdmin = userId === ADMIN_USER_ID;
+		// Use -1 to default to last posted video
+		await sendQueuePage(ctx, chatId, -1, null, isAdmin);
 		return;
 	}
 

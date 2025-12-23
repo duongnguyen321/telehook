@@ -749,6 +749,32 @@ export async function getPendingPostsByChat(chatId) {
 }
 
 /**
+ * Get all posts for a chat (both pending and posted), sorted by scheduledAt desc
+ * Also returns the index of the last posted video for default page
+ * @param {number} chatId
+ * @returns {Promise<{posts: ScheduledPost[], lastPostedIndex: number}>}
+ */
+export async function getAllPostsByChat(chatId) {
+	const posts = await prisma.scheduledPost.findMany({
+		where: {
+			chatId: BigInt(chatId),
+			status: { in: ['pending', 'posted'] },
+		},
+		orderBy: { scheduledAt: 'desc' },
+	});
+
+	const mappedPosts = posts.map(mapScheduledPost);
+
+	// Find the index of the last posted video (first 'posted' in desc order)
+	const lastPostedIndex = mappedPosts.findIndex((p) => p.status === 'posted');
+
+	return {
+		posts: mappedPosts,
+		lastPostedIndex: lastPostedIndex >= 0 ? lastPostedIndex : 0,
+	};
+}
+
+/**
  * Delete a scheduled post, its video file, and reschedule remaining posts
  * @param {string} postId - The post ID to delete
  * @param {number} chatId - Chat ID for rescheduling
