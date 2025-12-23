@@ -74,6 +74,15 @@ try {
 	// Column already exists, ignore
 }
 
+// Migration: Add notification_sent column if not exists (to prevent duplicate notifications)
+try {
+	db.run(
+		`ALTER TABLE scheduled_posts ADD COLUMN notification_sent INTEGER DEFAULT 0`
+	);
+} catch (e) {
+	// Column already exists, ignore
+}
+
 // Posted videos archive for repost system
 db.run(`
   CREATE TABLE IF NOT EXISTS video_archive (
@@ -578,14 +587,14 @@ export function rescheduleTimesOnly(chatId) {
 }
 
 /**
- * Get pending posts that are due
+ * Get pending posts that are due AND haven't had notification sent yet
  * @returns {ScheduledPost[]}
  */
 export function getDuePosts() {
 	const now = new Date().toISOString();
 	const stmt = db.prepare(`
     SELECT * FROM scheduled_posts
-    WHERE status = 'pending' AND scheduled_at <= ?
+    WHERE status = 'pending' AND scheduled_at <= ? AND (notification_sent IS NULL OR notification_sent = 0)
     ORDER BY scheduled_at ASC
   `);
 
@@ -601,6 +610,20 @@ export function getDuePosts() {
 		error: row.error,
 		isRepost: row.is_repost === 1,
 	}));
+}
+
+/**
+ * Mark a post as having its notification sent (prevents duplicate notifications)
+ * @param {string} postId
+ */
+export function markNotificationSent(postId) {
+	const stmt = db.prepare(
+		`UPDATE scheduled_posts SET notification_sent = 1 WHERE id = ?`
+	);
+	stmt.run(postId);
+	console.log(
+		`[Storage] Marked notification sent for post ${postId.slice(0, 8)}`
+	);
 }
 
 /**

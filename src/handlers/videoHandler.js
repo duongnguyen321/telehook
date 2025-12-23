@@ -8,6 +8,7 @@ import {
 	isVideoDuplicate,
 	trackDownloadedVideo,
 	updateVideoStatus,
+	updatePostStatus,
 	getVideoStats,
 	rescheduleAllPending,
 	deleteScheduledPost,

@@ -3,6 +3,7 @@ import fs from 'fs';
 import {
 	getDuePosts,
 	updatePostStatus,
+	markNotificationSent,
 	needsRepost,
 	scheduleReposts,
 	getPendingCount,
@@ -72,6 +73,9 @@ async function processNotification(post) {
 			supports_streaming: true,
 			reply_markup: keyboard,
 		});
+
+		// Mark notification as sent BEFORE logging success
+		markNotificationSent(postId);
 
 		console.log(`[Scheduler] Sent notification: ${postId.slice(0, 8)}`);
 		return { success: true, postId };
