@@ -2152,13 +2152,15 @@ export const CATEGORIES = {
 		name: 'Hoạt động',
 		emoji: '🎬',
 		options: {
-			POSING: {
-				label: 'Tạo dáng',
-				keywords: ['tạo dáng', 'thả dáng', 'khoe', 'đứng', 'nhìn', 'ngắm'],
-			},
-			DANCING: {
-				label: 'Nhảy / Chuyển động',
+			POSING_DANCING: {
+				label: 'Tạo dáng / Nhảy',
 				keywords: [
+					'tạo dáng',
+					'thả dáng',
+					'khoe',
+					'đứng',
+					'nhìn',
+					'ngắm',
 					'nhảy',
 					'dance',
 					'quẩy',
@@ -2169,6 +2171,14 @@ export const CATEGORIES = {
 					'trend',
 					'uốn',
 				],
+			},
+			SITTING: {
+				label: 'Ngồi',
+				keywords: ['ngồi', 'ghế', 'sofa'],
+			},
+			KNEELING: {
+				label: 'Quỳ / Bò',
+				keywords: ['quỳ', 'trườn'],
 			},
 			SEXY_DANCE: {
 				label: 'Nhảy gợi cảm / Lắc hông',
@@ -2184,7 +2194,7 @@ export const CATEGORIES = {
 			},
 			RELAXING: {
 				label: 'Nằm / Thư giãn',
-				keywords: ['thư giãn', 'nằm', 'ngủ', 'giường', 'sofa', 'ngồi'],
+				keywords: ['thư giãn', 'nằm', 'ngủ', 'giường', 'sofa'],
 			},
 			PLAYFUL: {
 				label: 'Nghịch / Tương tác',
@@ -2228,6 +2238,38 @@ export const CATEGORIES = {
 					'xông hơi',
 					'thư giãn',
 				],
+			},
+		},
+	},
+
+	// 4. TƯ THẾ (Position)
+	POSITION: {
+		name: 'Tư thế',
+		emoji: '🧘‍♀️',
+		options: {
+			TRADITIONAL: {
+				label: 'Truyền thống',
+				keywords: ['truyền thống', 'bình thường'],
+			},
+			PRONE: {
+				label: 'Úp / Sấp',
+				keywords: ['úp', 'sấp', 'nằm sấp'],
+			},
+			SUPINE: {
+				label: 'Ngửa',
+				keywords: ['ngửa', 'nằm ngửa'],
+			},
+			LOVE_CHAIR: {
+				label: 'Ghế tình yêu',
+				keywords: [],
+			},
+			DOGGY: {
+				label: 'Doggy / Từ sau',
+				keywords: ['chổng'],
+			},
+			NO_SEX: {
+				label: 'Không làm / Tạo dáng',
+				keywords: ['tạo dáng'],
 			},
 		},
 	},
@@ -2310,33 +2352,41 @@ export const CATEGORIES = {
 		name: 'Địa điểm',
 		emoji: '📍',
 		options: {
-			PRIVATE: {
-				label: 'Riêng tư (Nhà/Phòng)',
+			BEDROOM: {
+				label: 'Phòng ngủ / Giường',
+				keywords: ['phòng ngủ', 'giường', 'gối', 'chăn', 'nệm', 'ngủ'],
+			},
+			BATHROOM: {
+				label: 'Nhà tắm / Phòng tắm',
+				keywords: ['tắm', 'phòng tắm', 'bồn tắm', 'vòi sen', 'ướt'],
+			},
+			MIRROR: {
+				label: 'Trước gương',
+				keywords: ['gương', 'soi', 'phản chiếu', 'trước gương'],
+			},
+			HOME_GENERAL: {
+				label: 'Nhà / Phòng khách',
 				keywords: [
 					'nhà',
 					'phòng',
-					'phòng ngủ',
-					'tắm',
-					'bếp',
-					'gương',
 					'trong nhà',
 					'tại gia',
 					'riêng tư',
-					'riêng',
-					'tư',
+					'sofa',
+					'bếp',
 				],
 			},
+			OFFICE: {
+				label: 'Văn phòng / Cơ quan',
+				keywords: ['văn phòng', 'công sở', 'bàn làm việc', 'sơ mi', 'thư ký'],
+			},
+			GYM: {
+				label: 'Gym / Phòng tập',
+				keywords: ['gym', 'phòng tập', 'tập'],
+			},
 			PUBLIC: {
-				label: 'Công cộng (Gym/Phố)',
-				keywords: [
-					'ngoài trời',
-					'công viên',
-					'phố',
-					'gym',
-					'karaoke',
-					'phòng tập',
-					'tập',
-				],
+				label: 'Công cộng / Ngoài trời',
+				keywords: ['ngoài trời', 'công viên', 'phố', 'karaoke'],
 			},
 			NATURE: {
 				label: 'Thiên nhiên (Biển/Hồ)',
