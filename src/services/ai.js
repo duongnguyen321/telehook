@@ -993,6 +993,41 @@ export const TITLES = [
 	'Team nữ vui vẻ đêm nay',
 	'Các chị em cùng quẩy',
 	'Bạn nữ của em chơi cùng',
+
+	// === TỪ KHÓA MỚI - ĐỊA ĐIỂM (25) ===
+	// Cầu thang
+	'Tạo dáng bên cầu thang',
+	'Ngồi ở bậc thang quyến rũ',
+	'Vịn tay vịn cầu thang gợi cảm',
+	// Ban công
+	'Dựa lan can ban công hóng gió',
+	'View ban công cực chill',
+	// Bếp
+	'Bàn ăn hôm nay có em',
+	'Tủ lạnh làm nền cho em',
+	'Đứng bếp đeo tạp dề gợi cảm',
+	'Ngồi trên đảo bếp quyến rũ',
+	// Phòng khách
+	'Nằm dài trên thảm phòng khách',
+	'Xem tivi cùng em không',
+	'Ghế sofa êm ái đợi anh',
+	// Xe
+	'Ngồi ghế phụ xe sang',
+	'Lái xế hộp dạo phố',
+	// Bar/Club
+	'Lên bar quẩy đêm nay',
+	'Vũ trường sôi động cùng em',
+	'Chill ở pub với ly rượu',
+	// Hồ bơi
+	'Ngồi bên thành hồ xả hơi',
+	'Pool party nóng bỏng',
+	// Phố/Đường
+	'Đi dạo vỉa hè buổi tối',
+	'Check-in hẻm nhỏ vắng vẻ',
+	// Phòng ngủ
+	'Đèn ngủ mờ ảo lãng mạn',
+	// Phòng tắm
+	'Soi gương lavabo gợi cảm',
 ];
 
 // 300+ descriptions - dirty talk style, gợi dục táo bạo
@@ -2503,11 +2538,27 @@ export const CATEGORIES = {
 		options: {
 			BEDROOM: {
 				label: 'Phòng ngủ / Giường',
-				keywords: ['phòng ngủ', 'giường', 'gối', 'chăn', 'nệm', 'ngủ'],
+				keywords: [
+					'phòng ngủ',
+					'giường',
+					'gối',
+					'chăn',
+					'nệm',
+					'ngủ',
+					'đèn ngủ',
+				],
+			},
+			LIVING_ROOM: {
+				label: 'Phòng khách / Sofa',
+				keywords: ['sofa', 'phòng khách', 'tivi', 'thảm', 'ghế sofa'],
+			},
+			KITCHEN: {
+				label: 'Bếp / Bàn ăn',
+				keywords: ['bếp', 'nấu ăn', 'bàn ăn', 'tủ lạnh', 'đảo bếp', 'tạp dề'],
 			},
 			BATHROOM: {
 				label: 'Nhà tắm / Phòng tắm',
-				keywords: ['tắm', 'phòng tắm', 'bồn tắm', 'vòi sen', 'ướt'],
+				keywords: ['tắm', 'phòng tắm', 'bồn tắm', 'vòi sen', 'ướt', 'lavabo'],
 			},
 			MIRROR: {
 				label: 'Trước gương',
@@ -2536,6 +2587,30 @@ export const CATEGORIES = {
 			PUBLIC: {
 				label: 'Công cộng / Ngoài trời',
 				keywords: ['ngoài trời', 'công viên', 'phố', 'karaoke'],
+			},
+			STREET: {
+				label: 'Ngoài đường / Phố',
+				keywords: ['phố', 'đường', 'công viên', 'vỉa hè', 'hẻm', 'dạo phố'],
+			},
+			CAR: {
+				label: 'Xe hơi / Ô tô',
+				keywords: ['xe', 'ô tô', 'car', 'ghế phụ', 'lái xe', 'xế hộp'],
+			},
+			CLUB_BAR: {
+				label: 'Bar / Club / Pub',
+				keywords: ['bar', 'club', 'pub', 'vũ trường', 'quẩy', 'lên bar'],
+			},
+			POOL: {
+				label: 'Hồ bơi / Bể bơi',
+				keywords: ['hồ bơi', 'bể bơi', 'pool', 'bơi', 'thành hồ'],
+			},
+			BALCONY: {
+				label: 'Ban công / Sân thượng',
+				keywords: ['ban công', 'sân thượng', 'lan can', 'cửa sổ', 'view'],
+			},
+			STAIRS: {
+				label: 'Cầu thang',
+				keywords: ['cầu thang', 'bậc thang', 'tay vịn'],
 			},
 			NATURE: {
 				label: 'Thiên nhiên (Biển/Hồ)',
