@@ -877,11 +877,11 @@ export function setupVideoHandler(bot) {
 
 			await updatePostStatus(postId, 'posted');
 
-			// Edit message to remove the button and show confirmation
+			// Delete the notification message
 			try {
-				await ctx.editMessageReplyMarkup({ reply_markup: undefined });
+				await ctx.api.deleteMessage(chatId, messageId);
 			} catch (e) {
-				// Ignore if can't edit
+				// Ignore if can't delete
 			}
 
 			await safeAnswer('✅ Đã đánh dấu đã đăng!');
