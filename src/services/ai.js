@@ -1258,6 +1258,30 @@ export const TITLES = [
 	'Em mặc vải màn xuyên thấu mỏng tang, em múa quạt gợi cảm khoe hàng họ trên giường',
 	'Em là hầu gái mặc váy ngắn dọn dẹp cho chủ nhân, cúi người khoe mông ngoan ngoãn',
 	'Em mặc blazer trang phục ngành, quay video chi tiết cho sếp xem trong văn phòng',
+
+	// === THOẢI MÁI / TỰ NHIÊN (dùng từ đồng nghĩa an toàn) ===
+	// Trước gương
+	'Em đứng trước gương thoải mái hoàn toàn, ngắm cơ thể tự nhiên của em anh nhé',
+	'Soi gương thấy da thịt em mịn như này, anh có muốn sờ thử không?',
+	'Em tự do toàn thân trước gương, ngắm đường cong nguyên bản của em đây anh',
+	'Phản chiếu trong gương là em không che đậy gì cả, nóng bỏng chưa anh?',
+
+	// Trong phòng
+	'Một mình trong phòng thoải mái thế này, ai vào thấy em da thịt tự nhiên?',
+	'Em nằm giường nguyên bản như này, da thịt em nóng bỏng lắm anh',
+	'Phòng ngủ riêng em tự do hoàn toàn, khoe cơ thể tự nhiên cho anh xem đây',
+	'Em phơi da thịt nguyên bản trên sofa, em trắng nuột lắm anh',
+
+	// Ngoài trời (táo bạo)
+	'Em liều mạng thoải mái ngoài trời, phơi da thịt cho anh xem',
+	'Ban công vắng em tự nhiên hoàn toàn, gió thổi mát da thịt em lắm anh',
+	'Hồ bơi khuya vắng em tự do bơi, tự nhiên hoàn toàn cho anh đây',
+	'Trong xe riêng em thoải mái, không che đậy cho anh ngắm da thịt',
+
+	// Tắm
+	'Vừa tắm xong em chưa mặc gì, da thịt ướt át cho anh xem nè',
+	'Trong bồn tắm em thoải mái tự nhiên, bong bóng che hờ da thịt em đây',
+	'Em đứng dưới vòi sen tự do hoàn toàn, nước chảy xuống cơ thể nguyên bản',
 ];
 // === ENHANCED DESCRIPTIONS (≥4 filters, dirty talk style) ===
 export const DESCRIPTIONS = [
@@ -1907,6 +1931,28 @@ export const DESCRIPTIONS = [
 	'Em nằm quấn màn tuyn vải màn mỏng manh, che hờ thân thể ngọc ngà nằm ngửa trên giường',
 	'Em là hầu gái mặc váy ngắn dọn dẹp phục vụ chủ nhân, ngoan ngoãn nghe lời trên sofa',
 	'Em quay video cận cảnh, thư ký mặc blazer thả rông khoe hàng trong văn phòng',
+
+	// === THOẢI MÁI / TỰ NHIÊN DESCRIPTIONS (dùng từ đồng nghĩa an toàn) ===
+	// Trước gương
+	'Em soi gương thoải mái hoàn toàn, da thịt trắng mịn phản chiếu lung linh cho anh ngắm',
+	'Cơ thể tự nhiên của em trong gương, đường cong nguyên bản gợi cảm anh thấy chưa?',
+	'Em da thịt tự nhiên trước gương, ngắm mình từng góc, em đẹp lắm anh',
+
+	// Trong phòng
+	'Một mình trong phòng em thoải mái, da thịt tự nhiên tự do thoải mái',
+	'Trên giường em tự do hoàn toàn, nguyên bản nằm chờ anh đây',
+	'Em phơi da thịt nguyên bản trong phòng riêng, cơ thể nóng bỏng cho anh',
+
+	// Ngoài trời
+	'Liều mạng thoải mái ngoài trời, em phơi da thịt cho gió thổi mát',
+	'Trên ban công vắng em tự nhiên hoàn toàn, cảm giác tự do thích lắm anh',
+	'Hồ bơi riêng em tự do bơi thoải mái, nước mát lạnh da thịt',
+	'Trong xe riêng em không che đậy, không ai thấy em tự nhiên đâu anh',
+
+	// Tắm
+	'Vừa tắm xong chưa mặc gì, da thịt ướt mượt mà cho anh ngắm',
+	'Trong bồn tắm em thoải mái tự nhiên, bong bóng che hờ cơ thể nguyên bản',
+	'Dưới vòi sen em tự do hoàn toàn, nước chảy xuống da thịt tự nhiên',
 ];
 
 // 40+ hashtag sets - TẤT CẢ phải có #xuhuong #fyp (bắt buộc)
@@ -2330,6 +2376,23 @@ export const CATEGORIES = {
 			TOWEL: {
 				label: 'Khăn tắm',
 				keywords: ['khăn tắm', 'quấn khăn', 'áo choàng tắm'],
+			},
+			NUDE: {
+				label: 'Thoải mái / Tự nhiên',
+				keywords: [
+					'thoải mái',
+					'tự do',
+					'tự nhiên',
+					'nguyên bản',
+					'da thịt tự nhiên',
+					'không che đậy',
+					'tự do hoàn toàn',
+					'thoải mái hoàn toàn',
+					'tự do toàn thân',
+					'da thịt nguyên bản',
+					'cơ thể tự nhiên',
+					'cơ thể nguyên bản',
+				],
 			},
 		},
 	},
