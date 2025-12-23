@@ -82,23 +82,25 @@ function buildCategoryKeyboard(postId, page, selections = {}) {
  * @param {string} postId
  * @param {number} page
  * @param {string} categoryKey
+ * @param {Array} selectedOptions - Array of selected option keys for this category
  * @returns {InlineKeyboard}
  */
-function buildOptionsKeyboard(postId, page, categoryKey) {
+function buildOptionsKeyboard(postId, page, categoryKey, selectedOptions = []) {
 	const keyboard = new InlineKeyboard();
 	const options = getCategoryOptions(categoryKey);
 
 	if (!options) return keyboard;
 
-	// Add option buttons (2 per row)
 	// We need category index for the callback
 	const categories = getCategories();
 	const catIndex = categories.findIndex((c) => c.key === categoryKey);
 
 	for (let i = 0; i < options.length; i++) {
 		const opt = options[i];
+		const isSelected = selectedOptions.includes(opt.key);
+		const label = isSelected ? `✅ ${opt.label}` : opt.label;
 		// Use indices: opt_ID_Page_CatIndex_OptIndex
-		keyboard.text(opt.label, `opt_${postId}_${page}_${catIndex}_${i}`);
+		keyboard.text(label, `opt_${postId}_${page}_${catIndex}_${i}`);
 		if (i % 2 === 1) keyboard.row();
 	}
 
@@ -107,6 +109,26 @@ function buildOptionsKeyboard(postId, page, categoryKey) {
 	keyboard.text('⬅️ Quay lại', `back_${postId}_${page}`);
 
 	return keyboard;
+}
+
+/**
+ * Format all selections for display
+ * @param {Object} selections - { CATEGORY_KEY: [optKey1, optKey2], ... }
+ * @returns {string}
+ */
+function formatSelectionsDisplay(selections) {
+	const lines = [];
+	for (const [catKey, optKeys] of Object.entries(selections)) {
+		if (!optKeys || optKeys.length === 0) continue;
+		const catName = getCategoryName(catKey);
+		const optLabels = optKeys
+			.map((k) => getOptionLabel(catKey, k))
+			.filter(Boolean);
+		if (optLabels.length > 0) {
+			lines.push(`✅ **${catName}**: ${optLabels.join(', ')}`);
+		}
+	}
+	return lines.length > 0 ? lines.join('\n') : 'Chưa chọn gì';
 }
 
 /**
@@ -577,9 +599,20 @@ export function setupVideoHandler(bot) {
 			}
 
 			const catName = getCategoryName(categoryKey);
-			const keyboard = buildOptionsKeyboard(postId, currentPage, categoryKey);
+			const selections = categorySelections.get(`${chatId}_${postId}`) || {};
+			const selectedOpts = selections[categoryKey] || [];
+			const keyboard = buildOptionsKeyboard(
+				postId,
+				currentPage,
+				categoryKey,
+				selectedOpts
+			);
 
-			await safeEditMessage(ctx, `📝 Chọn **${catName}**:`, keyboard);
+			await safeEditMessage(
+				ctx,
+				`📝 Chọn **${catName}** (bấm lại để bỏ chọn):`,
+				keyboard
+			);
 			await safeAnswer();
 			return;
 		}
@@ -602,27 +635,45 @@ export function setupVideoHandler(bot) {
 
 			const selectionKey = `${chatId}_${postId}`;
 
-			// Save selection
+			// Initialize or get existing selections
 			if (!categorySelections.has(selectionKey)) {
 				categorySelections.set(selectionKey, {});
 			}
 			const selections = categorySelections.get(selectionKey);
-			selections[categoryKey] = optionKey;
+
+			// Initialize category array if needed
+			if (!selections[categoryKey]) {
+				selections[categoryKey] = [];
+			}
+
+			// Toggle selection
+			const idx = selections[categoryKey].indexOf(optionKey);
+			if (idx >= 0) {
+				// Remove if exists
+				selections[categoryKey].splice(idx, 1);
+			} else {
+				// Add if not exists
+				selections[categoryKey].push(optionKey);
+			}
 
 			const optLabel = getOptionLabel(categoryKey, optionKey);
 			const catName = getCategoryName(categoryKey);
 
-			// Return to category selection with updated selections
-			const keyboard = buildCategoryKeyboard(postId, currentPage, selections);
-			// Update caption with new selection
+			// Stay on options screen with updated checkmarks
+			const keyboard = buildOptionsKeyboard(
+				postId,
+				currentPage,
+				categoryKey,
+				selections[categoryKey]
+			);
 			await safeEditMessage(
 				ctx,
-				'📝 **CHỌN CATEGORY ĐỂ TẠO NỘI DUNG**\n\n' +
-					`✅ Đã chọn: ${catName} → ${optLabel}\n\n` +
-					'Tiếp tục chọn hoặc bấm **Xong** để tạo nội dung.',
+				`📝 Chọn **${catName}** (bấm lại để bỏ chọn):`,
 				keyboard
 			);
-			await safeAnswer(`Đã chọn: ${optLabel}`);
+			await safeAnswer(
+				idx >= 0 ? `Bỏ chọn: ${optLabel}` : `Đã chọn: ${optLabel}`
+			);
 			return;
 		}
 
@@ -635,13 +686,14 @@ export function setupVideoHandler(bot) {
 
 			const selections = categorySelections.get(selectionKey) || {};
 			const keyboard = buildCategoryKeyboard(postId, currentPage, selections);
+			const selectionsText = formatSelectionsDisplay(selections);
 
 			await safeEditMessage(
 				ctx,
 				'📝 **CHỌN CATEGORY ĐỂ TẠO NỘI DUNG**\n\n' +
-					'Chọn các category phù hợp với video:\n' +
-					'✅ = đã chọn\n\n' +
-					'Bấm **Xong** khi đã chọn đủ, hoặc **Random** để tạo ngẫu nhiên.',
+					selectionsText +
+					'\n\n' +
+					'Tiếp tục chọn hoặc bấm **Xong** để tạo nội dung.',
 				keyboard
 			);
 			await safeAnswer();

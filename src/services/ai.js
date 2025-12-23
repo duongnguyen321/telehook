@@ -2017,6 +2017,7 @@ export const CATEGORIES = {
 					'nóng bỏng',
 					'quyến rũ',
 					'gợi tình',
+					'gợi cảm',
 					'sexy',
 					'18+',
 					'hư',
@@ -2029,6 +2030,14 @@ export const CATEGORIES = {
 					'ướt',
 					'mlem',
 					'cháy',
+					'nóng',
+					'gợi',
+					'quyến',
+					'rũ',
+					'cảm',
+					'tình',
+					'bỏng',
+					'da thịt',
 				],
 			},
 			CUTE_SWEET: {
@@ -2068,7 +2077,7 @@ export const CATEGORIES = {
 		options: {
 			BIKINI: {
 				label: 'Đồ bơi / Bikini',
-				keywords: ['bikini', 'đồ bơi', '2 mảnh', 'đi biển'],
+				keywords: ['bikini', 'đồ bơi', '2 mảnh', 'đi biển', 'áo tắm'],
 			},
 			LINGERIE: {
 				label: 'Nội y / Đồ ngủ',
@@ -2080,6 +2089,9 @@ export const CATEGORIES = {
 					'đồ ngủ',
 					'lụa',
 					'mỏng',
+					'đồ',
+					'nội',
+					'mặc',
 				],
 			},
 			COSPLAY_ROLE: {
@@ -2113,6 +2125,9 @@ export const CATEGORIES = {
 					'quần short',
 					'jeans',
 					'đồ nhà',
+					'váy',
+					'quần',
+					'áo',
 				],
 			},
 			MINIMAL: {
@@ -2182,11 +2197,32 @@ export const CATEGORIES = {
 		options: {
 			FULL_BODY: {
 				label: 'Toàn thân',
-				keywords: ['toàn thân', 'dáng', 'body', 'xa', 'bao quát', 'view'],
+				keywords: [
+					'toàn thân',
+					'dáng',
+					'body',
+					'xa',
+					'bao quát',
+					'view',
+					'cơ thể',
+					'thân',
+					'cơ',
+				],
 			},
 			UPPER_BODY: {
 				label: 'Nửa trên (Mặt/Ngực)',
-				keywords: ['mặt', 'ngực', 'vòng 1', 'vai', 'cổ', 'môi', 'mắt', 'hôn'],
+				keywords: [
+					'mặt',
+					'ngực',
+					'vòng 1',
+					'vai',
+					'cổ',
+					'môi',
+					'mắt',
+					'hôn',
+					'vòng',
+					'tay',
+				],
 			},
 			LOWER_BODY: {
 				label: 'Nửa dưới (Mông/Chân)',
@@ -2221,6 +2257,7 @@ export const CATEGORIES = {
 					'ngôi thứ nhất',
 					'nhìn xuống',
 					'gần',
+					'góc',
 				],
 			},
 		},
@@ -2242,6 +2279,9 @@ export const CATEGORIES = {
 					'gương',
 					'trong nhà',
 					'tại gia',
+					'riêng tư',
+					'riêng',
+					'tư',
 				],
 			},
 			PUBLIC: {
@@ -2253,6 +2293,7 @@ export const CATEGORIES = {
 					'gym',
 					'karaoke',
 					'phòng tập',
+					'tập',
 				],
 			},
 			NATURE: {
@@ -2281,6 +2322,8 @@ export const CATEGORIES = {
 					'massage',
 					'spa',
 					'sang',
+					'khách',
+					'sạn',
 				],
 			},
 		},
@@ -2309,7 +2352,7 @@ export const CATEGORIES = {
 		options: {
 			SOLO: {
 				label: 'Một mình (Solo)',
-				keywords: ['em', 'một mình', 'solo', 'selfie'],
+				keywords: ['em', 'một mình', 'solo', 'selfie', 'tự'],
 			},
 			COUPLE: {
 				label: 'Cặp đôi',
@@ -2320,6 +2363,8 @@ export const CATEGORIES = {
 					'bạn trai',
 					'người yêu',
 					'couple',
+					'đôi',
+					'cặp',
 				],
 			},
 			GROUP: {
@@ -2336,7 +2381,7 @@ export const CATEGORIES = {
 		options: {
 			SHORT: {
 				label: 'Tóc ngắn',
-				keywords: ['tóc ngắn', 'cá tính'],
+				keywords: ['tóc ngắn', 'cá tính', 'tóc'],
 			},
 			LONG: {
 				label: 'Tóc dài',
