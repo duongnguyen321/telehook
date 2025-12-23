@@ -945,6 +945,54 @@ export const TITLES = [
 	'Tập xong đẫm mồ hôi',
 	'Quần lưng cao tập gym',
 	'Phòng tập là sàn catwalk của em',
+
+	// === TỪ KHÓA MỚI - TÓC RẤT DÀI (10) ===
+	'Tóc rất dài chấm mông',
+	'Tóc siêu dài thả bay',
+	'Tóc chấm mông quyến rũ',
+	'Tóc dài qua lưng nè anh',
+	'Tóc dài miên man em đây',
+	'Tóc rũ trên vai gợi cảm',
+	'Tóc dính mồ hôi còn cuốn',
+	'Tóc ẩm sau tắm thơm',
+
+	// === TỪ KHÓA MỚI - TƯ THẾ CỤ THỂ (10) ===
+	'Ngồi lên anh đi',
+	'Lên trên em thích',
+	'Em ride như thế này',
+	'Lưng cong gợi cảm của em',
+	'Võng lưng quyến rũ chưa anh',
+	'Bụng phẳng lì của em',
+	'Curves hoàn hảo đây anh',
+	'Dạng chân cho anh xem',
+	'Banh ra cho anh nhìn',
+
+	// === TỪ KHÓA MỚI - TRANG PHỤC (10) ===
+	'Đồ mesh xuyên thấu trong suốt',
+	'Leather bó sát người em',
+	'Đồ lưới trong suốt sexy',
+	'Em mặc leather đêm nay',
+	'Dữ dội và hoang dại',
+
+	// === TỪ KHÓA MỚI - QUÁN KARAOKE/KTV (8) ===
+	'Tiếp viên quán hát gợi cảm',
+	'KTV girl phục vụ anh đêm nay',
+	'Tiếp viên karaoke quyến rũ',
+	'Em là tiếp viên của riêng anh',
+
+	// === TỪ KHÓA MỚI - KHOE CƠ THỂ (8) ===
+	'Mông tròn đầy muốn chạm',
+	'Khoe ngực căng tràn cho anh',
+	'Ngực căng sắp bung áo',
+	'Khoe ngực quyến rũ anh',
+
+	// === TỪ KHÓA MỚI - SỐ NGƯỜI (10) ===
+	'1 em chiều mấy anh cũng được',
+	'1 anh chiều mấy em luôn',
+	'Mấy em cùng chiều anh',
+	'Team nữ vui vẻ đêm nay',
+	'Các chị em cùng quẩy',
+	'Bạn nữ của em chơi cùng',
 ];
 
 // 300+ descriptions - dirty talk style, gợi dục táo bạo
@@ -2067,6 +2115,18 @@ export const CATEGORIES = {
 					'thoải mái',
 				],
 			},
+			WET_LOOK: {
+				label: 'Ướt át & Đẫm nước',
+				keywords: ['ướt', 'nước', 'đẫm', 'nhễ nhại', 'mồ hôi'],
+			},
+			WILD: {
+				label: 'Hoang dại & Điên cuồng',
+				keywords: ['hoang dại', 'điên cuồng', 'dữ dội', 'mạnh bạo', 'thô bạo'],
+			},
+			MYSTERIOUS: {
+				label: 'Bí ẩn & Che giấu',
+				keywords: ['bí ẩn', 'bí mật', 'che', 'kín', 'giấu', 'mờ'],
+			},
 		},
 	},
 
@@ -2108,6 +2168,18 @@ export const CATEGORIES = {
 					'mèo',
 				],
 			},
+			KTV_GIRL: {
+				label: 'Nhân viên quán hát / KTV',
+				keywords: [
+					'karaoke',
+					'quán hát',
+					'phòng hát',
+					'KTV',
+					'tiếp viên',
+					'đèn mờ',
+					'rượu',
+				],
+			},
 			TRADITIONAL: {
 				label: 'Áo dài / Truyền thống',
 				keywords: ['áo dài', 'truyền thống', 'nón', 'yếm'],
@@ -2143,6 +2215,25 @@ export const CATEGORIES = {
 					'khăn tắm',
 					'quấn khăn',
 				],
+			},
+			TIGHT: {
+				label: 'Đồ bó sát / Ôm',
+				keywords: ['bó sát', 'bó', 'ôm sát', 'tight', 'ôm', 'bodycon'],
+			},
+			MESH: {
+				label: 'Lưới / Xuyên thấu',
+				keywords: [
+					'lưới',
+					'mesh',
+					'xuyên thấu',
+					'mỏng tang',
+					'thấu',
+					'trong suốt',
+				],
+			},
+			LEATHER: {
+				label: 'Đồ da / Bóng',
+				keywords: ['da', 'da bóng', 'leather', 'bóng loáng', 'nhựa bóng'],
 			},
 		},
 	},
@@ -2213,6 +2304,32 @@ export const CATEGORIES = {
 				label: 'Show hàng / Khoe',
 				keywords: ['khoe', 'cởi', 'hở', 'lộ', 'phô', 'phơi'],
 			},
+			SHOW_BACK: {
+				label: 'Khoe lưng',
+				keywords: ['khoe lưng', 'lưng trần', 'hở lưng', 'lưng', 'quay lưng'],
+			},
+			SHOW_BUTT: {
+				label: 'Khoe mông',
+				keywords: [
+					'khoe mông',
+					'mông',
+					'vòng 3',
+					'đít',
+					'mông cong',
+					'mông tròn',
+				],
+			},
+			SHOW_CHEST: {
+				label: 'Khoe ngực',
+				keywords: [
+					'khoe ngực',
+					'ngực',
+					'vòng 1',
+					'ngực căng',
+					'ngực tràn',
+					'rãnh ngực',
+				],
+			},
 			BATHING: {
 				label: 'Tắm / Gội',
 				keywords: [
@@ -2238,6 +2355,18 @@ export const CATEGORIES = {
 					'xông hơi',
 					'thư giãn',
 				],
+			},
+			TOUCHING_SELF: {
+				label: 'Chạm / Vuốt ve',
+				keywords: ['sờ', 'vuốt ve', 'chạm', 'tự sờ', 'sờ soạng', 'vuốt'],
+			},
+			BENDING: {
+				label: 'Cúi / Gập người',
+				keywords: ['cúi', 'gập', 'cong người', 'cúi người', 'gập người'],
+			},
+			SPREADING: {
+				label: 'Dang / Mở',
+				keywords: ['dang', 'mở', 'dang chân', 'dạng', 'banh'],
 			},
 		},
 	},
@@ -2270,6 +2399,14 @@ export const CATEGORIES = {
 			NO_SEX: {
 				label: 'Không làm / Tạo dáng',
 				keywords: ['tạo dáng'],
+			},
+			RIDING: {
+				label: 'Cưỡi / Lên trên',
+				keywords: ['cưỡi', 'lên trên', 'ngồi lên', 'ride'],
+			},
+			ARCHED_BACK: {
+				label: 'Võng lưng / Cong lưng',
+				keywords: ['võng', 'cong lưng', 'lưng cong', 'võng lưng', 'lưng võng'],
 			},
 		},
 	},
@@ -2343,6 +2480,18 @@ export const CATEGORIES = {
 					'gần',
 					'góc',
 				],
+			},
+			CLEAVAGE: {
+				label: 'Rãnh ngực / Khe ngực',
+				keywords: ['rãnh ngực', 'khe ngực', 'ngực tràn', 'rãnh', 'khe'],
+			},
+			WAIST: {
+				label: 'Vòng eo / Bụng',
+				keywords: ['eo', 'eo thon', 'vòng eo', 'bụng', 'bụng phẳng'],
+			},
+			CURVES: {
+				label: 'Đường cong / Chữ S',
+				keywords: ['đường cong', 'cong', 'chữ S', 'curves', 'đồng hồ cát'],
 			},
 		},
 	},
@@ -2463,6 +2612,42 @@ export const CATEGORIES = {
 				label: 'Nhóm / Nhiều người',
 				keywords: ['nhóm', 'hội', 'chị em', 'nhiều người', 'bạn bè'],
 			},
+			ONE_F_MANY_M: {
+				label: '1 nữ nhiều nam',
+				keywords: [
+					'1 em',
+					'một em',
+					'một mình em',
+					'nhiều anh',
+					'mấy anh',
+					'các anh',
+					'em chiều hết',
+				],
+			},
+			ONE_M_MANY_F: {
+				label: '1 nam nhiều nữ',
+				keywords: [
+					'1 anh',
+					'một anh',
+					'anh một mình',
+					'nhiều em',
+					'mấy em',
+					'các em',
+					'hội các em',
+					'bọn em',
+				],
+			},
+			GIRLS_ONLY: {
+				label: 'Nhiều nữ (không nam)',
+				keywords: [
+					'chị em',
+					'hội chị em',
+					'các chị',
+					'nhóm nữ',
+					'team nữ',
+					'bạn nữ',
+				],
+			},
 		},
 	},
 
@@ -2486,6 +2671,20 @@ export const CATEGORIES = {
 			DYED: {
 				label: 'Nhuộm màu',
 				keywords: ['nhuộm', 'màu', 'bạch kim', 'hồng', 'đỏ', 'tây'],
+			},
+			VERY_LONG: {
+				label: 'Tóc rất dài / Siêu dài',
+				keywords: [
+					'tóc rất dài',
+					'tóc siêu dài',
+					'tóc chấm mông',
+					'tóc dài qua lưng',
+					'tóc dài miên man',
+				],
+			},
+			WET_HAIR: {
+				label: 'Tóc ướt',
+				keywords: ['tóc ướt', 'tóc rũ', 'tóc dính', 'tóc ẩm'],
 			},
 		},
 	},
