@@ -110,6 +110,51 @@ function buildOptionsKeyboard(postId, page, categoryKey) {
 }
 
 /**
+ * Safely edit message caption (for video) or text
+ * @param {import('grammy').Context} ctx
+ * @param {string} text
+ * @param {import('grammy').InlineKeyboard} keyboard
+ */
+async function safeEditMessage(ctx, text, keyboard) {
+	try {
+		const isVideo = !!ctx.callbackQuery?.message?.video;
+		// Caption limit is 1024 chars
+		if (isVideo && text.length <= 1024) {
+			await ctx.editMessageCaption({
+				caption: text,
+				reply_markup: keyboard,
+				parse_mode: 'Markdown',
+			});
+		} else {
+			// If not video, or text too long, fall back to text edit
+			if (isVideo && text.length > 1024) {
+				// Must convert to text message
+				try {
+					await ctx.api.deleteMessage(
+						ctx.chat.id,
+						ctx.callbackQuery.message.message_id
+					);
+				} catch (e) {
+					/* ignore */
+				}
+				await ctx.reply(text, {
+					reply_markup: keyboard,
+					parse_mode: 'Markdown',
+				});
+			} else {
+				// Normal text message edit
+				await ctx.editMessageText(text, {
+					reply_markup: keyboard,
+					parse_mode: 'Markdown',
+				});
+			}
+		}
+	} catch (e) {
+		console.error('[UI] Error editing message:', e.message);
+	}
+}
+
+/**
  * Send paginated queue page with video details + video file
  * @param {import('grammy').Context} ctx
  * @param {number} chatId
@@ -217,15 +262,46 @@ async function sendQueuePage(
 		return;
 	}
 
-	// Delete old message first (always delete to avoid confusion)
+	// Try editing content if messageId provided
 	if (messageId) {
 		try {
-			await ctx.api.deleteMessage(chatId, messageId);
+			let videoSource;
+			if (post.telegramFileId) {
+				videoSource = post.telegramFileId;
+			} else {
+				videoSource = new InputFile(post.videoPath);
+			}
+
+			await ctx.api.editMessageMedia(
+				chatId,
+				messageId,
+				{
+					type: 'video',
+					media: videoSource,
+					caption: caption,
+					parse_mode: 'Markdown',
+					supports_streaming: true,
+				},
+				{
+					reply_markup: keyboard,
+				}
+			);
+			return; // Edit success
 		} catch (e) {
-			// Ignore delete error
+			console.log(
+				'[Queue] Edit media failed, falling back to delete/send:',
+				e.message
+			);
+			// Fallback to delete and send
+			try {
+				await ctx.api.deleteMessage(chatId, messageId);
+			} catch (d) {
+				/* ignore */
+			}
 		}
 	}
 
+	// Send new message (or fallback from failed edit)
 	// Use cached file_id if available, otherwise upload from disk
 	let videoSource;
 	if (post.telegramFileId) {
@@ -419,16 +495,11 @@ export function setupVideoHandler(bot) {
 
 			await safeAnswer('Bạn có chắc muốn xóa video này?');
 
-			// Delete old message and send confirmation
-			try {
-				await ctx.api.deleteMessage(chatId, messageId);
-			} catch (e) {
-				// Ignore
-			}
-
-			await ctx.reply(
-				'⚠️ XÁC NHẬN XÓA VIDEO?\n\nVideo sẽ bị xóa vĩnh viễn khỏi hệ thống và ổ cứng!',
-				{ reply_markup: confirmKeyboard }
+			// Use safeEditMessage instead of delete+reply
+			await safeEditMessage(
+				ctx,
+				'⚠️ **XÁC NHẬN XÓA VIDEO?**\n\nVideo sẽ bị xóa vĩnh viễn khỏi hệ thống và ổ cứng!',
+				confirmKeyboard
 			);
 			return;
 		}
@@ -442,15 +513,9 @@ export function setupVideoHandler(bot) {
 			const result = await deleteScheduledPost(postId, chatId);
 			if (result.success) {
 				await safeAnswer(`Đã xóa! Đã reschedule ${result.rescheduled} video`);
-				// Delete confirmation message
-				try {
-					await ctx.api.deleteMessage(chatId, messageId);
-				} catch (e) {
-					// Ignore
-				}
-				// Show previous page or first page
+				// Reuse message bubble -> pass messageId
 				const newPage = Math.max(0, currentPage - 1);
-				await sendQueuePage(ctx, chatId, newPage, null, isAdmin);
+				await sendQueuePage(ctx, chatId, newPage, messageId, isAdmin);
 			} else {
 				await safeAnswer('Lỗi: Không tìm thấy video');
 			}
@@ -464,13 +529,9 @@ export function setupVideoHandler(bot) {
 
 			await safeAnswer('Đã hủy xóa');
 
-			// Delete confirmation message and return to queue
-			try {
-				await ctx.api.deleteMessage(chatId, messageId);
-			} catch (e) {
-				// Ignore
-			}
-			await sendQueuePage(ctx, chatId, currentPage, null, isAdmin);
+			// Return to queue view (restore video/caption)
+			// Pass messageId to reuse the bubble
+			await sendQueuePage(ctx, chatId, currentPage, messageId, isAdmin);
 			return;
 		}
 
@@ -489,20 +550,14 @@ export function setupVideoHandler(bot) {
 			const selections = categorySelections.get(selectionKey);
 			const keyboard = buildCategoryKeyboard(postId, currentPage, selections);
 
-			// Delete video message and show category selection
-			try {
-				await ctx.api.deleteMessage(chatId, messageId);
-			} catch (e) {
-				// Ignore
-			}
-
-			await ctx.api.sendMessage(
-				chatId,
+			// Use safeEditMessage
+			await safeEditMessage(
+				ctx,
 				'📝 **CHỌN CATEGORY ĐỂ TẠO NỘI DUNG**\n\n' +
 					'Chọn các category phù hợp với video:\n' +
 					'✅ = đã chọn\n\n' +
 					'Bấm **Xong** khi đã chọn đủ, hoặc **Random** để tạo ngẫu nhiên.',
-				{ reply_markup: keyboard, parse_mode: 'Markdown' }
+				keyboard
 			);
 			await safeAnswer();
 			return;
@@ -524,10 +579,7 @@ export function setupVideoHandler(bot) {
 			const catName = getCategoryName(categoryKey);
 			const keyboard = buildOptionsKeyboard(postId, currentPage, categoryKey);
 
-			await ctx.editMessageText(`📝 Chọn **${catName}**:`, {
-				reply_markup: keyboard,
-				parse_mode: 'Markdown',
-			});
+			await safeEditMessage(ctx, `📝 Chọn **${catName}**:`, keyboard);
 			await safeAnswer();
 			return;
 		}
@@ -562,11 +614,13 @@ export function setupVideoHandler(bot) {
 
 			// Return to category selection with updated selections
 			const keyboard = buildCategoryKeyboard(postId, currentPage, selections);
-			await ctx.editMessageText(
+			// Update caption with new selection
+			await safeEditMessage(
+				ctx,
 				'📝 **CHỌN CATEGORY ĐỂ TẠO NỘI DUNG**\n\n' +
 					`✅ Đã chọn: ${catName} → ${optLabel}\n\n` +
 					'Tiếp tục chọn hoặc bấm **Xong** để tạo nội dung.',
-				{ reply_markup: keyboard, parse_mode: 'Markdown' }
+				keyboard
 			);
 			await safeAnswer(`Đã chọn: ${optLabel}`);
 			return;
@@ -582,12 +636,13 @@ export function setupVideoHandler(bot) {
 			const selections = categorySelections.get(selectionKey) || {};
 			const keyboard = buildCategoryKeyboard(postId, currentPage, selections);
 
-			await ctx.editMessageText(
+			await safeEditMessage(
+				ctx,
 				'📝 **CHỌN CATEGORY ĐỂ TẠO NỘI DUNG**\n\n' +
 					'Chọn các category phù hợp với video:\n' +
 					'✅ = đã chọn\n\n' +
 					'Bấm **Xong** khi đã chọn đủ, hoặc **Random** để tạo ngẫu nhiên.',
-				{ reply_markup: keyboard, parse_mode: 'Markdown' }
+				keyboard
 			);
 			await safeAnswer();
 			return;
@@ -636,16 +691,8 @@ export function setupVideoHandler(bot) {
 			keyboard.text('❌ Hủy', `cancel_${postId}_${currentPage}`);
 
 			// Edit message
-			try {
-				await ctx.editMessageText(messageText, {
-					reply_markup: keyboard,
-					parse_mode: 'Markdown',
-				});
-			} catch (e) {
-				// Fallback if message too long or other error
-				console.error('Error sending options:', e);
-				await safeAnswer('Lỗi hiển thị options');
-			}
+			// Edit message (caption safely)
+			await safeEditMessage(ctx, messageText, keyboard);
 
 			await safeAnswer();
 			return;
@@ -685,16 +732,8 @@ export function setupVideoHandler(bot) {
 			categorySelections.delete(selectionKey);
 			generatedOptions.delete(selectionKey);
 
-			// Delete message and return to queue
-			try {
-				// Check if message exists before deleting
-				await ctx.api.deleteMessage(chatId, messageId);
-			} catch (e) {
-				// Ignore
-			}
-
 			await safeAnswer(`Đã chọn: "${content.title.slice(0, 20)}..."`);
-			await sendQueuePage(ctx, chatId, currentPage, null, isAdmin);
+			await sendQueuePage(ctx, chatId, currentPage, messageId, isAdmin);
 			return;
 		}
 
@@ -768,14 +807,13 @@ export function setupVideoHandler(bot) {
 			// Cleanup
 			categorySelections.delete(selectionKey);
 
-			// Delete message and return to queue
-			try {
-				await ctx.api.deleteMessage(chatId, messageId);
-			} catch (e) {
-				// Ignore
-			}
+			// Handle cancel - restore viewing state
+			// Just call sendQueuePage will restore full view.
+			// Since we act on the same message, we can just "go back".
 
 			await safeAnswer('Đã hủy');
+			await sendQueuePage(ctx, chatId, currentPage, null, isAdmin);
+			return;
 			await sendQueuePage(ctx, chatId, currentPage, null, isAdmin);
 			return;
 		}
