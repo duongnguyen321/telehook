@@ -867,8 +867,6 @@ export function setupVideoHandler(bot) {
 			await safeAnswer('Đã hủy');
 			await sendQueuePage(ctx, chatId, currentPage, null, isAdmin);
 			return;
-			await sendQueuePage(ctx, chatId, currentPage, null, isAdmin);
-			return;
 		}
 
 		// Handle posted confirmation (from scheduler notification)
