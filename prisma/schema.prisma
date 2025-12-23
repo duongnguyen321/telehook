@@ -74,3 +74,16 @@ model DownloadedVideo {
   @@index([chatId])
   @@map("downloaded_videos")
 }
+
+model User {
+  telegramId   BigInt  @id @map("telegram_id")
+  username     String?
+  firstName    String  @map("first_name")
+  lastName     String? @map("last_name")
+  role         String  @default("user")
+  createdAt    String  @default(dbgenerated("CURRENT_TIMESTAMP")) @map("created_at")
+  lastActiveAt String  @default(dbgenerated("CURRENT_TIMESTAMP")) @map("last_active_at")
+
+  @@index([telegramId])
+  @@map("users")
+}

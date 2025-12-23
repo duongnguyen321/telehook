@@ -36,6 +36,7 @@ import {
 	getOptionKeyByIndex,
 } from '../services/ai.js';
 import { downloadVideo, queueDownload } from '../utils/downloader.js';
+import { createOrUpdateUser } from '../services/userService.js';
 
 // Temporary storage for category selections during content generation
 // Key: `${chatId}_${postId}`, Value: { POSE: 'FRONT', ACTION: 'SHOWING', ... }
@@ -918,6 +919,28 @@ async function handleCommand(ctx, command) {
 
 	// ========== PUBLIC COMMANDS (GET data) ==========
 	if (command === '/start') {
+		// Track user information
+		try {
+			const userInfo = {
+				telegramId: userId,
+				username: ctx.from?.username,
+				firstName: ctx.from?.first_name || 'Unknown',
+				lastName: ctx.from?.last_name,
+				role: userId === ADMIN_USER_ID ? 'admin' : 'user',
+			};
+
+			await createOrUpdateUser(userInfo);
+			console.log(
+				`[User] ${
+					userInfo.role === 'admin' ? '👑 Admin' : '👤 User'
+				} tracked: ${userInfo.firstName} (@${
+					userInfo.username || 'no_username'
+				}) - ID: ${userId}`
+			);
+		} catch (error) {
+			console.error('[User] Failed to track user:', error.message);
+		}
+
 		await ctx.reply(
 			`Bot auto-schedule TikTok videos\n\n` +
 				`Forward video -> auto schedule\n` +
