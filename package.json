@@ -16,13 +16,10 @@
 		"typescript": "^5"
 	},
 	"dependencies": {
-		"@google/generative-ai": "^0.24.1",
 		"axios": "^1.13.2",
 		"better-sqlite3": "^12.5.0",
-		"bullmq": "^5.66.2",
 		"dotenv": "^17.2.3",
 		"grammy": "^1.38.4",
-		"ioredis": "^5.8.2",
 		"node-cron": "^4.2.1"
 	}
 }
