@@ -1028,6 +1028,23 @@ export const TITLES = [
 	'Đèn ngủ mờ ảo lãng mạn',
 	// Phòng tắm
 	'Soi gương lavabo gợi cảm',
+
+	// === TỪ KHÓA MỚI - BÚ MÚT / LIẾM (15) ===
+	'Em bú cho anh nha',
+	'Mút nhẹ thôi đừng mạnh',
+	'Liếm từ từ gợi cảm',
+	'Ngậm sâu vào bên trong',
+	'Thổi kèn cho anh đi',
+	'Dùng lưỡi nha anh',
+	'Đá lưỡi quyến rũ anh',
+	'Nút thật sâu đi em',
+	'69 với anh đêm nay',
+	'Oral cho anh một tí',
+	'Bú liếm cả đêm',
+	'Em ngậm cho anh sướng',
+	'Liếm khắp người anh',
+	'Mút như kẹo dẻo vậy',
+	'Oral sex với em tối nay',
 ];
 
 // 300+ descriptions - dirty talk style, gợi dục táo bạo
@@ -2403,6 +2420,19 @@ export const CATEGORIES = {
 				label: 'Dang / Mở',
 				keywords: ['dang', 'mở', 'dang chân', 'dạng', 'banh'],
 			},
+			SUCKING_LICKING: {
+				label: 'Bú / Mút / Liếm',
+				keywords: [
+					'bú',
+					'mút',
+					'liếm',
+					'ngậm',
+					'thổi',
+					'dùng lưỡi',
+					'đá lưỡi',
+					'nút',
+				],
+			},
 		},
 	},
 
@@ -2442,6 +2472,10 @@ export const CATEGORIES = {
 			ARCHED_BACK: {
 				label: 'Võng lưng / Cong lưng',
 				keywords: ['võng', 'cong lưng', 'lưng cong', 'võng lưng', 'lưng võng'],
+			},
+			ORAL_MODE: {
+				label: 'Oral / 69',
+				keywords: ['69', 'oral', 'thổi kèn', 'bú liếm', 'oral sex'],
 			},
 		},
 	},
