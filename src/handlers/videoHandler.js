@@ -728,9 +728,10 @@ export function setupVideoHandler(bot) {
 			});
 			messageText += '👇 Bấm số tương ứng để chọn:';
 
-			// Build selection keyboard (4 rows of 5 buttons)
+			// Build selection keyboard (based on actual options count)
 			const keyboard = new InlineKeyboard();
-			for (let i = 0; i < optionCount; i++) {
+			const actualCount = options.length;
+			for (let i = 0; i < actualCount; i++) {
 				keyboard.text(`${i + 1}`, `choose_${postId}_${currentPage}_${i}`);
 				// 5 buttons per row
 				if ((i + 1) % 5 === 0) keyboard.row();
