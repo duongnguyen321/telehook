@@ -2163,110 +2163,128 @@ export const CATEGORIES = {
 		},
 	},
 
-	// 2. TRANG PHỤC & VAI TRÒ (Outfit, Role)
+	// 2. VAI TRÒ (Role)
+	ROLE: {
+		name: 'Vai trò',
+		emoji: '🎭',
+		options: {
+			TEACHER: {
+				label: 'Cô giáo / Giáo viên',
+				keywords: ['cô giáo', 'giáo viên', 'dạy học', 'lớp học', 'bục giảng'],
+			},
+			STUDENT: {
+				label: 'Học sinh / Nữ sinh',
+				keywords: [
+					'học sinh',
+					'nữ sinh',
+					'sinh viên',
+					'đi học',
+					'đồng phục học sinh',
+				],
+			},
+			NURSE: {
+				label: 'Y tá / Bác sĩ',
+				keywords: ['y tá', 'bác sĩ', 'bệnh viện', 'khám', 'thuốc', 'tiêm'],
+			},
+			SECRETARY: {
+				label: 'Thư ký / Văn phòng',
+				keywords: ['thư ký', 'sếp', 'trợ lý', 'giám đốc'],
+			},
+			MAID: {
+				label: 'Hầu gái / Giúp việc',
+				keywords: ['hầu gái', 'giúp việc', 'dọn dẹp', 'chủ nhân', 'phục vụ'],
+			},
+			OFFICE_LADY: {
+				label: 'Dân văn phòng (OL)',
+				keywords: ['công sở', 'dân văn phòng', 'ol', 'nhân viên'],
+			},
+			KTV_GIRL: {
+				label: 'KTV / Tiếp viên',
+				keywords: [
+					'karaoke',
+					'tay vịn',
+					'tiếp viên',
+					'ktv',
+					'rót bia',
+					'phòng hát',
+				],
+			},
+			GYM_GIRL: {
+				label: 'Gymer / PT',
+				keywords: ['gymer', 'phòng tập', 'huấn luyện viên', 'pt', 'tập gym'],
+			},
+			RICH_KID: {
+				label: 'Tiểu thư / Sang chảnh',
+				keywords: [
+					'sang chảnh',
+					'tiểu thư',
+					'con nhà giàu',
+					'rich kid',
+					'đồ hiệu',
+				],
+			},
+			HOT_GIRL: {
+				label: 'Hotgirl / Idol',
+				keywords: ['hotgirl', 'hot girl', 'idol', 'nổi tiếng', 'hot face'],
+			},
+		},
+	},
+
+	// 3. TRANG PHỤC (Outfit)
 	OUTFIT: {
-		name: 'Trang phục & Vai trò',
-		emoji: '👙',
+		name: 'Trang phục',
+		emoji: '👗',
 		options: {
 			BIKINI: {
-				label: 'Đồ bơi / Bikini',
-				keywords: ['bikini', 'đồ bơi', '2 mảnh', 'đi biển', 'áo tắm'],
+				label: 'Bikini / Đồ bơi',
+				keywords: ['bikini', 'đồ bơi', '2 mảnh', 'áo tắm', 'đi biển'],
 			},
 			LINGERIE: {
 				label: 'Nội y / Đồ ngủ',
+				keywords: ['nội y', 'đồ lót', 'ren', 'lọt khe', 'đồ ngủ', 'váy ngủ'],
+			},
+			AO_DAI: {
+				label: 'Áo dài / Yếm',
+				keywords: ['áo dài', 'truyền thống', 'yếm', 'cổ trang'],
+			},
+			OFFICE_WEAR: {
+				label: 'Đồ công sở',
+				keywords: ['sơ mi', 'vest', 'chân váy', 'quần tây', 'zip', 'blazer'],
+			},
+			GYM_WEAR: {
+				label: 'Đồ tập / Sport',
+				keywords: ['đồ tập', 'legging', 'bra sport', 'bó sát', 'quần tập'],
+			},
+			STREET_STYLE: {
+				label: 'Đồ dạo phố',
 				keywords: [
-					'nội y',
-					'ren',
-					'đồ lót',
-					'lọt khe',
-					'đồ ngủ',
-					'lụa',
-					'mỏng',
-					'đồ',
-					'nội',
-					'mặc',
-				],
-			},
-			COSPLAY_ROLE: {
-				label: 'Cosplay / Nhập vai',
-				keywords: [
-					'cosplay',
-					'hóa trang',
-					'cô giáo',
-					'học sinh',
-					'y tá',
-					'hầu gái',
-					'thư ký',
-					'thỏ',
-					'mèo',
-				],
-			},
-			KTV_GIRL: {
-				label: 'Nhân viên quán hát / KTV',
-				keywords: [
-					'karaoke',
-					'quán hát',
-					'phòng hát',
-					'KTV',
-					'tiếp viên',
-					'đèn mờ',
-					'rượu',
-				],
-			},
-			TRADITIONAL: {
-				label: 'Áo dài / Truyền thống',
-				keywords: ['áo dài', 'truyền thống', 'nón', 'yếm'],
-			},
-			OFFICE: {
-				label: 'Công sở / Vest',
-				keywords: ['công sở', 'sơ mi', 'chân váy', 'zip', 'văn phòng'],
-			},
-			STREET_CASUAL: {
-				label: 'Dạo phố / Đồ thường',
-				keywords: [
-					'dạo phố',
 					'váy ngắn',
 					'áo thun',
 					'quần short',
+					'dạo phố',
+					'đồ thường',
 					'jeans',
-					'đồ nhà',
-					'váy',
-					'quần',
-					'áo',
 				],
 			},
-			MINIMAL: {
-				label: 'Gợi cảm (Ít vải/Ướt)',
-				keywords: [
-					'cởi',
-					'trần',
-					'không mặc',
-					'da thịt',
-					'ướt',
-					'nước',
-					'tắm',
-					'khăn tắm',
-					'quấn khăn',
-				],
+			DRESS: {
+				label: 'Váy / Đầm',
+				keywords: ['váy', 'đầm', 'dạ hội', 'đầm ôm', 'váy dây', 'váy body'],
 			},
-			TIGHT: {
-				label: 'Đồ bó sát / Ôm',
-				keywords: ['bó sát', 'bó', 'ôm sát', 'tight', 'ôm', 'bodycon'],
+			UNIFORM: {
+				label: 'Đồng phục',
+				keywords: ['đồng phục', 'trang phục ngành'],
+			},
+			LEATHER: {
+				label: 'Đồ da / Latex',
+				keywords: ['đồ da', 'da bóng', 'bộ da', 'latex', 'da'],
 			},
 			MESH: {
 				label: 'Lưới / Xuyên thấu',
-				keywords: [
-					'lưới',
-					'mesh',
-					'xuyên thấu',
-					'mỏng tang',
-					'thấu',
-					'trong suốt',
-				],
+				keywords: ['lưới', 'xuyên thấu', 'vải màn', 'mỏng tang'],
 			},
-			LEATHER: {
-				label: 'Đồ da / Bóng',
-				keywords: ['da', 'da bóng', 'leather', 'bóng loáng', 'nhựa bóng'],
+			TOWEL: {
+				label: 'Khăn tắm',
+				keywords: ['khăn tắm', 'quấn khăn', 'áo choàng tắm'],
 			},
 		},
 	},
