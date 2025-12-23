@@ -191,7 +191,7 @@ export const TITLES = [
 	'Tắm xong cơ thể em như này, khoe cho anh xem gợi cảm không?',
 
 	// === ACTIVITY + FOCUS + LOCATION + POSITION + PEOPLE (5 cats) ===
-	'Mông đít em tròn không anh? Khoe trên giường chổng cho anh xem nè',
+	'Mông mông em tròn không anh? Khoe trên giường chổng cho anh xem nè',
 	'Đít em cong vút thế này, lắc trên giường cho anh xem nhé',
 	'Chân em dài gợi cảm, khoe trên giường dang cho anh xem nè',
 	'Góc nhìn phía sau quyến rũ của em, khoe mông trên giường cho anh nè',
@@ -919,7 +919,7 @@ export const TITLES = [
 	'Chổng mông cho anh từ sau, khoe vòng 3 đêm nay nóng bỏng',
 	'Chổng mông doggy style cho anh, khoe mông căng đêm nay',
 	'Chổng mông chờ anh từ phía sau, khoe vòng 3 nóng bỏng',
-	'Chổng đít cho anh làm từ sau, khoe mông tròn đêm nay',
+	'Chổng mông cho anh làm từ sau, khoe mông tròn đêm nay',
 	'Chổng mông đợi anh vào, khoe vòng 3 căng đêm nay nóng bỏng',
 
 	// Cưỡi + Ride variations
@@ -1164,7 +1164,7 @@ export const TITLES = [
 	// Hầu gái + Nhà chủ nhân
 	'Em là hầu gái doggy ngoan ngoãn, Chủ nhân cứ việc "dùng" cơ thể này theo ý thích',
 	'Em là hầu gái quỳ phục vụ lếu lều, liếm sạch sẽ cho Chủ nhân hài lòng mới thôi',
-	'Em là hầu gái chổng mông lau sàn, Chủ nhân đi qua đá đít em hay phạt em đi',
+	'Em là hầu gái chổng mông lau sàn, Chủ nhân đi qua đá mông em hay phạt em đi',
 	'Em là hầu gái cưỡi ngựa phục vụ, nhún nhiệt tình cho Chủ nhân sướng mê li',
 	'Em là hầu gái nằm ngửa trong bếp, làm món "tráng miệng" đặc biệt cho Chủ nhân ăn',
 
@@ -1437,7 +1437,7 @@ export const DESCRIPTIONS = [
 	'Em mặc đồ nhà nhưng vẫn nóng đó anh, khoe mông trên giường cho anh nè',
 	'Tắm xong ướt đẫm cơ thể nè, khoe mông cho anh xem nè',
 	'Tắm xong cơ thể thơm phức anh, khoe mông cho anh xem nè',
-	'Mông đít em tròn không anh? Sờ thử, khoe mông cho anh trên giường',
+	'Mông mông em tròn không anh? Sờ thử, khoe mông cho anh trên giường',
 	'Đít em cong quyến rũ thế này, khoe mông trên giường cho anh nè',
 	'Chân dài quyến rũ của em đây, khoe đùi cho anh xem nè',
 	'Góc nhìn phía sau quyến rũ đây anh, khoe mông cho anh xem nè',
@@ -2410,7 +2410,7 @@ export const CATEGORIES = {
 					'khoe mông',
 					'mông',
 					'vòng 3',
-					'đít',
+					'mông',
 					'mông cong',
 					'mông tròn',
 				],
