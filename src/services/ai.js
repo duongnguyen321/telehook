@@ -214,13 +214,13 @@ export const TITLES = [
 	'Áo dài khoe đường cong chết người cho anh xem',
 
 	// === THEME + OUTFIT + ACTIVITY + TIME + LOCATION (5 cats) ===
-	'Bóng tối làm em muốn cởi đồ nằm trên giường đêm',
+	'Bóng tối làm em muốn cởi đồ nằm trên giường',
 	'Bí ẩn trong bóng đêm gợi tình cởi đồ trên giường',
 	'Nắng sớm chiếu vào chỗ kín khoe dáng trên giường sáng',
 	'Sáng nay nhìn em hư không cởi đồ trên giường anh?',
 	'Cà phê sáng trên giường em cởi đồ khoe dáng anh',
 	'Ở nhà ấm cúng mà muốn cởi đồ trên giường anh',
-	'Sang chảnh kiêu sa quyến rũ cởi đồ trên giường đêm',
+	'Sang chảnh kiêu sa quyến rũ cởi đồ trên giường',
 	'Hoang dại ướt át cởi đồ nằm trên giường nóng',
 
 	// === THEME + OUTFIT + ACTIVITY + FOCUS + LOCATION (5 cats) ===
@@ -233,8 +233,8 @@ export const TITLES = [
 
 	// === ACTIVITY + FOCUS + LOCATION + TIME + PEOPLE (5 cats) ===
 	'Nhảy trong phòng ngủ nóng bỏng khoe mông đêm nay anh',
-	'Lắc hông trong nhà gợi cảm khoe mông cho anh đêm',
-	'Tập nhảy trước gương quyến rũ khoe dáng cho anh đêm',
+	'Lắc hông trong nhà gợi cảm khoe mông cho anh',
+	'Tập nhảy trước gương quyến rũ khoe dáng cho anh',
 	'Dance trong phòng em đây khoe mông đêm nay cho anh',
 	'Nhún nhảy một mình trong phòng khoe mông đêm nay',
 	'Lắc mông trong nhà cho anh xem đêm nay nóng bỏng',
@@ -255,15 +255,15 @@ export const TITLES = [
 
 	// === OUTFIT + ACTIVITY + FOCUS + LOCATION + TIME (5 cats) ===
 	'Nhảy nhót đêm khuya khoe mông trong phòng nóng bỏng',
-	'Dance trên bãi biển nóng bỏng khoe mông bikini đêm',
+	'Dance trên bãi biển nóng bỏng khoe mông bikini',
 	'Lắc hông bên hồ bơi khoe mông bikini đêm nay',
 	'Nhảy trên sân thượng đêm nay khoe mông trong váy',
 	'Quẩy ngoài trời không quần áo khoe mông đêm nay',
-	'Dance trong công viên vắng vẻ khoe mông bikini đêm',
+	'Dance trong công viên vắng vẻ khoe mông bikini',
 	'Vũ điệu hoàng hôn gợi cảm khoe mông bikini ngoài',
 	'Lắc mông giữa đồng cỏ xanh khoe dáng bikini nóng',
 	'Dance ngoài ban công lộ liễu khoe mông đêm nay',
-	'Dance ở resort nóng bỏng khoe mông bikini đêm',
+	'Dance ở resort nóng bỏng khoe mông bikini',
 	'Nhảy ngoài biển bikini bé xíu khoe mông đêm nay',
 	'Dance trên đồi thông hoang vắng khoe mông bikini nóng cho anh đêm nay',
 	'Quẩy ngoài trời thoải mái cởi khoe mông đêm nay',
@@ -291,13 +291,13 @@ export const TITLES = [
 	'Tinh dầu thơm và tay em massage đêm nay anh',
 	'Spa tại nhà cùng em khoe mông đêm nay anh',
 	'Em giúp anh thư giãn massage khoe mông đêm nay',
-	'Massage đặc biệt của em khoe mông cho anh đêm',
+	'Massage đặc biệt của em khoe mông cho anh',
 	'Tay em trên lưng anh massage khoe mông đêm nay',
 	'Dầu nóng và thân em massage khoe mông cho anh',
 	'Tay em di chuyển xuống thấp massage đêm nay anh',
 	'Massage fullbody cho anh khoe mông em đêm nay',
 	'Em bóp vai cho anh nha khoe mông đêm nay',
-	'Dầu massage trên người em khoe mông cho anh đêm',
+	'Dầu massage trên người em khoe mông cho anh',
 	'Massage cùng nhau đêm nay khoe mông cho anh xem',
 	'Spa couple riêng tư khoe mông đêm nay cùng anh',
 	'Xông hơi nóng cùng em khoe mông đêm nay anh',
@@ -383,7 +383,7 @@ export const TITLES = [
 	// === OUTFIT + ACTIVITY + FOCUS + LOCATION + TIME (5 cats) ===
 	'Tiếp viên quán hát gợi cảm khoe ngực đêm nay',
 	'Tiếp viên karaoke quyến rũ khoe mông đêm nay',
-	'Ngực căng sắp bung áo khoe ngực trên giường đêm',
+	'Ngực căng sắp bung áo khoe ngực trên giường',
 	'Khoe ngực quyến rũ anh xem trên giường đêm nay',
 
 	// === ACTIVITY + FOCUS + LOCATION + TIME + PEOPLE (5 cats) ===
@@ -394,8 +394,8 @@ export const TITLES = [
 	'View ban công cực chill khoe mông đêm nay anh',
 	'Bàn ăn hôm nay có em khoe mông cho anh xem',
 	'Đứng bếp đeo tạp dề gợi cảm khoe mông cho anh',
-	'Ngồi trên đảo bếp quyến rũ khoe mông cho anh đêm',
-	'Xem tivi cùng em không anh xem khoe mông đêm',
+	'Ngồi trên đảo bếp quyến rũ khoe mông cho anh',
+	'Xem tivi cùng em không anh xem khoe mông',
 	'Lên bar quẩy đêm nay khoe mông cho các anh',
 	'Vũ trường sôi động cùng em khoe mông đêm nay',
 	'Chill ở pub với ly rượu khoe mông đêm nay',
@@ -454,8 +454,8 @@ export const TITLES = [
 
 	// === ACTIVITY + FOCUS + LOCATION + TIME + PEOPLE (5 cats) ===
 	'Đá lông nheo tình tứ dụ dỗ các anh xem đêm nay',
-	'Dựa thành hồ bể bơi vô cực ướt át khoe mông anh đêm',
-	'Trong xe hơi xế hộp sang chảnh kín đáo khoe mông đêm',
+	'Dựa thành hồ bể bơi vô cực ướt át khoe mông anh',
+	'Trong xe hơi xế hộp sang chảnh kín đáo khoe mông',
 	'Nấu ăn bên tủ lạnh mà không mặc gì khoe mông anh',
 	'Đơn giản thường ngày nhưng vẫn mlem khoe mông anh xem',
 
@@ -479,14 +479,14 @@ export const TITLES = [
 
 	// === THEME + ACTIVITY + FOCUS + LOCATION + TIME (5 cats) ===
 	'Ngắm em chuyển động uốn éo quyến rũ trên giường đêm nay',
-	'Liếm môi gợi cảm khoe mông tròn vòng 1 căng đẫy đêm',
+	'Liếm môi gợi cảm khoe mông tròn vòng 1 căng đẫy',
 	'Mút ngậm liếm mím môi làm mấy anh điên trong phòng ngủ',
-	'Dùng lưỡi đá lưỡi nút từ từ cho anh hưởng sướng trên giường đêm',
-	'Vòng 1 căng tràn ngực đầy khoe hàng trên giường nóng đêm',
+	'Dùng lưỡi đá lưỡi nút từ từ cho anh hưởng sướng trên giường',
+	'Vòng 1 căng tràn ngực đầy khoe hàng trên giường nóng',
 
 	// === THEME + POSITION + ACTIVITY + LOCATION + TIME (5 cats) ===
 	'Ngồi lên trên anh nhún nhảy trên giường đêm nay nóng',
-	'Tư thế 69 thổi kèn cho anh sướng rên rỉ trong phòng đêm',
+	'Tư thế 69 thổi kèn cho anh sướng rên rỉ trong phòng',
 	'Lên trên anh cưỡi ngựa trong phòng ngủ cả đêm liền',
 
 	// === THEME + ACTIVITY + FOCUS + LOCATION + POSITION (5 cats) ===
@@ -503,7 +503,7 @@ export const TITLES = [
 	// === THEME + ACTIVITY + LOCATION + TIME + PEOPLE (5 cats) ===
 	'Hai đứa mình cùng nghịch trên giường đêm nay nóng mlem',
 	'Một mình em solo khoe hàng nằm trên thảm đêm nay',
-	'Nhiều anh vây quanh một anh cân hết bọn em nằm giường đêm',
+	'Nhiều anh vây quanh một anh cân hết bọn em nằm giường',
 	'Anh một mình chiều nhiều em bọn em nằm trên giường đêm nay',
 	'Một anh phục vụ nhiều em trên giường cả đêm không nghỉ',
 
@@ -530,11 +530,11 @@ export const TITLES = [
 	'Bò trên giường quyến rũ khoe mông cho anh nhìn đêm nay',
 
 	// Ngồi xổm + nhiều filter
-	'Ngồi xổm gợi cảm khoe đùi mông trên giường cho anh đêm',
+	'Ngồi xổm gợi cảm khoe đùi mông trên giường cho anh',
 	'Em ngồi xổm tóc dài xõa vai khoe mông cho anh xem',
-	'Tư thế ngồi xổm quyến rũ khoe đường cong cho anh đêm',
+	'Tư thế ngồi xổm quyến rũ khoe đường cong cho anh',
 	'Ngồi xổm trước gương khoe mông tròn đêm nay nóng bỏng',
-	'Em ngồi xổm cúi người khoe ngực cho anh trên thảm đêm',
+	'Em ngồi xổm cúi người khoe ngực cho anh trên thảm',
 	'Ngồi xổm trong phòng tắm ướt khoe mông cho anh xem',
 	'Tư thế ngồi xổm bikini khoe đùi mông ngoài biển anh',
 
@@ -550,7 +550,7 @@ export const TITLES = [
 	'Em nằm ngửa trên thảm khoe toàn thân cho anh xem nóng',
 
 	// Nằm sấp + nhiều filter
-	'Nằm sấp chổng mông khoe vòng 3 trên giường cho anh đêm',
+	'Nằm sấp chổng mông khoe vòng 3 trên giường cho anh',
 	'Em nằm sấp tóc dài chấm mông khoe lưng cho anh xem',
 	'Tư thế nằm sấp gợi cảm khoe mông trên giường đêm nay',
 	'Nằm sấp trên giường khoe mông tròn cho anh xem nóng',
@@ -563,14 +563,14 @@ export const TITLES = [
 	'Em chổng mông gợi cảm tóc dài xõa khoe cho anh xem',
 	'Tư thế chổng mông quyến rũ khoe mông trên sofa anh',
 	'Chổng mông trên giường đêm nay khoe vòng 3 nóng bỏng',
-	'Em chổng mông quỳ gối khoe cho anh xem trên thảm đêm',
+	'Em chổng mông quỳ gối khoe cho anh xem trên thảm',
 	'Chổng mông từ sau khoe mông cong cho anh đêm nay nóng',
 	'Tư thế từ sau gợi cảm khoe mông cho anh xem đêm nay',
 	'Doggy trên giường khoe mông căng cho anh xem đêm nay',
 
 	// === POSITION: CƯỠI / RIDING ===
 	'Cưỡi ngựa trên giường khoe mông cho anh xem đêm nay nóng',
-	'Em cưỡi lên trên ride quyến rũ khoe ngực cho anh đêm',
+	'Em cưỡi lên trên ride quyến rũ khoe ngực cho anh',
 	'Tư thế cưỡi ngựa gợi cảm khoe đường cong cho anh xem',
 	'Ngồi lên trên anh cưỡi khoe mông đêm nay nóng bỏng',
 	'Em ride trên giường khoe ngực mông cho anh xem đêm nay',
@@ -587,12 +587,12 @@ export const TITLES = [
 	'Em ngậm cho anh sướng khoe môi đỏ đêm nay nóng bỏng',
 
 	// === LOCATION: CẦU THANG ===
-	'Tạo dáng trên cầu thang khoe mông gợi cảm cho anh đêm',
+	'Tạo dáng trên cầu thang khoe mông gợi cảm cho anh',
 	'Em ngồi bậc thang khoe đùi dài cho anh xem đêm nay',
 	'Cầu thang và em tóc dài khoe mông cho anh xem nóng',
 	'Vịn tay vịn cầu thang khoe ngực cho anh đêm nay',
 	'Tư thế trên cầu thang gợi cảm khoe mông cho anh xem',
-	'Ngồi xổm trên bậc thang khoe đùi mông cho anh đêm',
+	'Ngồi xổm trên bậc thang khoe đùi mông cho anh',
 	'Quỳ trên cầu thang khoe mông cho anh xem đêm nay nóng',
 	'Cầu thang spiral và em khoe dáng cho anh xem đêm nay',
 
@@ -601,10 +601,10 @@ export const TITLES = [
 	'Rãnh ngực căng tràn gợi cảm khoe cho anh xem đêm nay',
 	'Em khoe khe ngực quyến rũ trên giường cho anh đêm nay',
 	'Ngực tràn áo lộ rãnh ngực khoe cho anh xem nóng bỏng',
-	'Góc nhìn từ trên xuống rãnh ngực sâu khoe cho anh đêm',
+	'Góc nhìn từ trên xuống rãnh ngực sâu khoe cho anh',
 	'Khe ngực gợi cảm trong áo ren khoe cho anh đêm nay',
 	'Nằm ngửa khoe rãnh ngực căng tràn cho anh xem đêm nay',
-	'Rãnh ngực sâu hun hút khoe cho anh xem trên giường đêm',
+	'Rãnh ngực sâu hun hút khoe cho anh xem trên giường',
 
 	// === HAIR VARIATIONS: TÓC DÀI ĐẾN NHIỀU VỊ TRÍ ===
 	// Tóc tới mông
@@ -617,7 +617,7 @@ export const TITLES = [
 	// Tóc chấm lưng / giữa lưng
 	'Tóc dài chấm lưng gợi cảm khoe vai trên giường đêm nay',
 	'Em tóc giữa lưng xõa dài khoe cho anh xem nóng bỏng',
-	'Tóc dài qua lưng quyến rũ khoe đường cong cho anh đêm',
+	'Tóc dài qua lưng quyến rũ khoe đường cong cho anh',
 	'Tóc chấm giữa lưng thướt tha khoe cho anh xem đêm nay',
 
 	// Tóc ngang vai
@@ -630,7 +630,7 @@ export const TITLES = [
 	'Cúi người khoe mông tròn cho anh xem trên giường đêm nay',
 	'Em cúi xuống gợi cảm khoe ngực cho anh đêm nay nóng',
 	'Gập người khoe đường cong quyến rũ cho anh xem đêm nay',
-	'Cúi người từ từ khoe mông căng cho anh trên giường đêm',
+	'Cúi người từ từ khoe mông căng cho anh trên giường',
 	'Tư thế cúi gập người khoe mông cho anh xem nóng bỏng',
 	'Em cúi người tóc dài xõa khoe lưng cho anh đêm nay',
 	'Gập người xuống khoe vòng 3 căng cho anh xem đêm nay',
@@ -640,22 +640,22 @@ export const TITLES = [
 	// Quỳ + Tóc + Location + Focus
 	'Quỳ gối tóc dài tới mông khoe lưng trần trên giường anh',
 	'Em quỳ trên bậc thang tóc chấm lưng khoe mông cho anh',
-	'Quỳ trước gương tóc dài xõa khoe rãnh ngực cho anh đêm',
+	'Quỳ trước gương tóc dài xõa khoe rãnh ngực cho anh',
 
 	// Ngồi xổm + Tóc + Location + Focus
 	'Ngồi xổm tóc ngang vai khoe đùi trên cầu thang cho anh',
 	'Em ngồi xổm tóc tới mông khoe lưng trong phòng đêm nay',
 
 	// Nằm ngửa + Tóc + Location + Focus
-	'Nằm ngửa tóc dài chấm lưng khoe rãnh ngực cho anh đêm',
+	'Nằm ngửa tóc dài chấm lưng khoe rãnh ngực cho anh',
 	'Em nằm ngửa tóc siêu dài khoe toàn thân cho anh xem',
 
 	// Chổng + Tóc + Location + Focus
 	'Chổng mông tóc dài tới mông khoe lưng trên giường anh',
-	'Em chổng mông tóc chấm lưng khoe vòng 3 cho anh đêm',
+	'Em chổng mông tóc chấm lưng khoe vòng 3 cho anh',
 
 	// Cưỡi + Tóc + Location + Focus
-	'Cưỡi ngựa tóc dài bay khoe ngực trên giường cho anh đêm',
+	'Cưỡi ngựa tóc dài bay khoe ngực trên giường cho anh',
 	'Em ride tóc ngang vai khoe rãnh ngực cho anh xem nóng',
 
 	// Mix tất cả
@@ -665,7 +665,7 @@ export const TITLES = [
 	'Chổng mông võng lưng khoe vòng 3 căng cho anh đêm nay',
 	'Cưỡi ngựa lắc hông khoe mông ngực cho anh xem đêm nay',
 	'Oral quỳ gối khoe môi mọng cho anh xem đêm nay nóng',
-	'Trên cầu thang quỳ gối khoe mông tóc dài cho anh đêm',
+	'Trên cầu thang quỳ gối khoe mông tóc dài cho anh',
 	'Nằm sấp trên bậc thang khoe mông cho anh xem đêm nay',
 
 	// === POSITION: GHẾ TÌNH YÊU / GHẾ TANTRA ===
@@ -679,7 +679,7 @@ export const TITLES = [
 
 	// === POSITION: TRUYỀN THỐNG / BÌNH THƯỜNG / CƠ BẢN ===
 	'Tư thế truyền thống bình thường khoe ngực cho anh đêm nay',
-	'Cơ bản nhưng vẫn nóng bỏng khoe mông ngực cho anh đêm',
+	'Cơ bản nhưng vẫn nóng bỏng khoe mông ngực cho anh',
 	'Missionary trên giường khoe ngực cho anh xem đêm nay nóng',
 	'Bình thường thôi vẫn gợi cảm khoe mông cho anh đêm nay',
 	'Tư thế cơ bản quyến rũ khoe toàn thân cho anh đêm nay',
@@ -695,13 +695,13 @@ export const TITLES = [
 	'Thả dáng bên cửa sổ khoe mông cho anh xem đêm nay nóng',
 	'Pose trước ống kính khoe ngực mông cho anh xem đêm nay',
 	'Selfie trong nhà tắm khoe mông ướt cho anh xem đêm nay',
-	'Chụp ảnh khoe dáng gợi cảm cho anh xem trên giường đêm',
+	'Chụp ảnh khoe dáng gợi cảm cho anh xem trên giường',
 
 	// === CROSS-MAPPING: OUTFIT + LOCATION + POSITION + HAIR ===
 	// Cô giáo + các tư thế + tóc
 	'Cô giáo tóc dài quỳ gối trên giường khoe ngực cho anh xem',
 	'Cô giáo tóc chấm lưng nằm ngửa trên sofa khoe ngực anh',
-	'Cô giáo tóc ướt chổng mông trên giường khoe cho anh đêm',
+	'Cô giáo tóc ướt chổng mông trên giường khoe cho anh',
 	'Cô giáo tóc ngắn cưỡi ngựa trên giường khoe ngực anh',
 	'Cô giáo tóc dài cúi người khoe mông trên bàn cho anh',
 	'Cô giáo tóc ngang vai ngồi xổm khoe đùi trên ghế anh',
@@ -719,7 +719,7 @@ export const TITLES = [
 	'Nữ sinh tóc ngắn nằm ngửa trên sofa khoe ngực anh xem',
 	'Học sinh tóc đuôi ngựa chổng mông trên giường khoe anh',
 	'Nữ sinh tóc chấm lưng cưỡi ngựa khoe ngực trên giường',
-	'Học sinh tóc ngang vai cúi người khoe mông cho anh đêm',
+	'Học sinh tóc ngang vai cúi người khoe mông cho anh',
 	'Nữ sinh tóc dài ngồi xổm trên cầu thang khoe đùi anh',
 
 	// Thư ký + các tư thế + tóc
@@ -803,7 +803,7 @@ export const TITLES = [
 	'Trên sofa tóc ngang vai ngồi xổm khoe đùi cho anh',
 
 	// Cầu thang + các tư thế + tóc
-	'Trên cầu thang tóc dài quỳ gối khoe mông cho anh đêm',
+	'Trên cầu thang tóc dài quỳ gối khoe mông cho anh',
 	'Trên bậc thang tóc chấm lưng ngồi xổm khoe đùi anh',
 	'Trên cầu thang tóc ngắn cúi người khoe mông cho anh',
 	'Trên cầu thang tóc ướt nằm sấp khoe mông cho anh xem',
@@ -812,7 +812,7 @@ export const TITLES = [
 	'Bên biển tóc dài quỳ gối trên cát khoe mông cho anh',
 	'Bên hồ bơi tóc ướt nằm ngửa khoe ngực cho anh xem',
 	'Bên biển tóc chấm lưng chổng mông khoe mông cho anh',
-	'Bên hồ bơi tóc ngắn ngồi xổm khoe đùi cho anh đêm',
+	'Bên hồ bơi tóc ngắn ngồi xổm khoe đùi cho anh',
 
 	// Phòng tắm + các tư thế + tóc
 	'Trong bồn tắm tóc ướt quỳ gối khoe ngực cho anh xem',
@@ -868,7 +868,7 @@ export const TITLES = [
 	'Y tá nằm ngửa trên giường bệnh khoe ngực căng nóng',
 	'Y tá cưỡi ngựa trên giường khoe ngực cho bệnh nhân',
 	'Y tá doggy từ sau trong phòng khoe mông cho anh xem',
-	'Y tá oral cho bệnh nhân khoe môi đỏ trong phòng đêm',
+	'Y tá oral cho bệnh nhân khoe môi đỏ trong phòng',
 
 	// Học sinh + các tư thế cụ thể
 	'Nữ sinh chổng mông trên bàn học khoe vòng 3 cho anh',
@@ -894,7 +894,7 @@ export const TITLES = [
 	// Nội y + các tư thế cụ thể + địa điểm
 	'Nội y chổng mông trên giường khoe vòng 3 cho anh xem',
 	'Đồ ngủ quỳ gối bú anh trên giường khoe môi đỏ nóng',
-	'Nội y nằm ngửa trên sofa khoe ngực căng cho anh đêm',
+	'Nội y nằm ngửa trên sofa khoe ngực căng cho anh',
 	'Đồ lót cưỡi ngựa trên giường khoe ngực mông cho anh',
 	'Nội y ren doggy trên thảm khoe mông căng cho anh xem',
 	'Đồ ngủ oral thổi kèn cho anh khoe môi trên giường',
@@ -908,7 +908,7 @@ export const TITLES = [
 	'Quỳ xuống ngậm cho anh khoe môi mọng trên giường',
 
 	// Nằm + 69 combinations
-	'Nằm ngửa 69 với anh khoe ngực mông trên giường đêm',
+	'Nằm ngửa 69 với anh khoe ngực mông trên giường',
 	'Nằm tư thế 69 bú liếm khoe toàn thân cho anh xem',
 	'Nằm 69 thổi kèn cho anh khoe mông ngực trên giường',
 	'Nằm ngửa oral 69 khoe môi nóng với anh đêm nay',
@@ -928,7 +928,7 @@ export const TITLES = [
 	// === DEEP CROSS-MAPPING: LOCATION + POSITION CỤ THỂ ===
 	// Giường + tất cả positions
 	'Trên giường doggy chổng mông khoe vòng 3 cho anh',
-	'Trên giường quỳ bú cho anh khoe môi đỏ mọng đêm',
+	'Trên giường quỳ bú cho anh khoe môi đỏ mọng',
 	'Trên giường 69 nằm ngửa khoe toàn thân cho anh',
 	'Trên giường cưỡi ngựa lắc khoe mông ngực anh xem',
 
@@ -956,7 +956,7 @@ export const TITLES = [
 	// === DEEP CROSS-MAPPING: BODY FOCUS + POSITIONS ===
 	// Ngực + các positions
 	'Khoe ngực căng tràn quỳ gối trên giường cho anh',
-	'Khoe rãnh ngực sâu nằm ngửa trên sofa cho anh đêm',
+	'Khoe rãnh ngực sâu nằm ngửa trên sofa cho anh',
 	'Khoe ngực to tròn cưỡi ngựa trên giường cho anh',
 	'Ngực căng đẫy chổng mông trên giường cho anh xem',
 	'Vòng 1 căng tràn quỳ bú cho anh khoe môi đêm nay',
@@ -965,12 +965,12 @@ export const TITLES = [
 	'Khoe mông tròn căng chổng mông trên giường cho anh',
 	'Mông cong vút doggy từ sau khoe cho anh xem',
 	'Vòng 3 căng đầy cưỡi ngựa lắc cho anh xem nóng',
-	'Mông đẹp quỳ gối khoe cho anh xem trên giường đêm',
+	'Mông đẹp quỳ gối khoe cho anh xem trên giường',
 	'Khoe mông to tròn nằm sấp trên giường cho anh xem',
 
 	// Đùi + các positions
 	'Khoe đùi thon dài quỳ gối trên giường cho anh xem',
-	'Đùi trắng mịn dang chân nằm ngửa khoe cho anh đêm',
+	'Đùi trắng mịn dang chân nằm ngửa khoe cho anh',
 	'Khoe đùi nuột nà ngồi xổm trên sofa cho anh xem',
 
 	// Eo + các positions
@@ -1004,7 +1004,7 @@ export const TITLES = [
 	'Sau khi tắm đồ lót tóc ướt khoe mông cho anh xem',
 	'Vừa gội đầu nội y tóc ướt khoe ngực mông cho anh',
 	'Tắm xong bikini tóc ướt khoe mông bên hồ bơi anh',
-	'Sau shower đồ ngủ tóc ướt khoe ngực cho anh đêm',
+	'Sau shower đồ ngủ tóc ướt khoe ngực cho anh',
 
 	// Nhảy + Lắc hông + Tóc + Body
 	'Nhảy lắc hông tóc dài khoe ngực cho anh xem đêm nay',
@@ -1014,7 +1014,7 @@ export const TITLES = [
 	'Dance cover lắc hông tóc chấm lưng khoe mông anh',
 	'Nhảy trend lắc mông tóc tới mông khoe lưng cho anh',
 	'Lắc hông theo nhạc tóc dài bay khoe ngực mông anh',
-	'Quẩy lắc mông tóc ngang vai khoe ngực cho anh đêm',
+	'Quẩy lắc mông tóc ngang vai khoe ngực cho anh',
 	'Nhảy sexy lắc hông tóc dài khoe mông căng cho anh',
 	'Dance nóng lắc mông tóc ướt khoe ngực cho anh xem',
 
@@ -1026,13 +1026,13 @@ export const TITLES = [
 	'Tóc tới mông chổng mông khoe lưng cho anh xem',
 	'Tóc chấm lưng doggy khoe lưng trần cho anh đêm nay',
 	'Tóc dài miên man nằm ngửa khoe ngực cho anh xem',
-	'Tóc siêu dài quỳ gối khoe lưng mông cho anh đêm',
+	'Tóc siêu dài quỳ gối khoe lưng mông cho anh',
 
 	// === MULTI-COMBO: LOCATION + POSITION + HAIR + BODY ===
 	// Ngoài trời + Positions + Tóc
 	'Ngoài trời doggy tóc dài khoe mông cho anh xem nóng',
 	'Bên biển chổng mông tóc ướt khoe vòng 3 cho anh',
-	'Ngoài vườn nằm ngửa tóc dài khoe ngực cho anh đêm',
+	'Ngoài vườn nằm ngửa tóc dài khoe ngực cho anh',
 	'Sân thượng doggy tóc bay khoe mông cho anh xem nóng',
 	'Ngoài ban công cưỡi ngựa tóc dài khoe ngực cho anh',
 	'Bên hồ bơi chổng mông tóc ướt khoe mông cho anh',
@@ -1055,11 +1055,11 @@ export const TITLES = [
 	'Cô giáo chổng mông cạnh bảng đen khoe vòng 3 anh',
 	'Cô giáo cưỡi ngựa trên ghế giáo viên khoe ngực',
 	'Cô giáo nằm ngửa trên bàn trong lớp khoe ngực anh',
-	'Cô giáo 69 với học sinh trong phòng học tư đêm',
+	'Cô giáo 69 với học sinh trong phòng học tư',
 
 	// Y tá + Bệnh viện / Phòng khám
 	'Y tá doggy trong phòng khám khoe mông cho bệnh nhân',
-	'Y tá quỳ bú trong phòng bệnh khoe môi cho anh đêm',
+	'Y tá quỳ bú trong phòng bệnh khoe môi cho anh',
 	'Y tá chổng mông trên giường bệnh khoe vòng 3 anh',
 	'Y tá cưỡi ngựa trên giường bệnh viện khoe ngực',
 	'Y tá nằm ngửa trong phòng khám khoe ngực cho anh',
@@ -1076,7 +1076,7 @@ export const TITLES = [
 	'Hầu gái doggy trong phòng ngủ chủ khoe mông cho chủ',
 	'Hầu gái quỳ phục vụ trong phòng khách khoe môi',
 	'Hầu gái chổng mông lau nhà khoe vòng 3 cho chủ',
-	'Hầu gái cưỡi ngựa trên giường chủ khoe ngực đêm',
+	'Hầu gái cưỡi ngựa trên giường chủ khoe ngực',
 	'Hầu gái nằm ngửa trong bếp khoe ngực cho chủ xem',
 
 	// Tiếp viên + Karaoke
@@ -1102,7 +1102,7 @@ export const TITLES = [
 
 	// === HAIR + ACTIVITY + BODY COMBO ===
 	// Tóc ướt combos
-	'Tóc ướt sau tắm lắc mông khoe ngực cho anh đêm',
+	'Tóc ướt sau tắm lắc mông khoe ngực cho anh',
 	'Tóc ướt nhảy quẩy khoe mông tròn cho anh xem nóng',
 	'Tóc ướt cưỡi ngựa khoe ngực căng cho anh đêm nay',
 	'Tóc ướt chổng mông khoe vòng 3 cho anh xem nóng',
@@ -1110,14 +1110,14 @@ export const TITLES = [
 
 	// Tóc dài + Activity + Body đa dạng
 	'Tóc dài thướt tha uốn éo khoe ngực mông cho anh',
-	'Tóc dài bay bay nhảy khoe đường cong cho anh đêm',
+	'Tóc dài bay bay nhảy khoe đường cong cho anh',
 	'Tóc dài xõa vai cưỡi ngựa khoe ngực cho anh nóng',
 	'Tóc dài buông lơi chổng mông khoe lưng cho anh',
-	'Tóc dài rũ lưng quỳ gối khoe mông cho anh đêm',
+	'Tóc dài rũ lưng quỳ gối khoe mông cho anh',
 
 	// Tóc chấm mông / siêu dài combos
 	'Tóc chấm mông lắc hông khoe lưng trần cho anh xem',
-	'Tóc tới mông doggy khoe lưng dáng cho anh đêm',
+	'Tóc tới mông doggy khoe lưng dáng cho anh',
 	'Tóc siêu dài cưỡi ngựa khoe lưng mông cho anh',
 	'Tóc chấm lưng nằm ngửa khoe ngực cho anh đêm nay',
 	'Tóc dài qua mông quỳ gối khoe lưng cho anh xem',
@@ -1135,12 +1135,12 @@ export const TITLES = [
 
 	// Áo dài truyền thống tóc dài elegant
 	'Áo dài tóc dài thướt tha khoe đường cong cho anh',
-	'Áo dài truyền thống tóc xõa khoe lưng cho anh đêm',
+	'Áo dài truyền thống tóc xõa khoe lưng cho anh',
 	'Áo dài hở lưng tóc chấm mông khoe dáng cho anh',
 
 	// Leather/Da bóng tóc ngắn cá tính
 	'Đồ da tóc ngắn cá tính doggy khoe mông cho anh',
-	'Leather tóc ngắn cưỡi ngựa khoe ngực cho anh đêm',
+	'Leather tóc ngắn cưỡi ngựa khoe ngực cho anh',
 	'Da bóng tóc nhuộm chổng mông khoe vòng 3 cho anh',
 
 	// Massage spa tóc buộc khoe lưng
@@ -1160,7 +1160,7 @@ export const DESCRIPTIONS = [
 	'Em ướt hết rồi khoe mông ngực cho anh xem nóng',
 	'Nóng từ mắt đến cơ thể khoe hết cho anh xem',
 	'Hương em quyến rũ lắm khoe dáng cho anh nóng',
-	'Em là giấc mơ ướt khoe mông ngực cho anh đêm',
+	'Em là giấc mơ ướt khoe mông ngực cho anh',
 	'Cơ thể em nóng lắm anh khoe hết cho anh xem',
 	'Quyến rũ không cần cố khoe mông ngực trên giường cho anh',
 
@@ -1169,7 +1169,7 @@ export const DESCRIPTIONS = [
 	'Thức khuya có quà nóng khoe mông đêm nay anh',
 	'Lời thú tội đêm khuya khoe ngực mông cho anh trên giường',
 	'Ai ôm em đêm nay khoe mông ngực trên giường?',
-	'Tự tin với từng đường cong khoe mông cho anh đêm',
+	'Tự tin với từng đường cong khoe mông cho anh',
 
 	// === THEME + OUTFIT + ACTIVITY + FOCUS + PEOPLE (5 cats) ===
 	'Thích nếu em quyến rũ khoe mông ngực cho anh',
@@ -1181,7 +1181,7 @@ export const DESCRIPTIONS = [
 	'10k like em cởi thêm khoe mông ngực cho anh',
 
 	// === THEME + ACTIVITY + FOCUS + LOCATION + TIME (5 cats) ===
-	'Midnight vibes nóng bỏng khoe mông trên giường đêm',
+	'Midnight vibes nóng bỏng khoe mông trên giường',
 	'Content cho người mất ngủ khoe mông đêm nay',
 	'Cho những ai không ngủ được khoe mông đêm nay',
 	'Khuya rồi ai chưa ngủ xem khoe mông trên giường',
@@ -1206,26 +1206,26 @@ export const DESCRIPTIONS = [
 	'Sinh ra để nóng bỏng khoe mông ngực cho anh',
 
 	// === ACTIVITY + FOCUS + LOCATION + TIME + PEOPLE (5 cats) ===
-	'Em đang lắc hông đây khoe mông trên giường đêm',
-	'Vuốt tóc quyến rũ khoe lưng trên giường anh đêm',
-	'Cắn môi gợi cảm khoe mặt trên giường anh đêm',
+	'Em đang lắc hông đây khoe mông trên giường',
+	'Vuốt tóc quyến rũ khoe lưng trên giường anh',
+	'Cắn môi gợi cảm khoe mặt trên giường anh',
 	'Đong đưa hông em khoe mông trên giường đêm nay',
-	'Dang chân một chút khoe đùi trên giường anh đêm',
-	'Ngồi xổm gợi cảm khoe đùi trên giường anh đêm',
-	'Thả dáng bên cửa sổ khoe mông trên giường đêm',
-	'Tạo dáng chuyên nghiệp khoe mông trên giường đêm',
-	'Nháy mắt đưa tình khoe mặt trên giường anh đêm',
-	'Cong lưng như cây cầu khoe lưng trên giường đêm',
-	'Uốn dáng võng tròn khoe lưng trên giường anh đêm',
-	'Lưng võng quyến rũ khoe lưng trên giường anh đêm',
+	'Dang chân một chút khoe đùi trên giường anh',
+	'Ngồi xổm gợi cảm khoe đùi trên giường anh',
+	'Thả dáng bên cửa sổ khoe mông trên giường',
+	'Tạo dáng chuyên nghiệp khoe mông trên giường',
+	'Nháy mắt đưa tình khoe mặt trên giường anh',
+	'Cong lưng như cây cầu khoe lưng trên giường',
+	'Uốn dáng võng tròn khoe lưng trên giường anh',
+	'Lưng võng quyến rũ khoe lưng trên giường anh',
 
 	// === THEME + ACTIVITY + FOCUS + LOCATION + TIME (5 cats) ===
 	'Giường em êm lắm anh lên khoe mông đêm nay',
 	'Đêm nay trên giường em khoe mông ngực nóng bỏng',
-	'Gối đầu lên đùi em anh nhìn ngực trên giường đêm',
+	'Gối đầu lên đùi em anh nhìn ngực trên giường',
 	'Đêm nay em muốn được yêu khoe mông trên giường',
 	'Ôm em ngủ đi anh khoe mông trên giường đêm nay',
-	'Em sợ ngủ một mình khoe mông trên giường đêm',
+	'Em sợ ngủ một mình khoe mông trên giường',
 
 	// === THEME + ACTIVITY + FOCUS + LOCATION + PEOPLE (5 cats) ===
 	'Tiệc tùng đêm nay cùng em khoe mông ngực cho anh',
@@ -1262,10 +1262,10 @@ export const DESCRIPTIONS = [
 	'Trước gương quyến rũ như này khoe mông cho anh',
 
 	// === OUTFIT + ACTIVITY + FOCUS + LOCATION + TIME (5 cats) ===
-	'Karaoke đêm nay đi anh khoe ngực trong váy đêm',
-	'Phòng hát tối và nóng khoe mông trong váy đêm',
+	'Karaoke đêm nay đi anh khoe ngực trong váy',
+	'Phòng hát tối và nóng khoe mông trong váy',
 	'Quẩy karaoke cùng em khoe mông trong váy đêm nay',
-	'Đèn mờ quyến rũ trong phòng hát khoe ngực đêm',
+	'Đèn mờ quyến rũ trong phòng hát khoe ngực',
 	'Đêm nay trong khách sạn cùng em khoe mông giường',
 	'Ngoài trời nắng đẹp khoe dáng mông bikini nóng',
 	'Biển xanh và thân hình em khoe mông bikini',
@@ -1299,8 +1299,8 @@ export const DESCRIPTIONS = [
 
 	// === OUTFIT + ACTIVITY + FOCUS + LOCATION + TIME (5 cats) ===
 	'Đêm tiệc lộng lẫy khoe mông trong váy dạ hội',
-	'Váy dạ hội sexy khoe ngực mông trong tiệc đêm',
-	'Nhảy quyến rũ cùng em khoe mông trên giường đêm',
+	'Váy dạ hội sexy khoe ngực mông trong tiệc',
+	'Nhảy quyến rũ cùng em khoe mông trên giường',
 	'Em sờ cơ thể em thế này khoe mông cho anh xem',
 	'Sờ soạng bản thân gợi cảm khoe mông cho anh trên giường',
 	'Chạm vào cơ thể em đi anh sờ khoe mông nóng',
@@ -1308,8 +1308,8 @@ export const DESCRIPTIONS = [
 	'Cong người quyến rũ như này khoe lưng cho anh trên giường',
 	'Khoe thân hình đi em khoe mông ngực cho anh trên giường',
 	'Xoay người cho anh xem đủ góc khoe mông nóng',
-	'Quẩy theo nhạc nha khoe mông trên giường đêm',
-	'Nảy theo nhịp quyến rũ khoe mông trên giường đêm',
+	'Quẩy theo nhạc nha khoe mông trên giường',
+	'Nảy theo nhịp quyến rũ khoe mông trên giường',
 	'Vuốt ve cơ thể em đây khoe mông cho anh xem',
 	'Tự sờ cho anh xem khoe mông trên giường nóng',
 
@@ -1389,14 +1389,14 @@ export const DESCRIPTIONS = [
 	'Nhìn xuống em đi em đang bú khoe mông cho anh giường',
 
 	// === ACTIVITY + FOCUS + LOCATION + TIME + PEOPLE (5 cats) ===
-	'Tay em massage lên người anh nhé khoe mông đêm',
+	'Tay em massage lên người anh nhé khoe mông',
 	'Thư giãn với em đêm nay khoe mông trên giường',
-	'Em bóp vai cho anh mềm người khoe mông đêm',
+	'Em bóp vai cho anh mềm người khoe mông',
 	'Tinh dầu nóng lên cơ thể em khoe mông đêm anh',
 	'Tay em trơn dầu lướt trên da anh khoe mông',
 	'Xông hơi xong em nóng ran người khoe mông anh',
-	'Phòng massage mờ đèn ấm cúng khoe mông đêm',
-	'Em là massage girl riêng của anh khoe mông đêm',
+	'Phòng massage mờ đèn ấm cúng khoe mông',
+	'Em là massage girl riêng của anh khoe mông',
 	'Dầu nóng chảy khắp người em khoe mông cho anh',
 	'Cơ thể em trơn như lươn khoe mông cho anh xem',
 	'Bàn massage và em chờ anh khoe mông đêm nay',
@@ -1425,24 +1425,24 @@ export const DESCRIPTIONS = [
 	'Cơ thể ẩm ướt sau khi tắm khoe mông cho anh',
 
 	// === ACTIVITY + FOCUS + LOCATION + TIME + PEOPLE (5 cats) ===
-	'Giường king size cho đêm dài khoe mông đêm',
+	'Giường king size cho đêm dài khoe mông',
 	'Phòng suite view đẹp và em khoe mông đêm nay',
 	'Book phòng đêm nay cùng em khoe mông trên giường',
-	'Villa riêng tư không ai làm phiền khoe mông đêm',
-	'Đêm tân hôn trong hotel 5 sao khoe mông đêm',
+	'Villa riêng tư không ai làm phiền khoe mông',
+	'Đêm tân hôn trong hotel 5 sao khoe mông',
 	'View thành phố từ giường ngủ khoe mông đêm nay',
-	'Bồn tắm trong phòng khách sạn khoe mông đêm',
-	'Minibar và em anh thích không? khoe mông đêm',
+	'Bồn tắm trong phòng khách sạn khoe mông',
+	'Minibar và em anh thích không? khoe mông',
 	'Đèn mờ trong phòng hotel ấm khoe mông đêm nay',
 	'Phòng đôi dành cho tình yêu khoe mông đêm nay',
 	'Đêm nóng bỏng trong resort khoe mông trên giường',
 	'Nhảy trong phòng cho anh xem khoe mông đêm nay',
 	'Lắc hông theo nhạc đêm nay khoe mông cho anh trên giường',
 	'Dance cover trend mới nhất khoe mông đêm nay',
-	'Quẩy một mình trong phòng riêng khoe mông đêm',
+	'Quẩy một mình trong phòng riêng khoe mông',
 	'Nhảy trước gương quyến rũ khoe mông đêm nay',
 	'Vũ điệu gợi cảm tại nhà khoe mông đêm nay anh',
-	'Lắc mông theo beat nóng bỏng khoe mông đêm',
+	'Lắc mông theo beat nóng bỏng khoe mông',
 	'Nhảy ngoài trời bikini bé xíu khoe mông ngoài',
 	'Dance bên hồ bơi mát lạnh khoe mông bikini',
 	'Nhảy trên sân thượng đêm về khoe mông đêm nay',
@@ -1451,7 +1451,7 @@ export const DESCRIPTIONS = [
 	'Dance freestyle không giới hạn khoe mông ngoài trời cho anh',
 	'Nhảy trend TikTok nóng bỏng khoe mông đêm nay',
 	'Cover dance với đồ hở hang khoe mông cho anh',
-	'Nhảy trong đêm khuya một mình khoe mông đêm',
+	'Nhảy trong đêm khuya một mình khoe mông',
 	'Lắc hông trong phòng tập khoe mông cho anh đêm nay',
 	'Nhảy xong đẫm mồ hôi nóng khoe mông cho anh',
 
@@ -1473,20 +1473,20 @@ export const DESCRIPTIONS = [
 	'Em quỳ xuống gợi cảm khoe ngực mông cho anh xem',
 	'Tư thế quỳ gối quyến rũ khoe đường cong cho anh đêm nay',
 	'Quỳ trên thảm tóc dài xõa khoe mông cho anh xem nóng',
-	'Trườn trên giường gợi cảm khoe lưng mông cho anh đêm',
+	'Trườn trên giường gợi cảm khoe lưng mông cho anh',
 	'Em bò trên giường khoe mông cho anh xem đêm nay nóng',
 
 	// Ngồi xổm + nhiều filter
 	'Ngồi xổm gợi cảm khoe đùi mông cho anh xem đêm nay',
 	'Em ngồi xổm trước gương khoe mông cho anh đêm nay nóng',
 	'Tư thế ngồi xổm quyến rũ khoe đường cong cho anh xem',
-	'Ngồi xổm trong phòng tắm ướt khoe mông cho anh đêm',
+	'Ngồi xổm trong phòng tắm ướt khoe mông cho anh',
 
 	// Nằm ngửa + nhiều filter
 	'Nằm ngửa trên giường khoe ngực căng tràn cho anh đêm nay',
 	'Em nằm ngửa phơi bày khoe rãnh ngực cho anh xem nóng',
 	'Tư thế nằm ngửa gợi cảm khoe toàn thân cho anh đêm nay',
-	'Nằm ngửa dang chân khoe đùi cho anh xem trên giường đêm',
+	'Nằm ngửa dang chân khoe đùi cho anh xem trên giường',
 	'Em nằm ngửa võng lưng khoe ngực cho anh đêm nay nóng',
 
 	// Nằm sấp + nhiều filter
@@ -1497,7 +1497,7 @@ export const DESCRIPTIONS = [
 
 	// === POSITION: CHỔNG MÔNG / DOGGY ===
 	'Chổng mông cho anh xem vòng 3 căng đêm nay nóng bỏng',
-	'Em chổng mông gợi cảm khoe cho anh xem trên giường đêm',
+	'Em chổng mông gợi cảm khoe cho anh xem trên giường',
 	'Tư thế chổng mông quyến rũ khoe mông cho anh đêm nay',
 	'Từ sau nhìn mông em cong khoe cho anh xem nóng bỏng',
 
@@ -1506,13 +1506,13 @@ export const DESCRIPTIONS = [
 	'Em ride quyến rũ khoe đường cong cho anh xem đêm nay',
 	'Tư thế cưỡi ngựa gợi cảm khoe ngực cho anh đêm nay',
 	'Lên trên anh cưỡi khoe mông căng đêm nay nóng bỏng',
-	'Ngồi lên cưỡi khoe ngực mông cho anh xem trên giường đêm',
+	'Ngồi lên cưỡi khoe ngực mông cho anh xem trên giường',
 
 	// === POSITION: ORAL / 69 ===
 	'Oral cho anh đêm nay khoe môi mọng trên giường nóng bỏng',
 	'Em thổi kèn gợi cảm khoe môi cho anh xem đêm nay nóng',
 	'Tư thế 69 nóng bỏng khoe toàn thân cho anh xem đêm nay',
-	'Bú liếm cho anh sướng khoe lưỡi nóng trên giường đêm',
+	'Bú liếm cho anh sướng khoe lưỡi nóng trên giường',
 
 	// === LOCATION: CẦU THANG ===
 	'Trên cầu thang khoe mông gợi cảm cho anh xem đêm nay',
@@ -1524,7 +1524,7 @@ export const DESCRIPTIONS = [
 	// === FOCUS: RÃNH NGỰC / KHE NGỰC ===
 	'Khoe rãnh ngực sâu cho anh xem đêm nay nóng bỏng giường',
 	'Rãnh ngực căng tràn gợi cảm khoe cho anh đêm nay nóng',
-	'Em khoe khe ngực quyến rũ cho anh xem trên giường đêm',
+	'Em khoe khe ngực quyến rũ cho anh xem trên giường',
 	'Ngực tràn áo lộ rãnh ngực khoe cho anh xem đêm nay',
 	'Góc nhìn từ trên rãnh ngực sâu khoe cho anh đêm nay',
 	'Khe ngực gợi cảm trong áo ren khoe cho anh xem đêm nay',
@@ -1538,7 +1538,7 @@ export const DESCRIPTIONS = [
 	// Tóc chấm lưng / giữa lưng
 	'Tóc dài chấm lưng gợi cảm khoe cho anh xem đêm nay',
 	'Em tóc giữa lưng xõa khoe lưng cho anh đêm nay nóng',
-	'Tóc dài qua lưng quyến rũ khoe đường cong cho anh đêm',
+	'Tóc dài qua lưng quyến rũ khoe đường cong cho anh',
 
 	// Tóc ngang vai
 	'Tóc ngang vai gợi cảm khoe vai trần cho anh đêm nay',
@@ -1607,11 +1607,11 @@ export const DESCRIPTIONS = [
 	// KTV / Tiếp viên
 	'Tiếp viên tóc dài quỳ gối khoe ngực cho anh đêm nay',
 	'Tiếp viên tóc ướt nằm ngửa khoe ngực cho anh xem',
-	'KTV tóc chấm lưng chổng mông khoe mông cho anh đêm',
+	'KTV tóc chấm lưng chổng mông khoe mông cho anh',
 
 	// Áo dài
 	'Áo dài tóc dài quỳ gối khoe ngực cho anh xem đêm nay',
-	'Áo dài tóc chấm lưng nằm ngửa khoe ngực cho anh đêm',
+	'Áo dài tóc chấm lưng nằm ngửa khoe ngực cho anh',
 	'Áo dài tóc ướt chổng mông khoe mông cho anh xem nóng',
 
 	// Đồ bó sát / Gym
@@ -1634,20 +1634,20 @@ export const DESCRIPTIONS = [
 	// Sofa
 	'Trên sofa tóc dài quỳ gối khoe mông cho anh đêm nay',
 	'Trên sofa tóc ngắn nằm ngửa khoe ngực cho anh xem',
-	'Trên sofa tóc ướt chổng mông khoe mông cho anh đêm',
+	'Trên sofa tóc ướt chổng mông khoe mông cho anh',
 
 	// Cầu thang
-	'Trên cầu thang tóc dài quỳ gối khoe mông cho anh đêm',
+	'Trên cầu thang tóc dài quỳ gối khoe mông cho anh',
 	'Trên bậc thang tóc chấm lưng ngồi xổm khoe đùi anh',
 	'Trên cầu thang tóc ướt nằm sấp khoe mông cho anh',
 
 	// Biển / Hồ bơi
 	'Bên biển tóc dài quỳ gối khoe mông cho anh xem',
-	'Bên hồ bơi tóc ướt nằm ngửa khoe ngực cho anh đêm',
+	'Bên hồ bơi tóc ướt nằm ngửa khoe ngực cho anh',
 	'Bên biển tóc chấm lưng chổng mông khoe mông anh',
 
 	// Phòng tắm
-	'Trong bồn tắm tóc ướt quỳ gối khoe ngực cho anh đêm',
+	'Trong bồn tắm tóc ướt quỳ gối khoe ngực cho anh',
 	'Dưới vòi sen tóc dài nằm ngửa khoe ngực cho anh',
 	'Trong phòng tắm tóc ướt chổng mông khoe mông anh',
 
@@ -1788,7 +1788,7 @@ export const DESCRIPTIONS = [
 	'Cô giáo quỳ bú khoe ngực căng cho anh xem',
 	'Y tá doggy khoe mông cho bệnh nhân xem đêm nay',
 	'Nữ sinh 69 nằm ngửa khoe ngực cho anh đêm nay',
-	'Hầu gái cưỡi chủ khoe mông ngực nóng bỏng đêm',
+	'Hầu gái cưỡi chủ khoe mông ngực nóng bỏng',
 	'Bikini doggy bên biển khoe vòng 3 căng cho anh',
 	'Nội y quỳ bú khoe ngực căng cho anh xem đêm nay',
 ];
