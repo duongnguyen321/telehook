@@ -11,7 +11,7 @@ export const TITLES = [
 	'Muốn cởi không?',
 	'Đêm nay ai làm em mệt?',
 	'Chịu được bao lâu?',
-	'Em thích ở trên hay dưới?',
+	'Anh thích ở trên hay dưới?',
 	'Nóng quá muốn cởi hết',
 	'Ai làm em ướt đêm nay?',
 	'Càng đêm càng muốn yêu...',
@@ -2005,352 +2005,333 @@ export function suggestPostingTime() {
  * This avoids content duplication - all content comes from TITLES and DESCRIPTIONS arrays
  */
 export const CATEGORIES = {
-	// Tư thế / Góc camera
-	POSE: {
-		name: 'Tư thế',
-		emoji: '📷',
-		options: {
-			FRONT: {
-				label: 'Trực diện',
-				keywords: ['trước', 'mặt', 'ngực', 'nhìn'],
-			},
-			BACK: {
-				label: 'Phía sau',
-				keywords: ['sau', 'lưng', 'mông', 'quay'],
-			},
-			TOP: {
-				label: 'Góc cao',
-				keywords: ['trên', 'xuống', 'rãnh'],
-			},
-			BOTTOM: {
-				label: 'Góc thấp',
-				keywords: ['dưới', 'lên', 'chân'],
-			},
-			SIDE: {
-				label: 'Góc nghiêng',
-				keywords: ['nghiêng', 'cong', 'đường cong'],
-			},
-			STANDING: {
-				label: 'Đứng',
-				keywords: ['đứng', 'toàn thân', 'dáng'],
-			},
-			SQUAT: { label: 'Ngồi thấp', keywords: ['squat', 'ngồi xổm', 'hạ thấp'] },
-			ARCH: {
-				label: 'Tạo dáng lưng',
-				keywords: ['uốn', 'cong lưng', 'võng'],
-			},
-			STRETCH: {
-				label: 'Vươn mình',
-				keywords: ['vươn', 'dãn', 'căng'],
-			},
-		},
-	},
-
-	// Hành động
-	ACTION: {
-		name: 'Hành động cuốn',
-		emoji: '🎬',
-		options: {
-			SHOWING: {
-				label: 'Khoe dáng',
-				keywords: ['khoe', 'xem'],
-			},
-			BOUNCING: {
-				label: 'Chuyển động',
-				keywords: ['nhún', 'nảy', 'lắc'],
-			},
-			DANCING: {
-				label: 'Nhảy múa',
-				keywords: ['lắc', 'nhảy', 'quẩy', 'xoay'],
-			},
-			LYING: {
-				label: 'Nằm thư giãn',
-				keywords: ['nằm', 'giường', 'ngủ'],
-			},
-			BENDING: {
-				label: 'Cúi người',
-				keywords: ['cúi', 'gập'],
-			},
-			TOUCHING: {
-				label: 'Vuốt ve',
-				keywords: ['sờ', 'chạm', 'vuốt'],
-			},
-			LICKING: { label: 'Liếm môi', keywords: ['liếm', 'mút', 'lưỡi'] },
-			WINKING: {
-				label: 'Nháy mắt',
-				keywords: ['nháy', 'mắt', 'đá lông nheo'],
-			},
-			PLAYING: {
-				label: 'Nghịch ngợm',
-				keywords: ['nghịch', 'chơi'],
-			},
-			POSING: {
-				label: 'Thả dáng',
-				keywords: ['thả dáng', 'tạo dáng', 'dáng', 'khoe dáng'],
-			},
-			STROKING_HAIR: {
-				label: 'Vuốt tóc',
-				keywords: ['vuốt tóc', 'luồn tay', 'tóc'],
-			},
-		},
-	},
-
-	// Biểu cảm
-	EXPRESSION: {
-		name: 'Biểu cảm',
-		emoji: '😮',
-		options: {
-			MOANING: {
-				label: 'Hơi thở',
-				keywords: ['kêu', 'rên', 'sướng', 'ahh', 'ơi', 'ồn'],
-			},
-			SILENT: {
-				label: 'Im lặng',
-				keywords: ['im', 'lặng'],
-			},
-			SMILING: {
-				label: 'Cười tươi',
-				keywords: ['cười', 'vui'],
-			},
-			SEDUCTIVE: {
-				label: 'Quyến rũ',
-				keywords: ['mắt', 'nhìn', 'gợi', 'quyến rũ', 'hư'],
-			},
-			BITING: {
-				label: 'Cắn nhẹ môi',
-				keywords: ['cắn', 'môi', 'liếm'],
-			},
-			CONFUSED: {
-				label: 'Ngây thơ',
-				keywords: ['ngây', 'ngơ'],
-			},
-			ANGRY: { label: 'Giận dỗi', keywords: ['giận', 'dỗi'] },
-		},
-	},
-
-	// Vibe / Mood (Mới)
-	VIBE: {
-		name: 'Vibe',
+	// 1. CHỦ ĐỀ & PHONG CÁCH (Theme, Vibe, Expression)
+	THEME: {
+		name: 'Chủ đề & Phong cách',
 		emoji: '✨',
 		options: {
-			DARK: {
-				label: 'Tối/Bí ẩn',
-				keywords: ['tối', 'bí ẩn', 'đen'],
+			SEXY_BOLD: {
+				label: 'Gợi cảm & Táo bạo',
+				keywords: [
+					'táo bạo',
+					'nóng bỏng',
+					'quyến rũ',
+					'gợi tình',
+					'sexy',
+					'18+',
+					'hư',
+					'bad girl',
+					'cởi',
+					'hở',
+					'ren',
+					'xuyên thấu',
+					'lọt khe',
+					'ướt',
+					'mlem',
+					'cháy',
+				],
 			},
-			BRIGHT: {
-				label: 'Sáng/Trong',
-				keywords: ['sáng', 'trong', 'nắng'],
+			CUTE_SWEET: {
+				label: 'Đáng yêu & Ngọt ngào',
+				keywords: ['đáng yêu', 'dễ thương', 'cười', 'ngây thơ', 'nắng', 'hiền'],
 			},
-			COZY: { label: 'Ấm áp', keywords: ['ấm', 'nhà'] },
-			LUXURY: {
-				label: 'Sang chảnh',
-				keywords: ['sang', 'chảnh', 'quý phái'],
+			LUXURY_CLASSY: {
+				label: 'Sang chảnh & Quý phái',
+				keywords: [
+					'sang chảnh',
+					'quý phái',
+					'đẳng cấp',
+					'tiệc',
+					'dạ hội',
+					'resort',
+					'kiêu sa',
+				],
 			},
-			CUTE: {
-				label: 'Đáng yêu',
-				keywords: ['dễ thương', 'yêu', 'bé', 'nhõng nhẽo'],
+			CASUAL_DAILY: {
+				label: 'Thường ngày & Gần gũi',
+				keywords: [
+					'thường ngày',
+					'ở nhà',
+					'đơn giản',
+					'ấm áp',
+					'chill',
+					'thoải mái',
+				],
 			},
-			WILD: { label: 'Hoang dã', keywords: ['hoang', 'điên'] },
 		},
 	},
 
-	// Roleplay (Mới)
-	ROLE: {
-		name: 'Nhập vai',
-		emoji: '🎭',
+	// 2. TRANG PHỤC & VAI TRÒ (Outfit, Role)
+	OUTFIT: {
+		name: 'Trang phục & Vai trò',
+		emoji: '👙',
 		options: {
-			TEACHER: {
-				label: 'Cô giáo nghiêm khắc',
-				keywords: ['cô giáo', 'dạy', 'học'],
+			BIKINI: {
+				label: 'Đồ bơi / Bikini',
+				keywords: ['bikini', 'đồ bơi', '2 mảnh', 'đi biển'],
 			},
-			STUDENT: {
-				label: 'Học sinh cá tính',
-				keywords: ['học sinh', 'nữ sinh', 'trường'],
+			LINGERIE: {
+				label: 'Nội y / Đồ ngủ',
+				keywords: [
+					'nội y',
+					'ren',
+					'đồ lót',
+					'lọt khe',
+					'đồ ngủ',
+					'lụa',
+					'mỏng',
+				],
 			},
-			SECRETARY: {
-				label: 'Thư ký riêng',
-				keywords: ['thư ký', 'sếp', 'văn phòng'],
+			COSPLAY_ROLE: {
+				label: 'Cosplay / Nhập vai',
+				keywords: [
+					'cosplay',
+					'hóa trang',
+					'cô giáo',
+					'học sinh',
+					'y tá',
+					'hầu gái',
+					'thư ký',
+					'thỏ',
+					'mèo',
+				],
 			},
-			NURSE: {
-				label: 'Y tá tận tình',
-				keywords: ['y tá', 'bệnh', 'khám', 'thuốc'],
+			TRADITIONAL: {
+				label: 'Áo dài / Truyền thống',
+				keywords: ['áo dài', 'truyền thống', 'nón', 'yếm'],
 			},
-			MAID: {
-				label: 'Giúp việc',
-				keywords: ['giúp việc', 'dọn', 'phục vụ', 'chủ'],
+			OFFICE: {
+				label: 'Công sở / Vest',
+				keywords: ['công sở', 'sơ mi', 'chân váy', 'zip', 'văn phòng'],
 			},
-			GYM: {
-				label: 'Gymer',
-				keywords: ['gym', 'tập', 'yoga', 'thể thao'],
+			STREET_CASUAL: {
+				label: 'Dạo phố / Đồ thường',
+				keywords: [
+					'dạo phố',
+					'váy ngắn',
+					'áo thun',
+					'quần short',
+					'jeans',
+					'đồ nhà',
+				],
+			},
+			MINIMAL: {
+				label: 'Gợi cảm (Ít vải/Ướt)',
+				keywords: [
+					'cởi',
+					'trần',
+					'không mặc',
+					'da thịt',
+					'ướt',
+					'nước',
+					'tắm',
+					'khăn tắm',
+					'quấn khăn',
+				],
 			},
 		},
 	},
 
-	// Địa điểm
+	// 3. HOẠT ĐỘNG (Activity, Motion)
+	ACTIVITY: {
+		name: 'Hoạt động',
+		emoji: '🎬',
+		options: {
+			POSING: {
+				label: 'Tạo dáng',
+				keywords: ['tạo dáng', 'thả dáng', 'khoe', 'đứng', 'nhìn', 'ngắm'],
+			},
+			DANCING: {
+				label: 'Nhảy / Chuyển động',
+				keywords: [
+					'nhảy',
+					'dance',
+					'quẩy',
+					'lắc',
+					'nhún',
+					'chuyển động',
+					'cover',
+					'trend',
+					'uốn',
+				],
+			},
+			RELAXING: {
+				label: 'Nằm / Thư giãn',
+				keywords: ['thư giãn', 'nằm', 'ngủ', 'giường', 'sofa', 'ngồi'],
+			},
+			PLAYFUL: {
+				label: 'Nghịch / Tương tác',
+				keywords: [
+					'nghịch',
+					'chơi',
+					'tương tác',
+					'nháy mắt',
+					'đá lông nheo',
+					'liếm môi',
+					'vuốt tóc',
+					'cắn môi',
+				],
+			},
+		},
+	},
+
+	// 4. TIÊU ĐIỂM & GÓC NHÌN (Focus, Angle)
+	FOCUS: {
+		name: 'Tiêu điểm & Góc nhìn',
+		emoji: '🎯',
+		options: {
+			FULL_BODY: {
+				label: 'Toàn thân',
+				keywords: ['toàn thân', 'dáng', 'body', 'xa', 'bao quát', 'view'],
+			},
+			UPPER_BODY: {
+				label: 'Nửa trên (Mặt/Ngực)',
+				keywords: ['mặt', 'ngực', 'vòng 1', 'vai', 'cổ', 'môi', 'mắt', 'hôn'],
+			},
+			LOWER_BODY: {
+				label: 'Nửa dưới (Mông/Chân)',
+				keywords: [
+					'mông',
+					'vòng 3',
+					'chân',
+					'đùi',
+					'eo',
+					'squat',
+					'ngồi xổm',
+					'dưới lên',
+				],
+			},
+			BACK_VIEW: {
+				label: 'Phía sau (Lưng/Mông)',
+				keywords: [
+					'phía sau',
+					'lưng',
+					'quay lưng',
+					'back view',
+					'cong',
+					'đường cong',
+				],
+			},
+			CLOSEUP_POV: {
+				label: 'Cận cảnh / POV',
+				keywords: [
+					'cận',
+					'zoom',
+					'chi tiết',
+					'ngôi thứ nhất',
+					'nhìn xuống',
+					'gần',
+				],
+			},
+		},
+	},
+
+	// 5. ĐỊA ĐIỂM (Location)
 	LOCATION: {
 		name: 'Địa điểm',
-		emoji: '🏠',
+		emoji: '📍',
 		options: {
-			MIRROR: {
-				label: 'Trước gương',
-				keywords: ['gương', 'phản chiếu'],
+			PRIVATE: {
+				label: 'Riêng tư (Nhà/Phòng)',
+				keywords: [
+					'nhà',
+					'phòng',
+					'phòng ngủ',
+					'tắm',
+					'bếp',
+					'gương',
+					'trong nhà',
+					'tại gia',
+				],
 			},
-			KARAOKE: {
-				label: 'Phòng hát',
-				keywords: ['karaoke', 'phòng hát', 'hát'],
+			PUBLIC: {
+				label: 'Công cộng (Gym/Phố)',
+				keywords: [
+					'ngoài trời',
+					'công viên',
+					'phố',
+					'gym',
+					'karaoke',
+					'phòng tập',
+				],
 			},
-			OUTDOOR: {
-				label: 'Ngoài trời',
-				keywords: ['ngoài', 'biển', 'công viên', 'phố'],
+			NATURE: {
+				label: 'Thiên nhiên (Biển/Hồ)',
+				keywords: [
+					'biển',
+					'hồ bơi',
+					'bãi biển',
+					'sân thượng',
+					'vườn',
+					'cây',
+					'nắng',
+					'rừng',
+				],
 			},
-			INDOOR: {
-				label: 'Trong nhà',
-				keywords: ['nhà', 'phòng', 'bếp', 'sofa'],
-			},
-			BED: {
-				label: 'Giường ngủ',
-				keywords: ['giường', 'nằm', 'gối', 'chăn', 'nệm'],
-			},
-			BATHROOM: {
-				label: 'Phòng tắm',
-				keywords: ['tắm', 'ướt', 'bồn'],
-			},
-			HOTEL: {
-				label: 'Khách sạn',
-				keywords: ['khách sạn', 'nhận phòng', 'nghỉ dưỡng'],
-			},
-			CAR: {
-				label: 'Trong xe',
-				keywords: ['xe', 'ô tô', 'lái', 'ghế'],
-			},
-			RESORT: {
-				label: 'Resort/Villa',
-				keywords: ['resort', 'villa', 'nghỉ dưỡng', 'biệt thự'],
-			},
-			MASSAGE_ROOM: {
-				label: 'Phòng massage',
-				keywords: ['phòng massage', 'spa', 'tinh dầu'],
-			},
-			GYM: {
-				label: 'Phòng tập',
-				keywords: ['phòng tập', 'gym', 'tập', 'máy tập'],
-			},
-			ROOFTOP: {
-				label: 'Sân thượng',
-				keywords: ['sân thượng', 'rooftop', 'ban công'],
-			},
-			BEACH: {
-				label: 'Bãi biển',
-				keywords: ['biển', 'bãi biển', 'cát', 'sóng'],
-			},
-			POOL: {
-				label: 'Hồ bơi',
-				keywords: ['hồ bơi', 'bể bơi', 'pool'],
-			},
-			GARDEN: {
-				label: 'Vườn/công viên',
-				keywords: ['vườn', 'công viên', 'cây', 'hoa'],
-			},
-			STUDIO: {
-				label: 'Studio',
-				keywords: ['studio', 'chụp ảnh', 'phông'],
+			LUXURY: {
+				label: 'Sang trọng (Hotel/Car)',
+				keywords: [
+					'khách sạn',
+					'hotel',
+					'resort',
+					'villa',
+					'xe',
+					'ô tô',
+					'car',
+					'massage',
+					'spa',
+					'sang',
+				],
 			},
 		},
 	},
 
-	// Thời gian
+	// 6. THỜI GIAN (Time)
 	TIME: {
 		name: 'Thời gian',
-		emoji: '🌙',
+		emoji: '⏰',
 		options: {
 			DAY: {
-				label: 'Ban ngày',
-				keywords: ['ngày', 'nắng', 'sáng', 'trưa'],
+				label: 'Ban ngày / Sáng',
+				keywords: ['ngày', 'nắng', 'sáng', 'trưa', 'bình minh', 'chiều'],
 			},
 			NIGHT: {
-				label: 'Đêm',
-				keywords: ['đêm', 'khuya', 'tối'],
+				label: 'Ban đêm / Tối',
+				keywords: ['đêm', 'khuya', 'tối', 'đèn', 'hoàng hôn', 'midnight'],
 			},
-			UNKNOWN: { label: 'Không rõ', keywords: [] },
 		},
 	},
 
-	// Số người
+	// 7. SỐ NGƯỜI (People)
 	PEOPLE: {
 		name: 'Số người',
 		emoji: '👥',
 		options: {
-			SOLO_FEMALE: {
-				label: '1 nữ',
-				keywords: ['em', 'một mình'],
-			},
-			MANY_MALE_1_FEMALE: {
-				label: 'Nhiều nam 1 nữ',
-				keywords: ['nhiều anh', 'các anh', 'nhóm'],
-			},
-			MANY_FEMALE: {
-				label: 'Nhiều nữ',
-				keywords: ['chị em', 'hội', 'các em', 'nhóm nữ'],
+			SOLO: {
+				label: 'Một mình (Solo)',
+				keywords: ['em', 'một mình', 'solo', 'selfie'],
 			},
 			COUPLE: {
 				label: 'Cặp đôi',
-				keywords: ['anh và em', 'cặp đôi', 'hai đứa', 'bạn trai', 'người yêu'],
-			},
-		},
-	},
-
-	// Trang phục
-	OUTFIT: {
-		name: 'Trang phục',
-		emoji: '👙',
-		options: {
-			BIKINI: {
-				label: 'Đồ bơi',
-				keywords: ['bikini', 'đồ bơi', '2 mảnh', 'biển'],
-			},
-			LINGERIE: {
-				label: 'Đồ ngủ',
-				keywords: ['nội y', 'ren', 'đồ lót', 'lọt khe'],
-			},
-			COSPLAY: {
-				label: 'Hóa trang',
 				keywords: [
-					'thỏ',
-					'hầu gái',
-					'y tá',
-					'hóa trang',
-					'mèo',
-					'cô giáo',
-					'học sinh',
+					'anh và em',
+					'cặp đôi',
+					'hai đứa',
+					'bạn trai',
+					'người yêu',
+					'couple',
 				],
 			},
-			CASUAL: {
-				label: 'Đồ thường',
-				keywords: ['đồ nhà', 'bình thường', 'đồ ngủ'],
+			GROUP: {
+				label: 'Nhóm / Nhiều người',
+				keywords: ['nhóm', 'hội', 'chị em', 'nhiều người', 'bạn bè'],
 			},
-			OFFICE: {
-				label: 'Công sở',
-				keywords: ['công sở', 'sơ mi', 'chân váy', 'zip'],
-			},
-			AO_DAI: {
-				label: 'Áo dài',
-				keywords: ['áo dài', 'truyền thống', 'lụa', 'nón'],
-			},
-			STREET: {
-				label: 'Dạo phố',
-				keywords: ['phố', 'váy ngắn', 'áo thun'],
-			},
-			NAKED: {
-				label: 'Gợi cảm',
-				keywords: ['cởi', 'trần', 'không mặc', 'da thịt'],
-			},
-			WET: { label: 'Ướt', keywords: ['ướt', 'nước', 'tắm'] },
 		},
 	},
 
-	// Tóc
+	// 8. TÓC (Hair)
 	HAIR: {
-		name: 'Tóc',
+		name: 'Kiểu tóc',
 		emoji: '💇',
 		options: {
 			SHORT: {
@@ -2359,145 +2340,15 @@ export const CATEGORIES = {
 			},
 			LONG: {
 				label: 'Tóc dài',
-				keywords: ['tóc dài', 'thướt tha', 'suôn'],
+				keywords: ['tóc dài', 'thướt tha', 'suôn', 'xõa'],
 			},
-			LOOSE: { label: 'Tóc xõa', keywords: ['xõa', 'tóc xõa', 'vai', 'thả'] },
 			TIED: {
-				label: 'Buộc tóc',
-				keywords: ['buộc', 'đuôi ngựa', 'búi'],
+				label: 'Cột / Búi',
+				keywords: ['buộc', 'đuôi ngựa', 'búi', 'cột'],
 			},
 			DYED: {
-				label: 'Tóc nhuộm',
-				keywords: ['nhuộm', 'màu', 'bạch kim', 'hồng', 'đỏ'],
-			},
-		},
-	},
-
-	// Điểm nhấn / Main focus
-	FOCUS: {
-		name: 'Điểm nhấn',
-		emoji: '🎯',
-		options: {
-			CHEST: {
-				label: 'Vòng 1',
-				keywords: ['ngực', 'vòng 1', 'rãnh', 'căng'],
-			},
-			BUTT: {
-				label: 'Vòng 3',
-				keywords: ['mông', 'vòng 3', 'đít', 'nảy'],
-			},
-			WAIST: {
-				label: 'Vòng 2',
-				keywords: ['eo', 'vòng eo', 'bé xíu', 'thon'],
-			},
-			LEGS: { label: 'Chân dài', keywords: ['chân', 'đùi', 'dài'] },
-			FACE: { label: 'Khuôn mặt', keywords: ['mặt', 'xinh', 'nét'] },
-			LIPS: { label: 'Đôi môi', keywords: ['môi', 'miệng', 'hôn'] },
-			EYES: { label: 'Đôi mắt', keywords: ['mắt', 'nhìn'] },
-			FULL_BODY: {
-				label: 'Toàn thân',
-				keywords: ['body', 'toàn thân', '3 vòng', 'dáng', 'cơ thể'],
-			},
-			BACK_BODY: { label: 'Phía sau', keywords: ['lưng', 'phía sau'] },
-		},
-	},
-
-	// Góc quay (Mới)
-	ANGLE: {
-		name: 'Góc quay',
-		emoji: '🎥',
-		options: {
-			POV: {
-				label: 'Góc nhìn',
-				keywords: ['ngôi thứ nhất', 'nhìn xuống'],
-			},
-			CLOSEUP: {
-				label: 'Cận cảnh',
-				keywords: ['cận', 'zoom', 'chi tiết'],
-			},
-			WIDE: {
-				label: 'Toàn cảnh',
-				keywords: ['xa', 'toàn', 'bao quát'],
-			},
-			LOW: { label: 'Góc thấp', keywords: ['thấp', 'dưới lên'] },
-			HIGH: { label: 'Góc cao', keywords: ['cao', 'trên xuống'] },
-		},
-	},
-
-	// Hoạt động đặc biệt (Mới)
-	ACTIVITY: {
-		name: 'Hoạt động',
-		emoji: '💆',
-		options: {
-			MASSAGE: {
-				label: 'Massage',
-				keywords: ['massage', 'xoa bóp', 'bấm huyệt', 'tinh dầu', 'thư giãn'],
-			},
-			SPA: {
-				label: 'Spa',
-				keywords: ['spa', 'xông hơi', 'chăm sóc', 'làm đẹp'],
-			},
-			BATHING: {
-				label: 'Tắm gội',
-				keywords: ['tắm', 'gội', 'bồn tắm', 'vòi sen', 'xà phòng', 'bong bóng'],
-			},
-			SWIMMING: {
-				label: 'Bơi lội',
-				keywords: ['bơi', 'hồ bơi', 'biển', 'nước'],
-			},
-			SUNBATHING: {
-				label: 'Phơi nắng',
-				keywords: ['phơi', 'nắng', 'tắm nắng', 'bãi biển'],
-			},
-			COOKING: {
-				label: 'Nấu ăn',
-				keywords: ['bếp', 'nấu', 'làm bếp'],
-			},
-			SLEEPING: {
-				label: 'Ngủ/nằm',
-				keywords: ['ngủ', 'nằm', 'giường', 'nghỉ ngơi'],
-			},
-			READING: {
-				label: 'Đọc sách',
-				keywords: ['đọc', 'sách', 'học'],
-			},
-		},
-	},
-
-	// Phong cách nhảy (Mới)
-	DANCE: {
-		name: 'Kiểu nhảy',
-		emoji: '💃',
-		options: {
-			INDOOR_DANCE: {
-				label: 'Nhảy trong nhà',
-				keywords: ['trong phòng', 'trong nhà', 'trước gương', 'tại nhà'],
-			},
-			OUTDOOR_DANCE: {
-				label: 'Nhảy ngoài trời',
-				keywords: [
-					'ngoài trời',
-					'bãi biển',
-					'công viên',
-					'sân thượng',
-					'hồ bơi',
-				],
-			},
-			TIKTOK_TREND: {
-				label: 'Trend TikTok',
-				keywords: ['trend', 'viral', 'cover', 'challenge'],
-			},
-			SLOW_MOTION: {
-				label: 'Slow motion',
-				keywords: ['chậm', 'slow', 'từ từ'],
-			},
-			SEXY_DANCE: {
-				label: 'Gợi cảm',
-				keywords: ['lắc hông', 'lắc mông', 'quyến rũ', 'gợi cảm'],
-			},
-			FREESTYLE: {
-				label: 'Tự do',
-				keywords: ['tự do', 'freestyle', 'tự nhiên'],
+				label: 'Nhuộm màu',
+				keywords: ['nhuộm', 'màu', 'bạch kim', 'hồng', 'đỏ', 'tây'],
 			},
 		},
 	},
