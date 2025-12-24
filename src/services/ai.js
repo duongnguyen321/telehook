@@ -5,12 +5,9 @@
  */
 
 // Import content data from separate files
+// Import content data from separate files
 import { TITLES } from '../data/titles.js';
-import {
-	HASHTAG_SETS,
-	HASHTAG_MAPPING,
-	BASE_HASHTAGS,
-} from '../data/hashtags.js';
+import { HASHTAG_SETS, BASE_HASHTAGS } from '../data/hashtags.js';
 import { CATEGORIES } from '../data/category.js';
 
 // Re-export for compatibility
@@ -48,6 +45,7 @@ function getUniqueRandom(arr, usedSet) {
  * Get random item from array (simple, for hashtags)
  */
 function random(arr) {
+	if (!arr || arr.length === 0) return '';
 	return arr[Math.floor(Math.random() * arr.length)];
 }
 
@@ -76,33 +74,27 @@ function findMatchedOptions(title) {
 
 	return matches;
 }
-
 /**
  * Generate hashtags that match the content of a title
  * @param {string} title - The title to generate hashtags for
  * @returns {string} Hashtag string
  */
 function generateMatchingHashtags(title) {
-	// If HASHTAG_MAPPING is not available, fallback to random
-	if (!HASHTAG_MAPPING) {
-		return random(HASHTAG_SETS);
-	}
-
 	const matches = findMatchedOptions(title);
 	const hashtags = new Set();
 
 	// Add hashtags based on matched categories
 	for (const [categoryKey, optionKeys] of Object.entries(matches)) {
-		const categoryMapping = HASHTAG_MAPPING[categoryKey];
-		if (categoryMapping) {
-			for (const optionKey of optionKeys) {
-				const tags = categoryMapping[optionKey];
-				if (tags && Array.isArray(tags)) {
-					// Pick 1-2 random hashtags from this option
-					const count = Math.min(2, tags.length);
-					for (let i = 0; i < count; i++) {
-						hashtags.add(random(tags));
-					}
+		const category = CATEGORIES[categoryKey];
+		if (!category) continue;
+
+		for (const optionKey of optionKeys) {
+			const option = category.options[optionKey];
+			if (option && option.hashtags && Array.isArray(option.hashtags)) {
+				// Pick 1-2 random hashtags from this option
+				const count = Math.min(2, option.hashtags.length);
+				for (let i = 0; i < count; i++) {
+					hashtags.add(random(option.hashtags));
 				}
 			}
 		}

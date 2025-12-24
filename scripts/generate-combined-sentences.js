@@ -31,15 +31,15 @@ const TEMPLATES = [
 	'{CONTEXT}, {ROLE} {EMOTION} diện {OUTFIT} rồi {ACTIVITY}.',
 	'{CONTEXT}, {ROLE} cảm thấy {EMOTION} khi {ACTIVITY} {LOCATION}.',
 
-	// 2. Visual Focus (Trang phục + Điểm nhấn + Cảm xúc)
-	'{CONTEXT}, {ROLE} diện {OUTFIT} {THEME}, {EMOTION} khoe {FOCUS}.',
+	// 2. Visual Focus (Trang phục + Điểm nhấn + Cảm xúc + Tóc)
+	'{CONTEXT}, {ROLE} với {HAIR} diện {OUTFIT} {THEME}, {EMOTION} khoe {FOCUS}.',
 	'Góc nhìn {THEME}: {ROLE} {EMOTION} với {FOCUS} trong bộ {OUTFIT} {LOCATION}.',
-	'{CONTEXT}, {ROLE} tự tin khoe {FOCUS} {THEME}.',
+	'{CONTEXT}, {ROLE} {HAIR} tự tin khoe {FOCUS} {THEME}.',
 
-	// 3. Invitation / Interaction (Mời gọi + Đối tượng)
-	'{CONTEXT}, {ROLE} {EMOTION} muốn {ACTIVITY} {PEOPLE}.',
-	'Anh có thích {ROLE} {EMOTION} mặc {OUTFIT} {ACTIVITY} {LOCATION} không?',
-	'{CONTEXT}, {ROLE} {EMOTION} gửi {FOCUS} {THEME} {PEOPLE} xem nè.',
+	// 3. Pose & Position (Tư thế + Địa điểm + Cảm xúc)
+	'{CONTEXT}, {ROLE} {EMOTION} {POSE} {LOCATION}.',
+	'{ROLE} với {HAIR} đang {POSE} {LOCATION}, {EMOTION} khoe {FOCUS}.',
+	'{CONTEXT}, {ROLE} {EMOTION} gửi {FOCUS} {THEME} từ {POSE} {LOCATION}.',
 
 	// 4. Action Oriented (Hành động + Tư thế + Cảm xúc)
 	'{CONTEXT}, {ROLE} {ACTIVITY} {LOCATION}, {EMOTION} khoe {FOCUS} {THEME}.',
@@ -47,110 +47,27 @@ const TEMPLATES = [
 	'{ROLE} mặc {OUTFIT} {ACTIVITY}, cảm giác thật {EMOTION} {LOCATION}.',
 
 	// 5. Short & Punchy (Ngắn gọn, ấn tượng)
-	'{CONTEXT}, {ROLE} {EMOTION} {ACTIVITY}.',
+	'{CONTEXT}, {ROLE} {HAIR} {EMOTION} {ACTIVITY}.',
 	'{ROLE} {THEME} với {FOCUS} {LOCATION} {CONTEXT}.',
 	'{OUTFIT} {THEME} của {ROLE} {EMOTION} quá {CONTEXT}.',
 
-	// 6. Confession / Mood
-	'{CONTEXT}, thật {EMOTION} khi {ROLE} {ACTIVITY} {LOCATION}.',
-	'{CONTEXT}, {ROLE} chỉ muốn {ACTIVITY} {PEOPLE} thôi.',
-	'{ROLE} {EMOTION} check-in {LOCATION} với {OUTFIT} {THEME}.',
+	// 6. Hair & Pose Focus
+	'{CONTEXT}, thật {EMOTION} khi {ROLE} {HAIR} {POSE} {LOCATION}.',
+	'{CONTEXT}, {ROLE} với {HAIR} chỉ muốn {ACTIVITY}.',
+	'{ROLE} {EMOTION} check-in {LOCATION} với {OUTFIT} và {HAIR} {THEME}.',
 ];
 
 // ============================================================
-// HASHTAG MAPPING - Based on category keywords
+// HASHTAG EXTRACTION - Read from CATEGORIES
 // ============================================================
 
-const HASHTAG_MAPPING = {
-	CONTEXT: {
-		BREAK_TIME: ['#nghitrua', '#giogiaolao', '#vanphong'],
-		HOME_ALONE: ['#onha', '#motminh', '#cuoisuan'],
-		LATE_NIGHT: ['#demkhuya', '#midnight', '#khuya'],
-		SECRET: ['#bimat', '#lenlut', '#riengtu'],
-		JUST_BATHED: ['#tamxong', '#shower', '#fresh'],
-		DRUNK: ['#chill', '#say', '#relaxing'],
-		MORNING: ['#buoisang', '#morning', '#goodmorning'],
-	},
-	ROLE: {
-		TEACHER: ['#cogiao', '#giaovien', '#teacher'],
-		STUDENT: ['#nusinh', '#student', '#hocsinh'],
-		NURSE: ['#yta', '#nurse', '#bacsi'],
-		SECRETARY: ['#thuky', '#secretary', '#troly'],
-		MAID: ['#haugai', '#maid', '#cosplay'],
-		OFFICE: ['#vanphong', '#office', '#congso'],
-		KTV: ['#ktv', '#karaoke', '#tiepvien'],
-		GYMER: ['#gym', '#fitness', '#yoga'],
-		RICH_KID: ['#tieuthuu', '#richkid', '#sangchanh'],
-		EX_GIRLFRIEND: ['#tinhcu', '#exgf', '#nguoiyeucu'],
-		NEIGHBOR: ['#hangxom', '#neighbor', '#girl'],
-	},
-	OUTFIT: {
-		BIKINI: ['#bikini', '#doboi', '#beach'],
-		LINGERIE: ['#noiy', '#lingerie', '#sexy'],
-		AO_DAI: ['#aodai', '#vietnam', '#truyenthong'],
-		OFFICE_WEAR: ['#congso', '#somi', '#vest'],
-		GYM_WEAR: ['#gymmotivation', '#legging', '#fitness'],
-		STREET: ['#streetstyle', '#fashion', '#ootd'],
-		COSPLAY: ['#cosplay', '#anime', '#costume'],
-		NO_CLOTHES: ['#body', '#art', '#nude'],
-		TOWEL: ['#khantam', '#shower', '#fresh'],
-	},
-	ACTIVITY: {
-		POSING: ['#pose', '#taodang', '#model'],
-		DANCING: ['#dance', '#nhay', '#tiktokdance'],
-		RELAXING: ['#relax', '#thugian', '#chill'],
-		WORKING: ['#working', '#lamviec', '#busy'],
-		EXERCISING: ['#workout', '#exercise', '#gym'],
-		SHOWING_OFF: ['#khoe', '#show', '#flex'],
-		TOUCHING: ['#sensual', '#touch', '#feel'],
-		TEASING: ['#teasing', '#sexy', '#hot'],
-		BATHING: ['#shower', '#bath', '#bathing'],
-		CHANGING: ['#changing', '#behind', '#dressing'],
-	},
-	LOCATION: {
-		BEDROOM: ['#phongngu', '#bedroom', '#giuong'],
-		LIVING_ROOM: ['#phongkhach', '#sofa', '#home'],
-		KITCHEN: ['#bep', '#kitchen', '#cooking'],
-		BATHROOM: ['#phongtam', '#bathroom', '#shower'],
-		OFFICE: ['#vanphong', '#office', '#work'],
-		PUBLIC: ['#public', '#outdoor', '#risky'],
-		OUTDOOR: ['#outdoor', '#nature', '#fresh'],
-		CAR: ['#xehoi', '#car', '#drive'],
-		STAIRS: ['#cauthang', '#stairs', '#secret'],
-	},
-	FOCUS: {
-		CHEST: ['#body', '#curves', '#vong1'],
-		BUTT: ['#booty', '#vong3', '#curves'],
-		LEGS: ['#legs', '#chan', '#dai'],
-		WAIST: ['#eo', '#waist', '#thon'],
-		BACK: ['#back', '#lung', '#sexy'],
-		LIPS: ['#lips', '#moi', '#kiss'],
-		SKIN: ['#skin', '#da', '#glow'],
-		GENERAL: ['#body', '#figure', '#curves'],
-	},
-	THEME: {
-		HOT: ['#hot', '#nongbong', '#fire'],
-		SWEET: ['#cute', '#sweet', '#kawaii'],
-		DARK: ['#dark', '#mysterious', '#gothic'],
-		REALISTIC: ['#real', '#natural', '#nofilter'],
-		HARDCORE: ['#wild', '#intense', '#crazy'],
-		SUBMISSIVE: ['#submissive', '#obedient', '#gentle'],
-	},
-	EMOTION: {
-		SHY: ['#shy', '#cute', '#ngaingung'],
-		BOLD: ['#bold', '#confident', '#taobao'],
-		NAUGHTY: ['#naughty', '#bad', '#huhong'],
-		SWEET: ['#sweet', '#cute', '#ngotngao'],
-		HORNY: ['#horny', '#turned', '#excited'],
-		CONFIDENT: ['#confident', '#queen', '#boss'],
-	},
-	PEOPLE: {
-		BOYFRIEND: ['#foryou', '#love', '#boyfriend'],
-		STRANGER: ['#stranger', '#random', '#anyone'],
-		FAN: ['#fan', '#followers', '#support'],
-		SOMEONE: ['#someone', '#secret', '#mystery'],
-	},
-};
+function getHashtagsForOption(categoryKey, optionKey) {
+	const category = CATEGORIES[categoryKey];
+	if (!category) return [];
+	const option = category.options[optionKey];
+	if (!option || !option.hashtags) return [];
+	return option.hashtags;
+}
 
 // Base hashtags always included (2 required)
 const BASE_HASHTAGS = '#xuhuong #fyp';
@@ -300,19 +217,13 @@ function generateHashtagsForSentence(sentence) {
 	const matches = findMatchedOptions(sentence);
 	const hashtags = new Set();
 
-	// Add hashtags based on matched categories
+	// Add hashtags based on matched categories (read from CATEGORIES)
 	for (const [categoryKey, optionKeys] of Object.entries(matches)) {
-		const categoryMapping = HASHTAG_MAPPING[categoryKey];
-		if (categoryMapping) {
-			for (const optionKey of optionKeys) {
-				const tags = categoryMapping[optionKey];
-				if (tags) {
-					// Pick 1-2 random hashtags from this option
-					const count = Math.min(2, tags.length);
-					for (let i = 0; i < count; i++) {
-						hashtags.add(randomItem(tags));
-					}
-				}
+		for (const optionKey of optionKeys) {
+			const tags = getHashtagsForOption(categoryKey, optionKey);
+			if (tags && tags.length > 0) {
+				// Pick 1 random hashtag from this option
+				hashtags.add(randomItem(tags));
 			}
 		}
 	}
@@ -332,34 +243,18 @@ function displayCategoryInfo() {
 }
 
 // ============================================================
-// GENERATE HASHTAGS.JS FROM MAPPING
+// GENERATE HASHTAGS FROM ACTUAL SENTENCES
 // ============================================================
 
-function generateHashtagSets() {
+function generateHashtagSetsFromSentences(sentences) {
 	const sets = new Set();
-	const allTags = [];
 
-	// Collect all available hashtags from mapping
-	for (const catMapping of Object.values(HASHTAG_MAPPING)) {
-		for (const optTags of Object.values(catMapping)) {
-			if (Array.isArray(optTags)) {
-				allTags.push(...optTags);
-			}
+	// Generate hashtags for each sentence
+	for (const sentence of sentences) {
+		const hashtags = generateHashtagsForSentence(sentence);
+		if (hashtags && hashtags.split(' ').length >= 4) {
+			sets.add(hashtags);
 		}
-	}
-
-	// Generate various combinations - ensure exactly 5 hashtags each
-	for (let i = 0; i < 500; i++) {
-		const tagSet = new Set();
-
-		// Keep adding until we have exactly 3 unique tags
-		while (tagSet.size < 3) {
-			tagSet.add(randomItem(allTags));
-		}
-
-		// Combine: 2 base + 3 specific = 5 total
-		const result = `${BASE_HASHTAGS} ${Array.from(tagSet).join(' ')}`;
-		sets.add(result);
 	}
 
 	return Array.from(sets);
@@ -430,8 +325,8 @@ ${qualitySentences.map((s) => `\t'${s.replace(/'/g, "\\'")}',`).join('\n')}
 fs.writeFileSync(titlesPath, titlesContent, 'utf8');
 console.log(`\n✅ Written titles to: ${titlesPath}`);
 
-// Generate and write hashtags.js
-const hashtagSets = generateHashtagSets();
+// Generate and write hashtags.js based on actual sentences
+const hashtagSets = generateHashtagSetsFromSentences(qualitySentences);
 const hashtagsPath = path.join(__dirname, '../src/data/hashtags.js');
 const hashtagsContent = `/**
  * Hashtag sets for TikTok videos
@@ -444,11 +339,6 @@ const hashtagsContent = `/**
 export const HASHTAG_SETS = [
 ${hashtagSets.map((s) => `\t'${s}',`).join('\n')}
 ];
-
-/**
- * Hashtag mapping by category for dynamic generation
- */
-export const HASHTAG_MAPPING = ${JSON.stringify(HASHTAG_MAPPING, null, '\t')};
 
 export const BASE_HASHTAGS = '${BASE_HASHTAGS}';
 `;

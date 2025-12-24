@@ -10,11 +10,12 @@
  * - LOCATION: Giới từ + Địa điểm ("trong văn phòng", "trên bàn làm việc")
  * - FOCUS: Danh từ bộ phận ("đôi chân", "vòng 1")
  * - THEME: Tính từ mô tả phong cách ("gợi cảm", "ngọt ngào")
- * - PEOPLE: Đối tượng hướng đến ("cho anh", "gửi người yêu")
+ * - HAIR: Kiểu tóc ("tóc dài", "tóc ướt")
+ * - POSE: Tư thế ("ngồi", "quỳ", "nằm")
  */
 
 export const CATEGORIES = {
-	// 1. BỐI CẢNH (Mới) - Mở đầu câu chuyện
+	// 1. BỐI CẢNH - Mở đầu câu chuyện
 	CONTEXT: {
 		name: 'Bối cảnh',
 		emoji: '🎬',
@@ -27,6 +28,7 @@ export const CATEGORIES = {
 					'tranh thủ sếp vắng',
 					'tranh thủ lúc vắng người',
 				],
+				hashtags: ['#nghitrua', '#giogiaolao', '#break'],
 			},
 			HOME_ALONE: {
 				label: 'Ở nhà một mình',
@@ -36,6 +38,7 @@ export const CATEGORIES = {
 					'tự do một mình',
 					'rảnh rỗi ở nhà',
 				],
+				hashtags: ['#onha', '#motminh'],
 			},
 			LATE_NIGHT: {
 				label: 'Đêm khuya',
@@ -45,6 +48,7 @@ export const CATEGORIES = {
 					'đêm nay buồn chán',
 					'tối muộn cô đơn',
 				],
+				hashtags: ['#demkhuya', '#khuya', '#midnight'],
 			},
 			SECRET: {
 				label: 'Bí mật/Lén lút',
@@ -55,6 +59,7 @@ export const CATEGORIES = {
 					'không để ai biết',
 					'âm thầm',
 				],
+				hashtags: ['#bimat', '#lenlut', '#riengtu'],
 			},
 			JUST_BATHED: {
 				label: 'Vừa tắm xong',
@@ -64,6 +69,7 @@ export const CATEGORIES = {
 					'vừa bước ra từ phòng tắm',
 					'cơ thể còn ẩm ướt',
 				],
+				hashtags: ['#tamxong', '#fresh', '#shower'],
 			},
 			DRUNK: {
 				label: 'Say/Chill',
@@ -73,6 +79,7 @@ export const CATEGORIES = {
 					'hơi say một chút',
 					'trong cơn say',
 				],
+				hashtags: ['#say', '#chill', '#relaxing'],
 			},
 			MORNING: {
 				label: 'Sáng sớm',
@@ -82,11 +89,12 @@ export const CATEGORIES = {
 					'chào ngày mới',
 					'bình minh trên giường',
 				],
+				hashtags: ['#buoisang', '#goodmorning', '#morning'],
 			},
 		},
 	},
 
-	// 2. CẢM XÚC (Mới) - Thái độ của nhân vật
+	// 2. CẢM XÚC - Thái độ của nhân vật
 	EMOTION: {
 		name: 'Cảm xúc',
 		emoji: '🥰',
@@ -94,10 +102,12 @@ export const CATEGORIES = {
 			SHY: {
 				label: 'Ngại ngùng',
 				keywords: ['ngại ngùng', 'e thẹn', 'mắc cỡ', 'lúng túng', 'hay mắc cỡ'],
+				hashtags: ['#shy', '#cute', '#ngaingung'],
 			},
 			BOLD: {
 				label: 'Táo bạo',
 				keywords: ['mạnh dạn', 'táo bạo', 'chủ động', 'bất chấp', 'thẳng thắn'],
+				hashtags: ['#bold', '#confident', '#taobao'],
 			},
 			NAUGHTY: {
 				label: 'Hư hỏng',
@@ -108,6 +118,7 @@ export const CATEGORIES = {
 					'thích trêu chọc',
 					'hư đốn',
 				],
+				hashtags: ['#naughty', '#huhong'],
 			},
 			SWEET: {
 				label: 'Ngọt ngào/Nũng nịu',
@@ -118,6 +129,7 @@ export const CATEGORIES = {
 					'ngọt ngào',
 					'dễ thương',
 				],
+				hashtags: ['#sweet', '#cute', '#ngotngao'],
 			},
 			HORNY: {
 				label: 'Kích thích',
@@ -129,10 +141,12 @@ export const CATEGORIES = {
 					'nóng trong người',
 					'khao khát',
 				],
+				hashtags: ['#horny', '#turned', '#excited'],
 			},
 			CONFIDENT: {
 				label: 'Tự tin',
 				keywords: ['tự tin', 'kiêu hãnh', 'biết mình đẹp', 'chảnh chọe'],
+				hashtags: ['#confident', '#queen', '#boss'],
 			},
 		},
 	},
@@ -150,6 +164,7 @@ export const CATEGORIES = {
 					'cô giáo trẻ',
 					'giảng viên',
 				],
+				hashtags: ['#cogiao', '#giaovien', '#teacher'],
 			},
 			STUDENT: {
 				label: 'Nữ sinh',
@@ -159,42 +174,52 @@ export const CATEGORIES = {
 					'sinh viên năm nhất',
 					'bạn học cùng bàn',
 				],
+				hashtags: ['#nusinh', '#hocsinh', '#student'],
 			},
 			NURSE: {
 				label: 'Y tá',
 				keywords: ['cô y tá', 'nữ bác sĩ', 'điều dưỡng viên'],
+				hashtags: ['#yta', '#bacsi', '#nurse'],
 			},
 			SECRETARY: {
 				label: 'Thư ký',
 				keywords: ['nữ thư ký', 'trợ lý giám đốc', 'cô nhân viên mới'],
+				hashtags: ['#thuky', '#troly', '#vanphong'],
 			},
 			MAID: {
 				label: 'Hầu gái',
 				keywords: ['cô hầu gái', 'người giúp việc', 'ô sin gợi cảm'],
+				hashtags: ['#haugai', '#maid', '#girl'],
 			},
 			OFFICE: {
 				label: 'Công sở',
-				keywords: ['dân văn phòng', 'chị đồng nghiệp', 'trưởng phòng'],
+				keywords: ['em gái văn phòng', 'chị đồng nghiệp', 'chị trưởng phòng'],
+				hashtags: ['#congso', '#vanphong', '#office'],
 			},
 			KTV: {
 				label: 'KTV',
 				keywords: ['em gái hát karaoke', 'nhân viên tiếp thị', 'tay vịn'],
+				hashtags: ['#ktv', '#karaoke', '#tiepvien'],
 			},
 			GYMER: {
 				label: 'Gymer',
 				keywords: ['huấn luyện viên yoga', 'cô nàng gym', 'PT cá nhân'],
+				hashtags: ['#gym', '#fitness', '#yoga'],
 			},
 			RICH_KID: {
 				label: 'Tiểu thư',
 				keywords: ['tiểu thư đài các', 'con gái sếp', 'cô chủ nhỏ'],
+				hashtags: ['#richkid', '#tieuthuu', '#girl'],
 			},
 			EX_GIRLFRIEND: {
 				label: 'Người yêu cũ',
 				keywords: ['người yêu cũ', 'tình cũ', 'bạn gái cũ'],
+				hashtags: ['#exgf', '#tinhcu', '#nguoiyeucu'],
 			},
 			NEIGHBOR: {
 				label: 'Hàng xóm',
 				keywords: ['cô hàng xóm', 'em gái nhà bên', 'chị hàng xóm'],
+				hashtags: ['#hangxom', '#neighbor', '#girl'],
 			},
 		},
 	},
@@ -207,6 +232,7 @@ export const CATEGORIES = {
 			BIKINI: {
 				label: 'Bikini',
 				keywords: ['đồ bơi hai mảnh', 'bikini dây', 'áo tắm gợi cảm'],
+				hashtags: ['#bikini', '#doboi', '#summer'],
 			},
 			LINGERIE: {
 				label: 'Nội y',
@@ -216,6 +242,7 @@ export const CATEGORIES = {
 					'chiếc quần lọt khe',
 					'váy ngủ mỏng manh',
 				],
+				hashtags: ['#lingerie', '#noiy', '#sexy'],
 			},
 			AO_DAI: {
 				label: 'Áo dài',
@@ -224,6 +251,7 @@ export const CATEGORIES = {
 					'áo dài mỏng tang',
 					'chiếc yếm đào',
 				],
+				hashtags: ['#aodai', '#vietnam', '#art'],
 			},
 			OFFICE_WEAR: {
 				label: 'Công sở',
@@ -233,10 +261,12 @@ export const CATEGORIES = {
 					'quần tất đen',
 					'giày cao gót',
 				],
+				hashtags: ['#somi', '#vest', '#congso'],
 			},
 			GYM_WEAR: {
 				label: 'Đồ tập',
 				keywords: ['bộ đồ tập bó sát', 'quần legging', 'áo bra thể thao'],
+				hashtags: ['#legging', '#gym', '#fitness'],
 			},
 			STREET: {
 				label: 'Dạo phố',
@@ -245,10 +275,12 @@ export const CATEGORIES = {
 					'quần short jeans',
 					'áo hai dây trễ nải',
 				],
+				hashtags: ['#streetstyle', '#fashion', '#ootd'],
 			},
 			COSPLAY: {
 				label: 'Cosplay',
 				keywords: ['bộ đồ cosplay', 'trang phục hầu gái', 'đồ thỏ sexy'],
+				hashtags: ['#cosplay', '#anime', '#costume'],
 			},
 			NO_CLOTHES: {
 				label: 'Không mặc',
@@ -257,6 +289,7 @@ export const CATEGORIES = {
 					'nguyên trạng tự nhiên',
 					'hoàn toàn trần trụi',
 				],
+				hashtags: ['#nude', '#natural', '#art'],
 			},
 			TOWEL: {
 				label: 'Khăn tắm',
@@ -265,6 +298,7 @@ export const CATEGORIES = {
 					'chiếc áo choàng tắm',
 					'khăn tắm hững hờ',
 				],
+				hashtags: ['#khantam', '#shower', '#fresh'],
 			},
 		},
 	},
@@ -281,6 +315,7 @@ export const CATEGORIES = {
 					'cố tình tạo dáng',
 					'đứng trước ống kính',
 				],
+				hashtags: ['#pose', '#taodang', '#model'],
 			},
 			DANCING: {
 				label: 'Nhảy',
@@ -289,18 +324,22 @@ export const CATEGORIES = {
 					'nhảy sexy dance',
 					'uốn éo theo điệu nhạc',
 				],
+				hashtags: ['#dance', '#nhay', '#tiktokdance'],
 			},
 			RELAXING: {
 				label: 'Thư giãn',
 				keywords: ['nằm dài thư giãn', 'ngồi nghỉ ngơi', 'nằm lười biếng'],
+				hashtags: ['#relax', '#thugian', '#chill'],
 			},
 			WORKING: {
 				label: 'Làm việc',
 				keywords: ['đang gõ máy tính', 'đang dọn dẹp', 'đang tưới cây'],
+				hashtags: ['#working', '#lamviec', '#busy'],
 			},
 			EXERCISING: {
 				label: 'Tập luyện',
 				keywords: ['đang tập squat', 'đang tập yoga', 'đang chạy bộ'],
+				hashtags: ['#workout', '#exercise', '#gym'],
 			},
 			SHOWING_OFF: {
 				label: 'Khoe hàng',
@@ -310,10 +349,12 @@ export const CATEGORIES = {
 					'kéo váy xuống',
 					'vén áo lên',
 				],
+				hashtags: ['#khoe', '#show', '#flex'],
 			},
 			TOUCHING: {
 				label: 'Đụng chạm',
 				keywords: ['tự vuốt ve cơ thể', 'luồn tay vào trong', 'xoa nắn'],
+				hashtags: ['#sensual', '#touch', '#feel'],
 			},
 			TEASING: {
 				label: 'Khiêu khích',
@@ -323,14 +364,17 @@ export const CATEGORIES = {
 					'nháy mắt đưa tình',
 					'nhìn chằm chằm',
 				],
+				hashtags: ['#teasing', '#sexy', '#hot'],
 			},
 			BATHING: {
 				label: 'Tắm',
 				keywords: ['đang tắm vòi sen', 'ngâm mình trong bồn', 'kỳ cọ cơ thể'],
+				hashtags: ['#shower', '#bath', '#bathing'],
 			},
 			CHANGING: {
 				label: 'Thay đồ',
 				keywords: ['đang thay đồ', 'đang kéo khóa áo', 'vừa cởi bỏ xiêm y'],
+				hashtags: ['#changing', '#behind', '#dressing'],
 			},
 		},
 	},
@@ -347,6 +391,7 @@ export const CATEGORIES = {
 					'trong phòng ngủ kín đáo',
 					'dưới ánh đèn ngủ mờ ảo',
 				],
+				hashtags: ['#phongngu', '#bedroom', '#giuong'],
 			},
 			LIVING_ROOM: {
 				label: 'Phòng khách',
@@ -355,10 +400,12 @@ export const CATEGORIES = {
 					'ngay tại phòng khách',
 					'trước tivi',
 				],
+				hashtags: ['#phongkhach', '#sofa', '#home'],
 			},
 			KITCHEN: {
 				label: 'Nhà bếp',
 				keywords: ['ngay trên bàn bếp', 'trong gian bếp', 'cạnh tủ lạnh'],
+				hashtags: ['#bep', '#kitchen', '#cooking'],
 			},
 			BATHROOM: {
 				label: 'Phòng tắm',
@@ -367,6 +414,7 @@ export const CATEGORIES = {
 					'dưới vòi hoa sen',
 					'trong bồn tắm đầy bọt',
 				],
+				hashtags: ['#phongtam', '#bathroom', '#shower'],
 			},
 			OFFICE: {
 				label: 'Văn phòng',
@@ -375,6 +423,7 @@ export const CATEGORIES = {
 					'trên bàn làm việc của sếp',
 					'trong phòng họp',
 				],
+				hashtags: ['#vanphong', '#office', '#work'],
 			},
 			PUBLIC: {
 				label: 'Công cộng',
@@ -384,6 +433,7 @@ export const CATEGORIES = {
 					'trên xe bus',
 					'trong thang máy',
 				],
+				hashtags: ['#public', '#outdoor', '#risky'],
 			},
 			OUTDOOR: {
 				label: 'Ngoài trời',
@@ -392,6 +442,7 @@ export const CATEGORIES = {
 					'trên sân thượng lộng gió',
 					'ngoài ban công',
 				],
+				hashtags: ['#outdoor', '#nature', '#fresh'],
 			},
 			CAR: {
 				label: 'Trong xe',
@@ -400,6 +451,7 @@ export const CATEGORIES = {
 					'trên ghế sau ô tô',
 					'trong hầm gửi xe',
 				],
+				hashtags: ['#xehoi', '#car', '#drive'],
 			},
 			STAIRS: {
 				label: 'Cầu thang',
@@ -408,6 +460,40 @@ export const CATEGORIES = {
 					'trên bậc cầu thang',
 					'khoảng chiếu nghỉ',
 				],
+				hashtags: ['#cauthang', '#stairs', '#secret'],
+			},
+			HOTEL: {
+				label: 'Khách sạn',
+				keywords: [
+					'trong phòng khách sạn',
+					'trên giường khách sạn',
+					'ở resort sang chảnh',
+				],
+				hashtags: ['#hotel', '#resort', '#sangchanh'],
+			},
+			POOL: {
+				label: 'Hồ bơi',
+				keywords: ['bên bể bơi', 'trong hồ bơi', 'cạnh bể jacuzzi'],
+				hashtags: ['#pool', '#hoboi', '#summer'],
+			},
+			GYM: {
+				label: 'Phòng gym',
+				keywords: ['trong phòng tập', 'trên máy chạy bộ', 'phòng gym vắng'],
+				hashtags: ['#gym', '#fitness', '#workout'],
+			},
+			BEACH: {
+				label: 'Bãi biển',
+				keywords: ['trên bãi biển', 'ven biển hoang vắng', 'cạnh sóng biển'],
+				hashtags: ['#beach', '#bien', '#summer'],
+			},
+			MIRROR: {
+				label: 'Trước gương',
+				keywords: [
+					'trước gương soi',
+					'selfie trước gương',
+					'trong phòng thử đồ',
+				],
+				hashtags: ['#mirror', '#selfie', '#ootd'],
 			},
 		},
 	},
@@ -425,6 +511,7 @@ export const CATEGORIES = {
 					'vòng 1 căng tràn sức sống',
 					'nhũ hoa lấp ló',
 				],
+				hashtags: ['#body', '#curves', '#vong1'],
 			},
 			BUTT: {
 				label: 'Mông',
@@ -434,6 +521,7 @@ export const CATEGORIES = {
 					'cặp mông nảy nở',
 					'đường cong vòng 3',
 				],
+				hashtags: ['#booty', '#vong3', '#curves'],
 			},
 			LEGS: {
 				label: 'Chân',
@@ -443,6 +531,7 @@ export const CATEGORIES = {
 					'bắp đùi thon gọn',
 					'bàn chân xinh',
 				],
+				hashtags: ['#legs', '#chan', '#dai'],
 			},
 			WAIST: {
 				label: 'Eo',
@@ -452,6 +541,7 @@ export const CATEGORIES = {
 					'cơ bụng số 11',
 					'rãnh bụng quyến rũ',
 				],
+				hashtags: ['#eo', '#waist', '#thon'],
 			},
 			BACK: {
 				label: 'Lưng',
@@ -460,6 +550,7 @@ export const CATEGORIES = {
 					'võng lưng quyến rũ',
 					'rãnh lưng sâu',
 				],
+				hashtags: ['#back', '#lung', '#sexy'],
 			},
 			LIPS: {
 				label: 'Môi',
@@ -468,10 +559,12 @@ export const CATEGORIES = {
 					'bờ môi ướt át',
 					'chiếc lưỡi tinh nghịch',
 				],
+				hashtags: ['#lips', '#moi', '#kiss'],
 			},
 			SKIN: {
 				label: 'Da',
 				keywords: ['làn da trắng sứ', 'làn da mịn màng', 'da thịt thơm tho'],
+				hashtags: ['#skin', '#da', '#glow'],
 			},
 			GENERAL: {
 				label: 'Tổng thể',
@@ -480,6 +573,7 @@ export const CATEGORIES = {
 					'ba vòng chuẩn chỉnh',
 					'thân hình đồng hồ cát',
 				],
+				hashtags: ['#body', '#figure', '#curves'],
 			},
 		},
 	},
@@ -497,6 +591,7 @@ export const CATEGORIES = {
 					'bốc lửa',
 					'rạo rực',
 				],
+				hashtags: ['#hot', '#nongbong', '#fire'],
 			},
 			SWEET: {
 				label: 'Ngọt ngào',
@@ -506,18 +601,22 @@ export const CATEGORIES = {
 					'như thiên thần',
 					'baby',
 				],
+				hashtags: ['#cute', '#sweet', '#kawaii'],
 			},
 			DARK: {
 				label: 'Huyền bí',
 				keywords: ['đầy bí ẩn', 'ma mị', 'quyến rũ chết người', 'nguy hiểm'],
+				hashtags: ['#dark', '#mysterious', '#gothic'],
 			},
 			REALISTIC: {
 				label: 'Thực tế',
 				keywords: ['chân thực', 'không che đậy', 'mộc mạc', 'nguyên bản'],
+				hashtags: ['#real', '#natural', '#nofilter'],
 			},
 			HARDCORE: {
 				label: 'Mạnh bạo',
 				keywords: ['dữ dội', 'mạnh bạo', 'điên cuồng', 'thú tính'],
+				hashtags: ['#wild', '#intense', '#crazy'],
 			},
 			SUBMISSIVE: {
 				label: 'Phục tùng',
@@ -527,35 +626,93 @@ export const CATEGORIES = {
 					'phục tùng tuyệt đối',
 					'làm nô lệ',
 				],
+				hashtags: ['#submissive', '#obedient', '#gentle'],
 			},
 		},
 	},
 
-	// 9. ĐỐI TƯỢNG
-	PEOPLE: {
-		name: 'Đối tượng',
-		emoji: '👥',
+	// 9. KIỂU TÓC
+	HAIR: {
+		name: 'Kiểu tóc',
+		emoji: '💇',
 		options: {
-			BOYFRIEND: {
-				label: 'Bạn trai/Chồng',
-				keywords: [
-					'dành riêng cho anh xã',
-					'tặng chồng yêu',
-					'gửi người yêu',
-					'cho anh yêu',
-				],
+			LONG: {
+				label: 'Tóc dài',
+				keywords: ['tóc dài óng ả', 'mái tóc xõa ngang lưng', 'tóc đen dài'],
+				hashtags: ['#longhair', '#tocdai', '#beautiful'],
 			},
-			STRANGER: {
-				label: 'Người lạ',
-				keywords: ['cho người lạ ơi', 'ai đó xem được', 'người qua đường'],
+			SHORT: {
+				label: 'Tóc ngắn',
+				keywords: ['tóc ngắn cá tính', 'tóc pixie', 'tóc bob'],
+				hashtags: ['#shorthair', '#tocngan', '#cute'],
 			},
-			FAN: {
-				label: 'Fan',
-				keywords: ['tặng fan cứng', 'chiêu đãi fan', 'quà cho người hâm mộ'],
+			PONYTAIL: {
+				label: 'Buộc đuôi ngựa',
+				keywords: ['tóc buộc cao', 'đuôi ngựa gợi cảm', 'tóc búi cao'],
+				hashtags: ['#ponytail', '#sporty', '#active'],
 			},
-			SOMEONE: {
-				label: 'Ai đó',
-				keywords: ['bất kỳ ai', 'anh nào may mắn', 'người đàn ông của em'],
+			WET: {
+				label: 'Tóc ướt',
+				keywords: ['tóc ướt bết', 'mái tóc ướt sũng', 'tóc dính vào da'],
+				hashtags: ['#wethair', '#shower', '#fresh'],
+			},
+			MESSY: {
+				label: 'Tóc rối',
+				keywords: ['tóc rối bời', 'tóc xù vừa ngủ dậy', 'mái tóc bung xõa'],
+				hashtags: ['#messyhair', '#bedhead', '#natural'],
+			},
+			COLORED: {
+				label: 'Nhuộm màu',
+				keywords: ['tóc nhuộm vàng', 'highlight', 'tóc màu nổi bật'],
+				hashtags: ['#coloredhair', '#highlight', '#trendy'],
+			},
+		},
+	},
+
+	// 10. TƯ THẾ
+	POSE: {
+		name: 'Tư thế',
+		emoji: '🧘',
+		options: {
+			STANDING: {
+				label: 'Đứng',
+				keywords: ['đứng tựa cửa', 'đứng khom người', 'đứng xoay lưng'],
+				hashtags: ['#standing', '#pose', '#model'],
+			},
+			SITTING: {
+				label: 'Ngồi',
+				keywords: ['ngồi dạng chân', 'ngồi vắt chéo chân', 'ngồi bệt'],
+				hashtags: ['#sitting', '#relax', '#chill'],
+			},
+			LYING: {
+				label: 'Nằm',
+				keywords: ['nằm ngửa', 'nằm sấp', 'nằm nghiêng'],
+				hashtags: ['#lying', '#bed', '#lazy'],
+			},
+			KNEELING: {
+				label: 'Quỳ',
+				keywords: ['quỳ gối', 'quỳ chổng mông', 'tư thế quỳ'],
+				hashtags: ['#kneeling', '#pose', '#sexy'],
+			},
+			BENDING: {
+				label: 'Cúi',
+				keywords: ['cúi người khom', 'chổng mông', 'khom lưng'],
+				hashtags: ['#bending', '#flexible', '#hot'],
+			},
+			SQUATTING: {
+				label: 'Ngồi xổm',
+				keywords: ['ngồi xổm', 'tư thế squat', 'ngồi chồm hổm'],
+				hashtags: ['#squat', '#fitness', '#gym'],
+			},
+			CRAWLING: {
+				label: 'Bò',
+				keywords: ['bò trên giường', 'chống tay quỳ gối', 'bốn chân'],
+				hashtags: ['#crawling', '#bed', '#naughty'],
+			},
+			STRETCHING: {
+				label: 'Giãn cơ',
+				keywords: ['giãn cơ', 'tư thế split', 'tư thế cobra'],
+				hashtags: ['#stretching', '#yoga', '#flexible'],
 			},
 		},
 	},
