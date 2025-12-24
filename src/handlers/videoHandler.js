@@ -230,7 +230,6 @@ async function sendQueuePage(
 			posts.length
 		}] ${statusEmoji} ${statusText} - ${time}\n\n` +
 		`${post.title}\n\n` +
-		`${post.description}\n\n` +
 		`${post.hashtags}` +
 		tiktokLink;
 
@@ -384,7 +383,6 @@ async function processVideoAfterDownload(ctx, video, videoPath, chatId) {
 			chatId,
 			videoPath,
 			title: content.title,
-			description: content.description,
 			hashtags: content.hashtags,
 			isRepost: false,
 		});
@@ -738,7 +736,7 @@ export function setupVideoHandler(bot) {
 			// Build message text
 			let messageText = '📝 **CHỌN NỘI DUNG ƯNG Ý NHẤT**\n\n';
 			options.forEach((opt, index) => {
-				messageText += `${index + 1}. **${opt.title}**\n${opt.description}\n\n`;
+				messageText += `${index + 1}. **${opt.title}**\n\n`;
 			});
 			messageText += '👇 Bấm số tương ứng để chọn:';
 
@@ -790,7 +788,6 @@ export function setupVideoHandler(bot) {
 				where: { id: postId },
 				data: {
 					title: content.title,
-					description: content.description,
 					hashtags: content.hashtags,
 				},
 			});
@@ -876,15 +873,11 @@ export function setupVideoHandler(bot) {
 
 			await updatePostStatus(postId, 'posted');
 
-			// Edit the message to show confirmation instead of deleting
+			// Delete the message after confirmation
 			try {
-				await ctx.api.editMessageText(
-					chatId,
-					messageId,
-					'✅ Đã đánh dấu video đã đăng thành công!'
-				);
+				await ctx.api.deleteMessage(chatId, messageId);
 			} catch (e) {
-				// Ignore if can't edit
+				// Ignore if can't delete
 			}
 
 			await safeAnswer('✅ Đã đánh dấu đã đăng!');

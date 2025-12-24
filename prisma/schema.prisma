@@ -15,7 +15,7 @@ model ScheduledPost {
   chatId           BigInt  @map("chat_id")
   videoPath        String  @map("video_path")
   title            String
-  description      String
+
   hashtags         String
   scheduledAt      String  @map("scheduled_at")
   status           String  @default("pending")
@@ -35,7 +35,7 @@ model VideoArchive {
   chatId       BigInt  @map("chat_id")
   videoPath    String  @map("video_path")
   title        String
-  description  String
+
   hashtags     String
   views        Int     @default(0)
   likes        Int     @default(0)

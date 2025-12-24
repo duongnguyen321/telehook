@@ -108,7 +108,7 @@ initSettings().catch(console.error);
  * @property {number} chatId
  * @property {string} videoPath
  * @property {string} title
- * @property {string} description
+
  * @property {string} hashtags
  * @property {string} scheduledAt
  * @property {'pending' | 'posted' | 'failed'} status
@@ -126,7 +126,7 @@ function mapScheduledPost(row) {
 		chatId: Number(row.chatId),
 		videoPath: getVideoFullPath(row.videoPath),
 		title: row.title,
-		description: row.description,
+
 		hashtags: row.hashtags,
 		scheduledAt: row.scheduledAt,
 		status: row.status,
@@ -154,7 +154,6 @@ export async function addScheduledPost(post) {
 			chatId: BigInt(post.chatId),
 			videoPath: relativePath,
 			title: post.title,
-			description: post.description,
 			hashtags: post.hashtags,
 			scheduledAt,
 			isRepost: post.isRepost ? 1 : 0,
@@ -358,7 +357,6 @@ export async function rescheduleAllPending(chatId) {
 			data: {
 				scheduledAt: scheduleTime.toISOString(),
 				title: content.title,
-				description: content.description,
 				hashtags: content.hashtags,
 			},
 		});
@@ -439,7 +437,7 @@ export async function rescheduleTimesOnly(chatId) {
 		}
 	}
 
-	// Update ONLY scheduled_at, keep title/description/hashtags
+	// Update ONLY scheduled_at, keep title/hashtags
 	let count = 0;
 	for (const post of posts) {
 		const [hour, minute] = DAILY_SLOTS[slotIndex];
@@ -551,7 +549,6 @@ async function archiveVideo(post) {
 			chatId: post.chatId,
 			videoPath: post.videoPath,
 			title: post.title,
-			description: post.description,
 			hashtags: post.hashtags,
 			postedAt: new Date().toISOString(),
 		},
@@ -684,7 +681,6 @@ export async function scheduleReposts(chatId) {
 			chatId: Number(video.chatId),
 			videoPath: getVideoFullPath(video.videoPath),
 			title: content.title,
-			description: content.description,
 			hashtags: content.hashtags,
 			isRepost: true,
 		});
@@ -844,9 +840,9 @@ export async function cleanOrphanedPosts(chatId) {
 }
 
 /**
- * Update post content (title, description, hashtags) with new random content
+ * Update post content (title, hashtags) with new random content
  * @param {string} postId - The post ID to update
- * @returns {Promise<{success: boolean, title: string, description: string, hashtags: string}>}
+ * @returns {Promise<{success: boolean, title: string, hashtags: string}>}
  */
 export async function updatePostContent(postId) {
 	// Import content generator dynamically to avoid circular deps
@@ -856,7 +852,7 @@ export async function updatePostContent(postId) {
 	const post = await prisma.scheduledPost.findUnique({ where: { id: postId } });
 
 	if (!post) {
-		return { success: false, title: '', description: '', hashtags: '' };
+		return { success: false, title: '', hashtags: '' };
 	}
 
 	// Generate new random content
@@ -867,7 +863,6 @@ export async function updatePostContent(postId) {
 		where: { id: postId },
 		data: {
 			title: content.title,
-			description: content.description,
 			hashtags: content.hashtags,
 		},
 	});
@@ -879,7 +874,6 @@ export async function updatePostContent(postId) {
 	return {
 		success: true,
 		title: content.title,
-		description: content.description,
 		hashtags: content.hashtags,
 	};
 }

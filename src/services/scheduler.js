@@ -34,15 +34,7 @@ export function setDefaultChatId(chatId) {
  * @param {Object} post
  */
 async function processNotification(post) {
-	const {
-		id: postId,
-		chatId,
-		videoPath,
-		title,
-		description,
-		hashtags,
-		isRepost,
-	} = post;
+	const { id: postId, chatId, videoPath, title, hashtags, isRepost } = post;
 	const repostLabel = isRepost ? ' [REPOST]' : '';
 
 	console.log(`[Scheduler] Processing: ${postId.slice(0, 8)}`);
@@ -57,8 +49,8 @@ async function processNotification(post) {
 			throw new Error(`Video file not found: ${videoPath}`);
 		}
 
-		// Format caption for TikTok (title + desc + hashtags)
-		const tiktokCaption = `${title}\n\n${description}\n\n${hashtags}`;
+		// Format caption for TikTok (title + hashtags)
+		const tiktokCaption = `${title}\n\n${hashtags}`;
 
 		// Send video with full caption and confirm button
 		const { InputFile, InlineKeyboard } = await import('grammy');
@@ -69,7 +61,7 @@ async function processNotification(post) {
 		);
 
 		await bot.api.sendVideo(chatId, new InputFile(videoPath), {
-			caption: `🔔 ĐẾN GIỜ ĐĂNG${repostLabel}\n\n${tiktokCaption}`,
+			caption: `${repostLabel}\n\n${tiktokCaption}`,
 			supports_streaming: true,
 			reply_markup: keyboard,
 		});
