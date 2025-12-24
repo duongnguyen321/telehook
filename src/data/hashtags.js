@@ -1,112 +1,884 @@
 /**
  * Hashtag sets for TikTok videos
+ * Auto-generated from category mapping on 2025-12-24
  * TẤT CẢ phải có #xuhuong #fyp (bắt buộc)
- * Thay #sexy bằng #quyenru #bimat để tránh bộ lọc
  */
 
 export const HASHTAG_SETS = [
-	// Hot & Quyến rũ
-	'#xuhuong #fyp #gaixinh #quyenru #viral',
-	'#xuhuong #fyp #hotgirl #body #tiktokvn',
-	'#xuhuong #fyp #vietnamesegirl #beautiful #goddess',
-	'#xuhuong #fyp #gaixinh #body #asian',
-	'#xuhuong #fyp #vietnamesegirl #hot #tiktokvietnam',
-
-	// Buổi sáng
-	'#xuhuong #fyp #gaixinh #buoisang #vietnam',
-	'#xuhuong #fyp #vietnamesegirl #trend #cuoixinh',
-	'#xuhuong #fyp #gaixinh #goodmorning #viral',
-	'#xuhuong #fyp #vietnamesegirl #trendsang #vui',
-	'#xuhuong #fyp #gaixinh #morningvibes #energy',
-
-	// Buổi trưa
-	'#xuhuong #fyp #gaixinh #buoitrua #viral',
-	'#xuhuong #fyp #hotgirl #nghitrua #tiktokvn',
-	'#xuhuong #fyp #vietnamesegirl #lunchbreak #chill',
-	'#xuhuong #fyp #gaixinh #slowmotion #bimat',
-	'#xuhuong #fyp #vietnamesegirl #relaxing #vietnam',
-
-	// Buổi chiều
-	'#xuhuong #fyp #gaixinh #outfit #dichoi',
-	'#xuhuong #fyp #vietnamesegirl #vui #viral',
-	'#xuhuong #fyp #gaixinh #cuoichieu #tiktokvn',
-	'#xuhuong #fyp #vietnamesegirl #streetstyle #fashion',
-	'#xuhuong #fyp #gaixinh #afterwork #vietnam',
-
-	// Prime Time (20:00)
-	'#xuhuong #fyp #gaixinh #primetime #viral',
-	'#xuhuong #fyp #hotgirl #giovang #tiktokvn',
-	'#xuhuong #fyp #vietnamesegirl #toinay #trend',
-	'#xuhuong #fyp #gaixinh #evening #goddess',
-	'#xuhuong #fyp #vietnamesegirl #bimat #viral',
-
-	// Đêm khuya
-	'#xuhuong #fyp #gaixinh #demkhuya #bimat',
-	'#xuhuong #fyp #vietnamesegirl #midnight #viral',
-	'#xuhuong #fyp #gaixinh #latenight #tiktokvn',
-	'#xuhuong #fyp #vietnamesegirl #nightowl #vibes',
-	'#xuhuong #fyp #gaixinh #khuya #vietnam',
-
-	// Baddie & Queen
-	'#xuhuong #fyp #gaixinh #baddie #queen',
-	'#xuhuong #fyp #vietnamesegirl #boss #viral',
-	'#xuhuong #fyp #gaixinh #goddess #beautiful',
-	'#xuhuong #fyp #vietnamesegirl #powerful #trending',
-	'#xuhuong #fyp #gaixinh #queen #tiktokvn',
-
-	// Body & Aesthetic
-	'#xuhuong #fyp #gaixinh #body #aesthetic',
-	'#xuhuong #fyp #vietnamesegirl #curves #viral',
-	'#xuhuong #fyp #gaixinh #bodygoals #bimat',
-	'#xuhuong #fyp #vietnamesegirl #bodypositivity #confidence',
-	'#xuhuong #fyp #gaixinh #nofilter #vietnam',
-
-	// Roleplay & Cosplay
-	'#xuhuong #fyp #gaixinh #nhapvai #cosplay',
-	'#xuhuong #fyp #vietnamesegirl #dongphuc #tiktokvn',
-	'#xuhuong #fyp #gaixinh #phongtap #yoga',
-	'#xuhuong #fyp #vietnamesegirl #vanphong #viral',
-	'#xuhuong #fyp #gaixinh #henho #trend',
-
-	// Vibez
-	'#xuhuong #fyp #gaixinh #bongtoi #bimat',
-	'#xuhuong #fyp #vietnamesegirl #dethuong #ngotngao',
-	'#xuhuong #fyp #gaixinh #sangchanh #nuhoang',
-	'#xuhuong #fyp #vietnamesegirl #thugian #giuong',
-	'#xuhuong #fyp #gaixinh #hoangdai #vui',
-
-	// Specifics
-	'#xuhuong #fyp #gaixinh #aodai #vietnam',
-	'#xuhuong #fyp #vietnamesegirl #bikini #viral',
-	'#xuhuong #fyp #gaixinh #khuonmat #bimat',
-	'#xuhuong #fyp #vietnamesegirl #legs #cothe',
-	'#xuhuong #fyp #gaixinh #nhay #cover',
-
-	// Massage & Spa
-	'#xuhuong #fyp #massage #spa #thugian',
-	'#xuhuong #fyp #gaixinh #massagebody #quyenru',
-	'#xuhuong #fyp #vietnamesegirl #spa #viral',
-	'#xuhuong #fyp #gaixinh #massagetrillieu #relax',
-	'#xuhuong #fyp #massage #spamoment #bimat',
-
-	// Tắm gội
-	'#xuhuong #fyp #tam #bathing #shower',
-	'#xuhuong #fyp #gaixinh #bontam #viral',
-	'#xuhuong #fyp #vietnamesegirl #tamtrang #skincare',
-	'#xuhuong #fyp #gaixinh #showercap #quyenru',
-	'#xuhuong #fyp #bathing #relax #bimat',
-
-	// Khách sạn & Du lịch
-	'#xuhuong #fyp #hotel #khachsan #bimat',
-	'#xuhuong #fyp #gaixinh #resort #viral',
-	'#xuhuong #fyp #vietnamesegirl #checkin #sangchanh',
-	'#xuhuong #fyp #gaixinh #roomtour #luxury',
-	'#xuhuong #fyp #travelgirl #vacation #hotel',
-
-	// Nhảy nhót
-	'#xuhuong #fyp #dance #cover #trending',
-	'#xuhuong #fyp #gaixinh #dancecover #viral',
-	'#xuhuong #fyp #vietnamesegirl #nhayhiendai #bimat',
-	'#xuhuong #fyp #gaixinh #dancetrend #quyenru',
-	'#xuhuong #fyp #dancing #choreography #motion',
+	'#xuhuong #fyp #da #congso #fitness',
+	'#xuhuong #fyp #shower #girl #bathroom',
+	'#xuhuong #fyp #hocsinh #giuong #exgf',
+	'#xuhuong #fyp #office #bimat #random',
+	'#xuhuong #fyp #fashion #skin #chan',
+	'#xuhuong #fyp #confident #fan #khoe',
+	'#xuhuong #fyp #hangxom #legging #cute',
+	'#xuhuong #fyp #curves #aodai #sensual',
+	'#xuhuong #fyp #shower #nguoiyeucu #bathroom',
+	'#xuhuong #fyp #huhong #nghitrua #motminh',
+	'#xuhuong #fyp #nude #ktv #cute',
+	'#xuhuong #fyp #ktv #tiepvien #nature',
+	'#xuhuong #fyp #taodang #curves #doboi',
+	'#xuhuong #fyp #boyfriend #back #confident',
+	'#xuhuong #fyp #goodmorning #motminh #sensual',
+	'#xuhuong #fyp #hot #nongbong #huhong',
+	'#xuhuong #fyp #maid #hocsinh #shower',
+	'#xuhuong #fyp #kitchen #fresh #anyone',
+	'#xuhuong #fyp #giuong #busy #love',
+	'#xuhuong #fyp #secret #hocsinh #yoga',
+	'#xuhuong #fyp #kiss #boss #excited',
+	'#xuhuong #fyp #bath #sensual #nguoiyeucu',
+	'#xuhuong #fyp #pose #congso #nurse',
+	'#xuhuong #fyp #demkhuya #nature #shower',
+	'#xuhuong #fyp #lung #taobao #maid',
+	'#xuhuong #fyp #yoga #beach #busy',
+	'#xuhuong #fyp #outdoor #flex #sexy',
+	'#xuhuong #fyp #bold #boss #shower',
+	'#xuhuong #fyp #khuya #excited #bacsi',
+	'#xuhuong #fyp #body #gentle #dressing',
+	'#xuhuong #fyp #fitness #aodai #tiepvien',
+	'#xuhuong #fyp #random #natural #doboi',
+	'#xuhuong #fyp #bad #office #huhong',
+	'#xuhuong #fyp #feel #cute #maid',
+	'#xuhuong #fyp #bedroom #relaxing #doboi',
+	'#xuhuong #fyp #thuky #sexy #queen',
+	'#xuhuong #fyp #aodai #public #shower',
+	'#xuhuong #fyp #public #changing #nhay',
+	'#xuhuong #fyp #gym #fresh #bathroom',
+	'#xuhuong #fyp #troly #touch #body',
+	'#xuhuong #fyp #gymmotivation #noiy #hot',
+	'#xuhuong #fyp #phongngu #random #bedroom',
+	'#xuhuong #fyp #wild #moi #goodmorning',
+	'#xuhuong #fyp #hangxom #karaoke #teacher',
+	'#xuhuong #fyp #confident #shower #gym',
+	'#xuhuong #fyp #khoe #fresh #foryou',
+	'#xuhuong #fyp #sensual #touch #phongtam',
+	'#xuhuong #fyp #xehoi #lips #congso',
+	'#xuhuong #fyp #cute #vong1 #phongtam',
+	'#xuhuong #fyp #shower #natural #yoga',
+	'#xuhuong #fyp #changing #motminh #gothic',
+	'#xuhuong #fyp #glow #shower #morning',
+	'#xuhuong #fyp #confident #cuoisuan #phongngu',
+	'#xuhuong #fyp #dance #intense #real',
+	'#xuhuong #fyp #relaxing #gym #haugai',
+	'#xuhuong #fyp #cute #public #doboi',
+	'#xuhuong #fyp #huhong #gym #curves',
+	'#xuhuong #fyp #stairs #figure #cosplay',
+	'#xuhuong #fyp #tinhcu #pose #neighbor',
+	'#xuhuong #fyp #crazy #curves #vong1',
+	'#xuhuong #fyp #tiktokdance #outdoor #huhong',
+	'#xuhuong #fyp #kitchen #boyfriend #gentle',
+	'#xuhuong #fyp #maid #neighbor #lingerie',
+	'#xuhuong #fyp #curves #secret #stairs',
+	'#xuhuong #fyp #feel #body #love',
+	'#xuhuong #fyp #curves #doboi #girl',
+	'#xuhuong #fyp #changing #booty #cute',
+	'#xuhuong #fyp #ngaingung #cute #horny',
+	'#xuhuong #fyp #vong1 #shower #nurse',
+	'#xuhuong #fyp #onha #hocsinh #shy',
+	'#xuhuong #fyp #exercise #dai #cauthang',
+	'#xuhuong #fyp #moi #skin #confident',
+	'#xuhuong #fyp #gym #bold #haugai',
+	'#xuhuong #fyp #random #xehoi #costume',
+	'#xuhuong #fyp #vanphong #sexy #dance',
+	'#xuhuong #fyp #lingerie #sensual #truyenthong',
+	'#xuhuong #fyp #public #secret #pose',
+	'#xuhuong #fyp #model #office #cauthang',
+	'#xuhuong #fyp #changing #goodmorning #teacher',
+	'#xuhuong #fyp #ngaingung #feel #busy',
+	'#xuhuong #fyp #natural #fan #waist',
+	'#xuhuong #fyp #cooking #body #tieuthuu',
+	'#xuhuong #fyp #intense #nghitrua #curves',
+	'#xuhuong #fyp #drive #gymmotivation #real',
+	'#xuhuong #fyp #chill #confident #bacsi',
+	'#xuhuong #fyp #curves #stranger #love',
+	'#xuhuong #fyp #costume #glow #sexy',
+	'#xuhuong #fyp #teacher #yta #vest',
+	'#xuhuong #fyp #nhay #sexy #lamviec',
+	'#xuhuong #fyp #busy #phongngu #cute',
+	'#xuhuong #fyp #sensual #khoe #mysterious',
+	'#xuhuong #fyp #da #workout #khuya',
+	'#xuhuong #fyp #goodmorning #lingerie #lamviec',
+	'#xuhuong #fyp #motminh #chan #streetstyle',
+	'#xuhuong #fyp #tinhcu #teasing #dressing',
+	'#xuhuong #fyp #curves #huhong #gym',
+	'#xuhuong #fyp #fitness #hot #moi',
+	'#xuhuong #fyp #cogiao #beach #congso',
+	'#xuhuong #fyp #fitness #teacher #flex',
+	'#xuhuong #fyp #phongkhach #richkid #beach',
+	'#xuhuong #fyp #moi #dai #giaovien',
+	'#xuhuong #fyp #legging #vong3 #anyone',
+	'#xuhuong #fyp #sweet #buoisang #public',
+	'#xuhuong #fyp #vietnam #touch #intense',
+	'#xuhuong #fyp #sexy #boyfriend #ootd',
+	'#xuhuong #fyp #bacsi #turned #student',
+	'#xuhuong #fyp #model #naughty #gentle',
+	'#xuhuong #fyp #sangchanh #skin #confident',
+	'#xuhuong #fyp #naughty #nofilter #giuong',
+	'#xuhuong #fyp #public #motminh #vietnam',
+	'#xuhuong #fyp #ktv #body #nude',
+	'#xuhuong #fyp #nude #sexy #stairs',
+	'#xuhuong #fyp #bimat #stranger #truyenthong',
+	'#xuhuong #fyp #office #say #cuoisuan',
+	'#xuhuong #fyp #giaovien #sweet #thuky',
+	'#xuhuong #fyp #followers #shower #maid',
+	'#xuhuong #fyp #cosplay #sexy #moi',
+	'#xuhuong #fyp #bimat #cosplay #karaoke',
+	'#xuhuong #fyp #turned #congso #demkhuya',
+	'#xuhuong #fyp #gym #cooking #say',
+	'#xuhuong #fyp #vanphong #body #sexy',
+	'#xuhuong #fyp #sweet #bath #support',
+	'#xuhuong #fyp #kawaii #kitchen #vong3',
+	'#xuhuong #fyp #thugian #shower #ngotngao',
+	'#xuhuong #fyp #booty #phongkhach #working',
+	'#xuhuong #fyp #motminh #confident #say',
+	'#xuhuong #fyp #shower #natural #lung',
+	'#xuhuong #fyp #girl #crazy #ootd',
+	'#xuhuong #fyp #work #da #streetstyle',
+	'#xuhuong #fyp #sensual #fire #real',
+	'#xuhuong #fyp #taobao #risky #sexy',
+	'#xuhuong #fyp #aodai #motminh #skin',
+	'#xuhuong #fyp #phongtam #tinhcu #lamviec',
+	'#xuhuong #fyp #working #body #model',
+	'#xuhuong #fyp #hocsinh #support #show',
+	'#xuhuong #fyp #shower #dressing #nature',
+	'#xuhuong #fyp #khantam #office #body',
+	'#xuhuong #fyp #lingerie #demkhuya #midnight',
+	'#xuhuong #fyp #maid #phongngu #model',
+	'#xuhuong #fyp #sensual #yoga #ktv',
+	'#xuhuong #fyp #sexy #nghitrua #chan',
+	'#xuhuong #fyp #troly #neighbor #gymmotivation',
+	'#xuhuong #fyp #body #nguoiyeucu #vanphong',
+	'#xuhuong #fyp #nude #fitness #shower',
+	'#xuhuong #fyp #sangchanh #khoe #truyenthong',
+	'#xuhuong #fyp #phongtam #teasing #bathroom',
+	'#xuhuong #fyp #richkid #beach #office',
+	'#xuhuong #fyp #bedroom #sexy #shower',
+	'#xuhuong #fyp #ngotngao #nude #crazy',
+	'#xuhuong #fyp #student #cauthang #shy',
+	'#xuhuong #fyp #legging #nusinh #cosplay',
+	'#xuhuong #fyp #haugai #costume #foryou',
+	'#xuhuong #fyp #fire #art #body',
+	'#xuhuong #fyp #wild #shower #show',
+	'#xuhuong #fyp #tinhcu #costume #turned',
+	'#xuhuong #fyp #shower #fan #beach',
+	'#xuhuong #fyp #noiy #office #obedient',
+	'#xuhuong #fyp #vietnam #midnight #vanphong',
+	'#xuhuong #fyp #onha #eo #booty',
+	'#xuhuong #fyp #fashion #flex #someone',
+	'#xuhuong #fyp #stranger #figure #model',
+	'#xuhuong #fyp #wild #taodang #vanphong',
+	'#xuhuong #fyp #risky #eo #phongkhach',
+	'#xuhuong #fyp #model #nguoiyeucu #vong1',
+	'#xuhuong #fyp #morning #cosplay #fashion',
+	'#xuhuong #fyp #truyenthong #show #maid',
+	'#xuhuong #fyp #tiepvien #da #demkhuya',
+	'#xuhuong #fyp #art #onha #yoga',
+	'#xuhuong #fyp #secretary #real #turned',
+	'#xuhuong #fyp #working #kiss #taodang',
+	'#xuhuong #fyp #goodmorning #cooking #dance',
+	'#xuhuong #fyp #fashion #waist #car',
+	'#xuhuong #fyp #tieuthuu #public #outdoor',
+	'#xuhuong #fyp #kawaii #aodai #working',
+	'#xuhuong #fyp #khantam #khoe #hot',
+	'#xuhuong #fyp #body #hot #curves',
+	'#xuhuong #fyp #curves #noiy #khoe',
+	'#xuhuong #fyp #xehoi #truyenthong #thon',
+	'#xuhuong #fyp #relaxing #vong1 #teasing',
+	'#xuhuong #fyp #lung #pose #show',
+	'#xuhuong #fyp #kiss #bath #sexy',
+	'#xuhuong #fyp #gym #phongkhach #working',
+	'#xuhuong #fyp #khoe #public #back',
+	'#xuhuong #fyp #followers #fashion #beach',
+	'#xuhuong #fyp #kiss #dark #exgf',
+	'#xuhuong #fyp #relax #vong1 #followers',
+	'#xuhuong #fyp #curves #relaxing #crazy',
+	'#xuhuong #fyp #submissive #body #love',
+	'#xuhuong #fyp #fire #fan #sexy',
+	'#xuhuong #fyp #say #someone #dance',
+	'#xuhuong #fyp #dark #khuya #yoga',
+	'#xuhuong #fyp #lingerie #cosplay #home',
+	'#xuhuong #fyp #workout #lingerie #bedroom',
+	'#xuhuong #fyp #show #skin #costume',
+	'#xuhuong #fyp #hocsinh #wild #fitness',
+	'#xuhuong #fyp #turned #huhong #body',
+	'#xuhuong #fyp #truyenthong #thugian #busy',
+	'#xuhuong #fyp #turned #giaovien #legs',
+	'#xuhuong #fyp #crazy #hot #submissive',
+	'#xuhuong #fyp #cogiao #beach #nofilter',
+	'#xuhuong #fyp #queen #love #show',
+	'#xuhuong #fyp #fresh #model #support',
+	'#xuhuong #fyp #chill #huhong #teacher',
+	'#xuhuong #fyp #followers #tamxong #vest',
+	'#xuhuong #fyp #kawaii #foryou #tamxong',
+	'#xuhuong #fyp #workout #glow #fitness',
+	'#xuhuong #fyp #vietnam #fitness #mystery',
+	'#xuhuong #fyp #shower #secretary #congso',
+	'#xuhuong #fyp #costume #random #body',
+	'#xuhuong #fyp #karaoke #outdoor #touch',
+	'#xuhuong #fyp #tiepvien #real #hangxom',
+	'#xuhuong #fyp #cosplay #boyfriend #secret',
+	'#xuhuong #fyp #hot #richkid #intense',
+	'#xuhuong #fyp #secret #turned #bold',
+	'#xuhuong #fyp #bathroom #taodang #vest',
+	'#xuhuong #fyp #sexy #nofilter #lips',
+	'#xuhuong #fyp #fresh #vest #working',
+	'#xuhuong #fyp #nude #streetstyle #shower',
+	'#xuhuong #fyp #gym #congso #teasing',
+	'#xuhuong #fyp #queen #cute #waist',
+	'#xuhuong #fyp #confident #gentle #buoisang',
+	'#xuhuong #fyp #girl #followers #fire',
+	'#xuhuong #fyp #outdoor #show #foryou',
+	'#xuhuong #fyp #doboi #public #curves',
+	'#xuhuong #fyp #secret #fire #relaxing',
+	'#xuhuong #fyp #vong3 #midnight #student',
+	'#xuhuong #fyp #secretary #buoisang #bacsi',
+	'#xuhuong #fyp #kitchen #yta #khoe',
+	'#xuhuong #fyp #gymmotivation #mystery #risky',
+	'#xuhuong #fyp #mysterious #nongbong #troly',
+	'#xuhuong #fyp #show #thon #gymmotivation',
+	'#xuhuong #fyp #neighbor #lenlut #sofa',
+	'#xuhuong #fyp #secret #neighbor #da',
+	'#xuhuong #fyp #hot #secret #flex',
+	'#xuhuong #fyp #lips #bimat #giuong',
+	'#xuhuong #fyp #show #khuya #relaxing',
+	'#xuhuong #fyp #home #bad #crazy',
+	'#xuhuong #fyp #dai #outdoor #wild',
+	'#xuhuong #fyp #tiktokdance #obedient #sweet',
+	'#xuhuong #fyp #ktv #giogiaolao #congso',
+	'#xuhuong #fyp #tieuthuu #sweet #sexy',
+	'#xuhuong #fyp #giogiaolao #hangxom #nusinh',
+	'#xuhuong #fyp #nofilter #haugai #phongngu',
+	'#xuhuong #fyp #intense #cosplay #model',
+	'#xuhuong #fyp #huhong #horny #streetstyle',
+	'#xuhuong #fyp #workout #body #skin',
+	'#xuhuong #fyp #hangxom #fire #model',
+	'#xuhuong #fyp #dance #thugian #huhong',
+	'#xuhuong #fyp #sweet #gym #nghitrua',
+	'#xuhuong #fyp #sensual #moi #secret',
+	'#xuhuong #fyp #outdoor #tinhcu #riengtu',
+	'#xuhuong #fyp #nguoiyeucu #truyenthong #taobao',
+	'#xuhuong #fyp #naughty #shower #hot',
+	'#xuhuong #fyp #dai #phongngu #cute',
+	'#xuhuong #fyp #haugai #fire #giogiaolao',
+	'#xuhuong #fyp #shower #tieuthuu #fire',
+	'#xuhuong #fyp #cooking #work #cute',
+	'#xuhuong #fyp #goodmorning #feel #booty',
+	'#xuhuong #fyp #yoga #figure #fitness',
+	'#xuhuong #fyp #nhay #relax #lips',
+	'#xuhuong #fyp #outdoor #truyenthong #skin',
+	'#xuhuong #fyp #vanphong #curves #back',
+	'#xuhuong #fyp #workout #cogiao #giaovien',
+	'#xuhuong #fyp #relax #crazy #giaovien',
+	'#xuhuong #fyp #goodmorning #fresh #cosplay',
+	'#xuhuong #fyp #shower #support #outdoor',
+	'#xuhuong #fyp #nurse #riengtu #dance',
+	'#xuhuong #fyp #chill #shower #boss',
+	'#xuhuong #fyp #naughty #teasing #lingerie',
+	'#xuhuong #fyp #bad #motminh #cauthang',
+	'#xuhuong #fyp #ootd #booty #thon',
+	'#xuhuong #fyp #touch #office #risky',
+	'#xuhuong #fyp #shower #exgf #eo',
+	'#xuhuong #fyp #hot #home #onha',
+	'#xuhuong #fyp #bathing #teasing #neighbor',
+	'#xuhuong #fyp #obedient #bep #lung',
+	'#xuhuong #fyp #kawaii #hangxom #bold',
+	'#xuhuong #fyp #kitchen #xehoi #legs',
+	'#xuhuong #fyp #home #vietnam #public',
+	'#xuhuong #fyp #car #kiss #lung',
+	'#xuhuong #fyp #vong1 #hot #obedient',
+	'#xuhuong #fyp #body #gothic #tamxong',
+	'#xuhuong #fyp #secret #fresh #bad',
+	'#xuhuong #fyp #beach #vest #maid',
+	'#xuhuong #fyp #real #yoga #busy',
+	'#xuhuong #fyp #sexy #bimat #vong3',
+	'#xuhuong #fyp #khuya #booty #secret',
+	'#xuhuong #fyp #bacsi #stairs #fashion',
+	'#xuhuong #fyp #taodang #random #hot',
+	'#xuhuong #fyp #ngotngao #model #tamxong',
+	'#xuhuong #fyp #figure #bathing #vanphong',
+	'#xuhuong #fyp #phongngu #intense #support',
+	'#xuhuong #fyp #home #lamviec #goodmorning',
+	'#xuhuong #fyp #doboi #cuoisuan #public',
+	'#xuhuong #fyp #huhong #sexy #sweet',
+	'#xuhuong #fyp #shower #followers #noiy',
+	'#xuhuong #fyp #mystery #obedient #vanphong',
+	'#xuhuong #fyp #girl #hangxom #gym',
+	'#xuhuong #fyp #motminh #giaovien #richkid',
+	'#xuhuong #fyp #haugai #secret #wild',
+	'#xuhuong #fyp #fan #lips #khantam',
+	'#xuhuong #fyp #vanphong #cute #phongtam',
+	'#xuhuong #fyp #sexy #somi #moi',
+	'#xuhuong #fyp #sangchanh #bikini #tiktokdance',
+	'#xuhuong #fyp #hot #bep #turned',
+	'#xuhuong #fyp #art #phongngu #taobao',
+	'#xuhuong #fyp #glow #lips #lingerie',
+	'#xuhuong #fyp #neighbor #cogiao #buoisang',
+	'#xuhuong #fyp #boss #love #riengtu',
+	'#xuhuong #fyp #eo #cauthang #boss',
+	'#xuhuong #fyp #thon #office #mysterious',
+	'#xuhuong #fyp #obedient #nature #crazy',
+	'#xuhuong #fyp #glow #home #chill',
+	'#xuhuong #fyp #dressing #shower #bath',
+	'#xuhuong #fyp #lamviec #taobao #da',
+	'#xuhuong #fyp #truyenthong #work #costume',
+	'#xuhuong #fyp #back #outdoor #vietnam',
+	'#xuhuong #fyp #naughty #turned #riengtu',
+	'#xuhuong #fyp #back #relax #khoe',
+	'#xuhuong #fyp #phongtam #body #yta',
+	'#xuhuong #fyp #submissive #kawaii #lamviec',
+	'#xuhuong #fyp #queen #model #secret',
+	'#xuhuong #fyp #outdoor #natural #fitness',
+	'#xuhuong #fyp #buoisang #bep #crazy',
+	'#xuhuong #fyp #maid #tamxong #troly',
+	'#xuhuong #fyp #exgf #fresh #sweet',
+	'#xuhuong #fyp #moi #vong1 #mysterious',
+	'#xuhuong #fyp #office #fresh #followers',
+	'#xuhuong #fyp #costume #outdoor #buoisang',
+	'#xuhuong #fyp #morning #turned #model',
+	'#xuhuong #fyp #nurse #truyenthong #anyone',
+	'#xuhuong #fyp #costume #curves #stranger',
+	'#xuhuong #fyp #nguoiyeucu #khuya #curves',
+	'#xuhuong #fyp #cute #home #gothic',
+	'#xuhuong #fyp #turned #khoe #hocsinh',
+	'#xuhuong #fyp #risky #shower #phongtam',
+	'#xuhuong #fyp #teacher #shower #cooking',
+	'#xuhuong #fyp #morning #bikini #art',
+	'#xuhuong #fyp #yta #sangchanh #bedroom',
+	'#xuhuong #fyp #shower #phongkhach #boyfriend',
+	'#xuhuong #fyp #eo #cosplay #midnight',
+	'#xuhuong #fyp #figure #khoe #goodmorning',
+	'#xuhuong #fyp #kawaii #fresh #eo',
+	'#xuhuong #fyp #kitchen #wild #nguoiyeucu',
+	'#xuhuong #fyp #bath #dance #sweet',
+	'#xuhuong #fyp #nature #sensual #dark',
+	'#xuhuong #fyp #sweet #hocsinh #tamxong',
+	'#xuhuong #fyp #body #lamviec #lips',
+	'#xuhuong #fyp #exgf #naughty #skin',
+	'#xuhuong #fyp #show #secret #confident',
+	'#xuhuong #fyp #midnight #cute #curves',
+	'#xuhuong #fyp #outdoor #costume #horny',
+	'#xuhuong #fyp #fashion #work #nguoiyeucu',
+	'#xuhuong #fyp #workout #random #noiy',
+	'#xuhuong #fyp #crazy #tiepvien #chill',
+	'#xuhuong #fyp #mystery #gym #bep',
+	'#xuhuong #fyp #body #curves #fresh',
+	'#xuhuong #fyp #curves #richkid #sweet',
+	'#xuhuong #fyp #richkid #eo #changing',
+	'#xuhuong #fyp #cogiao #cosplay #excited',
+	'#xuhuong #fyp #boyfriend #sangchanh #legs',
+	'#xuhuong #fyp #fire #fresh #shower',
+	'#xuhuong #fyp #outdoor #busy #stranger',
+	'#xuhuong #fyp #relax #lung #ktv',
+	'#xuhuong #fyp #aodai #lips #confident',
+	'#xuhuong #fyp #teasing #nurse #aodai',
+	'#xuhuong #fyp #nofilter #tiktokdance #congso',
+	'#xuhuong #fyp #somi #love #xehoi',
+	'#xuhuong #fyp #waist #noiy #kitchen',
+	'#xuhuong #fyp #risky #nhay #shower',
+	'#xuhuong #fyp #curves #ootd #gothic',
+	'#xuhuong #fyp #waist #body #mysterious',
+	'#xuhuong #fyp #vanphong #boss #behind',
+	'#xuhuong #fyp #relax #boss #submissive',
+	'#xuhuong #fyp #yoga #crazy #streetstyle',
+	'#xuhuong #fyp #outdoor #thugian #busy',
+	'#xuhuong #fyp #behind #dressing #random',
+	'#xuhuong #fyp #da #aodai #art',
+	'#xuhuong #fyp #back #vanphong #intense',
+	'#xuhuong #fyp #dance #figure #khantam',
+	'#xuhuong #fyp #anyone #tamxong #onha',
+	'#xuhuong #fyp #gym #relaxing #horny',
+	'#xuhuong #fyp #vong1 #curves #ktv',
+	'#xuhuong #fyp #phongtam #demkhuya #tamxong',
+	'#xuhuong #fyp #dark #legging #sweet',
+	'#xuhuong #fyp #giuong #anime #phongtam',
+	'#xuhuong #fyp #troly #bold #kawaii',
+	'#xuhuong #fyp #relax #work #stairs',
+	'#xuhuong #fyp #troly #tiktokdance #beach',
+	'#xuhuong #fyp #stairs #gym #shower',
+	'#xuhuong #fyp #curves #nurse #dark',
+	'#xuhuong #fyp #relax #exercise #chill',
+	'#xuhuong #fyp #pose #yoga #flex',
+	'#xuhuong #fyp #giuong #excited #anime',
+	'#xuhuong #fyp #lung #yta #thuky',
+	'#xuhuong #fyp #gothic #shower #vanphong',
+	'#xuhuong #fyp #bathing #relax #stranger',
+	'#xuhuong #fyp #girl #khuya #crazy',
+	'#xuhuong #fyp #nude #demkhuya #fan',
+	'#xuhuong #fyp #working #vest #relaxing',
+	'#xuhuong #fyp #morning #eo #model',
+	'#xuhuong #fyp #sweet #cauthang #office',
+	'#xuhuong #fyp #gym #costume #giaovien',
+	'#xuhuong #fyp #kawaii #body #waist',
+	'#xuhuong #fyp #ootd #khantam #cosplay',
+	'#xuhuong #fyp #vanphong #lingerie #hocsinh',
+	'#xuhuong #fyp #fresh #lenlut #hangxom',
+	'#xuhuong #fyp #crazy #sexy #chill',
+	'#xuhuong #fyp #queen #goodmorning #moi',
+	'#xuhuong #fyp #vong3 #lingerie #kitchen',
+	'#xuhuong #fyp #gentle #phongkhach #nude',
+	'#xuhuong #fyp #mysterious #thugian #model',
+	'#xuhuong #fyp #hangxom #bacsi #behind',
+	'#xuhuong #fyp #vanphong #sexy #flex',
+	'#xuhuong #fyp #chill #khoe #boss',
+	'#xuhuong #fyp #sensual #nghitrua #fitness',
+	'#xuhuong #fyp #hangxom #body #yta',
+	'#xuhuong #fyp #gym #karaoke #dance',
+	'#xuhuong #fyp #fire #body #workout',
+	'#xuhuong #fyp #taobao #bep #aodai',
+	'#xuhuong #fyp #phongtam #lenlut #hocsinh',
+	'#xuhuong #fyp #fashion #boyfriend #cauthang',
+	'#xuhuong #fyp #teacher #fire #hot',
+	'#xuhuong #fyp #nurse #sofa #lamviec',
+	'#xuhuong #fyp #fashion #real #phongtam',
+	'#xuhuong #fyp #show #cogiao #exercise',
+	'#xuhuong #fyp #lenlut #body #curves',
+	'#xuhuong #fyp #random #aodai #phongtam',
+	'#xuhuong #fyp #risky #pose #bep',
+	'#xuhuong #fyp #office #curves #nguoiyeucu',
+	'#xuhuong #fyp #sexy #nofilter #phongngu',
+	'#xuhuong #fyp #giuong #sweet #ootd',
+	'#xuhuong #fyp #nguoiyeucu #giogiaolao #turned',
+	'#xuhuong #fyp #dai #tiepvien #nurse',
+	'#xuhuong #fyp #sweet #boss #busy',
+	'#xuhuong #fyp #riengtu #fresh #horny',
+	'#xuhuong #fyp #boss #stairs #vanphong',
+	'#xuhuong #fyp #nghitrua #sweet #bad',
+	'#xuhuong #fyp #lamviec #huhong #random',
+	'#xuhuong #fyp #sensual #foryou #sangchanh',
+	'#xuhuong #fyp #stairs #morning #anyone',
+	'#xuhuong #fyp #haugai #fitness #onha',
+	'#xuhuong #fyp #giuong #shower #stairs',
+	'#xuhuong #fyp #thon #hot #legs',
+	'#xuhuong #fyp #support #riengtu #changing',
+	'#xuhuong #fyp #phongtam #fresh #phongngu',
+	'#xuhuong #fyp #vanphong #real #cute',
+	'#xuhuong #fyp #tiepvien #motminh #neighbor',
+	'#xuhuong #fyp #public #bacsi #haugai',
+	'#xuhuong #fyp #boyfriend #teasing #yta',
+	'#xuhuong #fyp #confident #vanphong #cosplay',
+	'#xuhuong #fyp #show #dark #chill',
+	'#xuhuong #fyp #dai #gym #someone',
+	'#xuhuong #fyp #home #noiy #bad',
+	'#xuhuong #fyp #natural #cauthang #motminh',
+	'#xuhuong #fyp #curves #nofilter #changing',
+	'#xuhuong #fyp #secretary #random #nofilter',
+	'#xuhuong #fyp #random #motminh #kitchen',
+	'#xuhuong #fyp #dressing #skin #art',
+	'#xuhuong #fyp #xehoi #skin #waist',
+	'#xuhuong #fyp #aodai #hot #gymmotivation',
+	'#xuhuong #fyp #girl #fan #phongngu',
+	'#xuhuong #fyp #khoe #risky #nhay',
+	'#xuhuong #fyp #hot #girl #touch',
+	'#xuhuong #fyp #art #followers #crazy',
+	'#xuhuong #fyp #cute #dark #goodmorning',
+	'#xuhuong #fyp #somi #sweet #nusinh',
+	'#xuhuong #fyp #turned #motminh #noiy',
+	'#xuhuong #fyp #giuong #vest #exercise',
+	'#xuhuong #fyp #bedroom #art #body',
+	'#xuhuong #fyp #followers #feel #vanphong',
+	'#xuhuong #fyp #somi #body #cute',
+	'#xuhuong #fyp #sexy #cosplay #mystery',
+	'#xuhuong #fyp #dark #demkhuya #curves',
+	'#xuhuong #fyp #fire #eo #vanphong',
+	'#xuhuong #fyp #art #gym #morning',
+	'#xuhuong #fyp #show #bacsi #someone',
+	'#xuhuong #fyp #busy #lamviec #bedroom',
+	'#xuhuong #fyp #pose #goodmorning #sensual',
+	'#xuhuong #fyp #workout #sexy #foryou',
+	'#xuhuong #fyp #hot #nusinh #morning',
+	'#xuhuong #fyp #bacsi #stranger #risky',
+	'#xuhuong #fyp #cosplay #sexy #hangxom',
+	'#xuhuong #fyp #taobao #sofa #queen',
+	'#xuhuong #fyp #random #excited #fire',
+	'#xuhuong #fyp #vietnam #gentle #risky',
+	'#xuhuong #fyp #touch #haugai #natural',
+	'#xuhuong #fyp #shower #anyone #lips',
+	'#xuhuong #fyp #fitness #secret #back',
+	'#xuhuong #fyp #lips #chill #thon',
+	'#xuhuong #fyp #fresh #yoga #horny',
+	'#xuhuong #fyp #fan #giuong #thon',
+	'#xuhuong #fyp #cooking #khoe #phongtam',
+	'#xuhuong #fyp #giaovien #bathroom #sexy',
+	'#xuhuong #fyp #cogiao #gym #costume',
+	'#xuhuong #fyp #shy #girl #figure',
+	'#xuhuong #fyp #dark #car #khoe',
+	'#xuhuong #fyp #da #flex #hot',
+	'#xuhuong #fyp #phongkhach #mysterious #troly',
+	'#xuhuong #fyp #hot #onha #anyone',
 ];
+
+/**
+ * Hashtag mapping by category for dynamic generation
+ */
+export const HASHTAG_MAPPING = {
+	"CONTEXT": {
+		"BREAK_TIME": [
+			"#nghitrua",
+			"#giogiaolao",
+			"#vanphong"
+		],
+		"HOME_ALONE": [
+			"#onha",
+			"#motminh",
+			"#cuoisuan"
+		],
+		"LATE_NIGHT": [
+			"#demkhuya",
+			"#midnight",
+			"#khuya"
+		],
+		"SECRET": [
+			"#bimat",
+			"#lenlut",
+			"#riengtu"
+		],
+		"JUST_BATHED": [
+			"#tamxong",
+			"#shower",
+			"#fresh"
+		],
+		"DRUNK": [
+			"#chill",
+			"#say",
+			"#relaxing"
+		],
+		"MORNING": [
+			"#buoisang",
+			"#morning",
+			"#goodmorning"
+		]
+	},
+	"ROLE": {
+		"TEACHER": [
+			"#cogiao",
+			"#giaovien",
+			"#teacher"
+		],
+		"STUDENT": [
+			"#nusinh",
+			"#student",
+			"#hocsinh"
+		],
+		"NURSE": [
+			"#yta",
+			"#nurse",
+			"#bacsi"
+		],
+		"SECRETARY": [
+			"#thuky",
+			"#secretary",
+			"#troly"
+		],
+		"MAID": [
+			"#haugai",
+			"#maid",
+			"#cosplay"
+		],
+		"OFFICE": [
+			"#vanphong",
+			"#office",
+			"#congso"
+		],
+		"KTV": [
+			"#ktv",
+			"#karaoke",
+			"#tiepvien"
+		],
+		"GYMER": [
+			"#gym",
+			"#fitness",
+			"#yoga"
+		],
+		"RICH_KID": [
+			"#tieuthuu",
+			"#richkid",
+			"#sangchanh"
+		],
+		"EX_GIRLFRIEND": [
+			"#tinhcu",
+			"#exgf",
+			"#nguoiyeucu"
+		],
+		"NEIGHBOR": [
+			"#hangxom",
+			"#neighbor",
+			"#girl"
+		]
+	},
+	"OUTFIT": {
+		"BIKINI": [
+			"#bikini",
+			"#doboi",
+			"#beach"
+		],
+		"LINGERIE": [
+			"#noiy",
+			"#lingerie",
+			"#sexy"
+		],
+		"AO_DAI": [
+			"#aodai",
+			"#vietnam",
+			"#truyenthong"
+		],
+		"OFFICE_WEAR": [
+			"#congso",
+			"#somi",
+			"#vest"
+		],
+		"GYM_WEAR": [
+			"#gymmotivation",
+			"#legging",
+			"#fitness"
+		],
+		"STREET": [
+			"#streetstyle",
+			"#fashion",
+			"#ootd"
+		],
+		"COSPLAY": [
+			"#cosplay",
+			"#anime",
+			"#costume"
+		],
+		"NO_CLOTHES": [
+			"#body",
+			"#art",
+			"#nude"
+		],
+		"TOWEL": [
+			"#khantam",
+			"#shower",
+			"#fresh"
+		]
+	},
+	"ACTIVITY": {
+		"POSING": [
+			"#pose",
+			"#taodang",
+			"#model"
+		],
+		"DANCING": [
+			"#dance",
+			"#nhay",
+			"#tiktokdance"
+		],
+		"RELAXING": [
+			"#relax",
+			"#thugian",
+			"#chill"
+		],
+		"WORKING": [
+			"#working",
+			"#lamviec",
+			"#busy"
+		],
+		"EXERCISING": [
+			"#workout",
+			"#exercise",
+			"#gym"
+		],
+		"SHOWING_OFF": [
+			"#khoe",
+			"#show",
+			"#flex"
+		],
+		"TOUCHING": [
+			"#sensual",
+			"#touch",
+			"#feel"
+		],
+		"TEASING": [
+			"#teasing",
+			"#sexy",
+			"#hot"
+		],
+		"BATHING": [
+			"#shower",
+			"#bath",
+			"#bathing"
+		],
+		"CHANGING": [
+			"#changing",
+			"#behind",
+			"#dressing"
+		]
+	},
+	"LOCATION": {
+		"BEDROOM": [
+			"#phongngu",
+			"#bedroom",
+			"#giuong"
+		],
+		"LIVING_ROOM": [
+			"#phongkhach",
+			"#sofa",
+			"#home"
+		],
+		"KITCHEN": [
+			"#bep",
+			"#kitchen",
+			"#cooking"
+		],
+		"BATHROOM": [
+			"#phongtam",
+			"#bathroom",
+			"#shower"
+		],
+		"OFFICE": [
+			"#vanphong",
+			"#office",
+			"#work"
+		],
+		"PUBLIC": [
+			"#public",
+			"#outdoor",
+			"#risky"
+		],
+		"OUTDOOR": [
+			"#outdoor",
+			"#nature",
+			"#fresh"
+		],
+		"CAR": [
+			"#xehoi",
+			"#car",
+			"#drive"
+		],
+		"STAIRS": [
+			"#cauthang",
+			"#stairs",
+			"#secret"
+		]
+	},
+	"FOCUS": {
+		"CHEST": [
+			"#body",
+			"#curves",
+			"#vong1"
+		],
+		"BUTT": [
+			"#booty",
+			"#vong3",
+			"#curves"
+		],
+		"LEGS": [
+			"#legs",
+			"#chan",
+			"#dai"
+		],
+		"WAIST": [
+			"#eo",
+			"#waist",
+			"#thon"
+		],
+		"BACK": [
+			"#back",
+			"#lung",
+			"#sexy"
+		],
+		"LIPS": [
+			"#lips",
+			"#moi",
+			"#kiss"
+		],
+		"SKIN": [
+			"#skin",
+			"#da",
+			"#glow"
+		],
+		"GENERAL": [
+			"#body",
+			"#figure",
+			"#curves"
+		]
+	},
+	"THEME": {
+		"HOT": [
+			"#hot",
+			"#nongbong",
+			"#fire"
+		],
+		"SWEET": [
+			"#cute",
+			"#sweet",
+			"#kawaii"
+		],
+		"DARK": [
+			"#dark",
+			"#mysterious",
+			"#gothic"
+		],
+		"REALISTIC": [
+			"#real",
+			"#natural",
+			"#nofilter"
+		],
+		"HARDCORE": [
+			"#wild",
+			"#intense",
+			"#crazy"
+		],
+		"SUBMISSIVE": [
+			"#submissive",
+			"#obedient",
+			"#gentle"
+		]
+	},
+	"EMOTION": {
+		"SHY": [
+			"#shy",
+			"#cute",
+			"#ngaingung"
+		],
+		"BOLD": [
+			"#bold",
+			"#confident",
+			"#taobao"
+		],
+		"NAUGHTY": [
+			"#naughty",
+			"#bad",
+			"#huhong"
+		],
+		"SWEET": [
+			"#sweet",
+			"#cute",
+			"#ngotngao"
+		],
+		"HORNY": [
+			"#horny",
+			"#turned",
+			"#excited"
+		],
+		"CONFIDENT": [
+			"#confident",
+			"#queen",
+			"#boss"
+		]
+	},
+	"PEOPLE": {
+		"BOYFRIEND": [
+			"#foryou",
+			"#love",
+			"#boyfriend"
+		],
+		"STRANGER": [
+			"#stranger",
+			"#random",
+			"#anyone"
+		],
+		"FAN": [
+			"#fan",
+			"#followers",
+			"#support"
+		],
+		"SOMEONE": [
+			"#someone",
+			"#secret",
+			"#mystery"
+		]
+	}
+};
+
+export const BASE_HASHTAGS = '#xuhuong #fyp';

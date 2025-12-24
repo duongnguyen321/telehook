@@ -717,12 +717,13 @@ export function setupVideoHandler(bot) {
 			const parts = data.split('_');
 			const postId = parts[1];
 			const currentPage = parseInt(parts[2]) || 0;
+			const optionPage = parseInt(parts[3]) || 0; // Track which set of 5 we're showing
 			const selectionKey = `${chatId}_${postId}`;
 
 			const selections = categorySelections.get(selectionKey) || {};
 
-			// Generate 10 options (sorted by keyword match count)
-			const optionCount = 10;
+			// Generate 5 options per page
+			const optionCount = 5;
 			let options;
 			if (Object.keys(selections).length > 0) {
 				options = generateContentFromCategories(selections, optionCount);
@@ -733,29 +734,35 @@ export function setupVideoHandler(bot) {
 			// Save generated options for selection
 			generatedOptions.set(selectionKey, options);
 
-			// Build message text
-			let messageText = '📝 **CHỌN NỘI DUNG ƯNG Ý NHẤT**\n\n';
+			// Build message text with title AND hashtags
+			let messageText = `📝 **CHỌN NỘI DUNG ƯNG Ý NHẤT** (Trang ${
+				optionPage + 1
+			})\n\n`;
 			options.forEach((opt, index) => {
-				messageText += `${index + 1}. **${opt.title}**\n\n`;
+				messageText += `${index + 1}. **${opt.title}**\n`;
+				messageText += `   _${opt.hashtags}_\n\n`;
 			});
-			messageText += '👇 Bấm số tương ứng để chọn:';
+			messageText +=
+				'👇 Bấm số để chọn, hoặc **Xem thêm** để tạo 5 options mới:';
 
 			// Build selection keyboard (based on actual options count)
 			const keyboard = new InlineKeyboard();
 			const actualCount = options.length;
 			for (let i = 0; i < actualCount; i++) {
 				keyboard.text(`${i + 1}`, `choose_${postId}_${currentPage}_${i}`);
-				// 5 buttons per row
-				if ((i + 1) % 5 === 0) keyboard.row();
+				// 3 buttons per row
+				if ((i + 1) % 3 === 0) keyboard.row();
 			}
 
 			// Navigation buttons
 			keyboard.row();
 			keyboard.text('⬅️', `back_${postId}_${currentPage}`);
-			keyboard.text('🔀 Random mới', `choose_random_${postId}_${currentPage}`);
+			keyboard.text(
+				'Xem thêm',
+				`done_${postId}_${currentPage}_${optionPage + 1}`
+			);
 			keyboard.text('❌ Hủy', `cancel_${postId}_${currentPage}`);
 
-			// Edit message
 			// Edit message (caption safely)
 			await safeEditMessage(ctx, messageText, keyboard);
 

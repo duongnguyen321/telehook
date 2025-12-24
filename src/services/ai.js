@@ -6,7 +6,11 @@
 
 // Import content data from separate files
 import { TITLES } from '../data/titles.js';
-import { HASHTAG_SETS } from '../data/hashtags.js';
+import {
+	HASHTAG_SETS,
+	HASHTAG_MAPPING,
+	BASE_HASHTAGS,
+} from '../data/hashtags.js';
 import { CATEGORIES } from '../data/category.js';
 
 // Re-export for compatibility
@@ -48,6 +52,74 @@ function random(arr) {
 }
 
 /**
+ * Find which category options are matched in a title
+ */
+function findMatchedOptions(title) {
+	const lowerTitle = title.toLowerCase();
+	const matches = {};
+
+	for (const [categoryKey, category] of Object.entries(CATEGORIES)) {
+		for (const [optionKey, option] of Object.entries(category.options)) {
+			if (option.keywords) {
+				for (const keyword of option.keywords) {
+					if (lowerTitle.includes(keyword.toLowerCase())) {
+						if (!matches[categoryKey]) matches[categoryKey] = [];
+						if (!matches[categoryKey].includes(optionKey)) {
+							matches[categoryKey].push(optionKey);
+						}
+						break;
+					}
+				}
+			}
+		}
+	}
+
+	return matches;
+}
+
+/**
+ * Generate hashtags that match the content of a title
+ * @param {string} title - The title to generate hashtags for
+ * @returns {string} Hashtag string
+ */
+function generateMatchingHashtags(title) {
+	// If HASHTAG_MAPPING is not available, fallback to random
+	if (!HASHTAG_MAPPING) {
+		return random(HASHTAG_SETS);
+	}
+
+	const matches = findMatchedOptions(title);
+	const hashtags = new Set();
+
+	// Add hashtags based on matched categories
+	for (const [categoryKey, optionKeys] of Object.entries(matches)) {
+		const categoryMapping = HASHTAG_MAPPING[categoryKey];
+		if (categoryMapping) {
+			for (const optionKey of optionKeys) {
+				const tags = categoryMapping[optionKey];
+				if (tags && Array.isArray(tags)) {
+					// Pick 1-2 random hashtags from this option
+					const count = Math.min(2, tags.length);
+					for (let i = 0; i < count; i++) {
+						hashtags.add(random(tags));
+					}
+				}
+			}
+		}
+	}
+
+	// If no matches found, use random hashtag set
+	if (hashtags.size === 0) {
+		return random(HASHTAG_SETS);
+	}
+
+	// Limit to 3 category-specific hashtags (total 5 with base)
+	const specificTags = Array.from(hashtags).slice(0, 3).join(' ');
+	const base = BASE_HASHTAGS || '#xuhuong #fyp';
+	return `${base} ${specificTags}`.trim();
+}
+
+/**
  * Generate 1 unique content option (title)
  * Tracks used titles globally to minimize duplicates
  */
@@ -65,7 +137,7 @@ export function generateContentOptions(count = 3) {
 
 		options.push({
 			title,
-			hashtags: random(HASHTAG_SETS),
+			hashtags: generateMatchingHashtags(title),
 		});
 	}
 
@@ -146,7 +218,7 @@ export function getCategoryOptions(categoryKey) {
  * @param {number} count - Number of options to generate (default: 6)
  * @returns {Array<{title: string, hashtags: string}>}
  */
-export function generateContentFromCategories(selectedCategories, count = 6) {
+export function generateContentFromCategories(selectedCategories, count = 5) {
 	// Collect keyword sets from each selected category
 	const keywordSets = [];
 
@@ -181,6 +253,7 @@ export function generateContentFromCategories(selectedCategories, count = 6) {
 
 	/**
 	 * Check if a string matches at least one keyword from the set
+	 * Prioritize longer keywords (more specific)
 	 */
 	const matchesCategory = (str, keywords) => {
 		const lowerStr = str.toLowerCase();
@@ -188,26 +261,31 @@ export function generateContentFromCategories(selectedCategories, count = 6) {
 	};
 
 	/**
-	 * AND logic: Content must match ALL selected categories
-	 * Each category requires at least one keyword match
+	 * Count how many categories are matched
 	 */
-	const matchesAllCategories = (str) => {
-		return keywordSets.every((set) => matchesCategory(str, set.keywords));
+	const countCategoryMatches = (str) => {
+		return keywordSets.filter((set) => matchesCategory(str, set.keywords))
+			.length;
 	};
 
 	/**
-	 * Score: count how many keyword sets (categories) are matched + bonus for individual keywords
+	 * Improved scoring:
+	 * - 10 points per category matched (big weight for category match)
+	 * - 1 point per individual keyword match (bonus for specificity)
+	 * - Extra bonus for longer keyword matches (more specific)
 	 */
 	const scoreByCategories = (str) => {
 		const lowerStr = str.toLowerCase();
 		let score = 0;
+
 		for (const set of keywordSets) {
 			if (matchesCategory(str, set.keywords)) {
-				score++; // 1 point per category matched
-				// Bonus: count individual keyword matches within category
+				score += 10; // Big bonus for matching a category
+				// Count individual keyword matches within category
 				for (const kw of set.keywords) {
 					if (lowerStr.includes(kw.toLowerCase())) {
-						score += 0.1; // Small bonus for each keyword match
+						// Bonus proportional to keyword length (longer = more specific)
+						score += 1 + kw.length * 0.1;
 					}
 				}
 			}
@@ -215,18 +293,19 @@ export function generateContentFromCategories(selectedCategories, count = 6) {
 		return score;
 	};
 
-	// Step 1: Filter to only items matching ALL categories (AND logic)
-	let matchingItems = TITLES.filter(matchesAllCategories);
+	// Calculate minimum category match threshold (at least 50% of selected categories)
+	const minCategoryMatch = Math.max(1, Math.ceil(keywordSets.length * 0.5));
 
-	// Step 2: If too few results, relax to items matching at least N-1 categories
-	if (matchingItems.length < count && keywordSets.length > 1) {
-		const relaxedMatches = TITLES.filter((item) => {
-			const matchCount = keywordSets.filter((set) =>
-				matchesCategory(item, set.keywords)
-			).length;
-			return matchCount >= keywordSets.length - 1;
-		});
-		// Add relaxed matches that aren't already included
+	// Step 1: Filter to only items matching at least minCategoryMatch categories
+	let matchingItems = TITLES.filter(
+		(item) => countCategoryMatches(item) >= minCategoryMatch
+	);
+
+	// Step 2: If too few results with strict matching, lower threshold
+	if (matchingItems.length < count * 3 && minCategoryMatch > 1) {
+		const relaxedMatches = TITLES.filter(
+			(item) => countCategoryMatches(item) >= 1
+		);
 		for (const item of relaxedMatches) {
 			if (!matchingItems.includes(item)) {
 				matchingItems.push(item);
@@ -234,40 +313,56 @@ export function generateContentFromCategories(selectedCategories, count = 6) {
 		}
 	}
 
-	// Step 3: If still too few, fall back to items matching ANY category
-	if (matchingItems.length < count) {
-		const allKeywords = keywordSets.flatMap((s) => s.keywords);
-		const anyMatch = TITLES.filter((item) => {
-			const lowerItem = item.toLowerCase();
-			return allKeywords.some((kw) => lowerItem.includes(kw.toLowerCase()));
-		});
-		for (const item of anyMatch) {
-			if (!matchingItems.includes(item)) {
-				matchingItems.push(item);
-			}
-		}
-	}
-
-	// Step 4: Score and sort
+	// Step 3: Score all matching items
 	const scoredItems = matchingItems.map((item) => ({
 		text: item,
 		score: scoreByCategories(item),
+		categoryCount: countCategoryMatches(item),
 	}));
-	scoredItems.sort((a, b) => b.score - a.score);
 
-	// Step 5: Pick top results, avoiding duplicates
+	// Step 4: Sort by category count first, then by score, then shuffle same scores
+	scoredItems.sort((a, b) => {
+		// First priority: number of categories matched
+		if (b.categoryCount !== a.categoryCount) {
+			return b.categoryCount - a.categoryCount;
+		}
+		// Second priority: detailed score
+		if (Math.abs(b.score - a.score) > 0.5) {
+			return b.score - a.score;
+		}
+		// Same score range: random shuffle for variety
+		return Math.random() - 0.5;
+	});
+
+	// Step 5: Pick top results, avoiding duplicates and recently used
 	const options = [];
 	const usedTitles = new Set();
 
 	for (const titleObj of scoredItems) {
 		if (options.length >= count) break;
 		if (usedTitles.has(titleObj.text)) continue;
+		if (usedTitlesGlobal.has(titleObj.text)) continue; // Avoid globally used titles
 
 		usedTitles.add(titleObj.text);
+		usedTitlesGlobal.add(titleObj.text); // Mark as used globally
 		options.push({
 			title: titleObj.text,
-			hashtags: random(HASHTAG_SETS),
+			hashtags: generateMatchingHashtags(titleObj.text),
 		});
+	}
+
+	// If still not enough (all top matches were used), pick from remaining scored items
+	if (options.length < count) {
+		for (const titleObj of scoredItems) {
+			if (options.length >= count) break;
+			if (usedTitles.has(titleObj.text)) continue;
+
+			usedTitles.add(titleObj.text);
+			options.push({
+				title: titleObj.text,
+				hashtags: generateMatchingHashtags(titleObj.text),
+			});
+		}
 	}
 
 	// If still not enough, fill with random
