@@ -186,18 +186,16 @@ function generateTitleFromTemplate(template, selectedCategories = {}) {
 
 /**
  * Generate hashtags directly from selected categories
- * Handles any number of selections (1 to CATEGORIES.length * options)
- * Always outputs exactly 5 hashtags total
+ * Always includes #xuhuong #fyp + 3 specific tags = exactly 5 total
  * @param {Object} selectedCategories - { CATEGORY_KEY: [optionKey1, optionKey2], ... }
- * @returns {string} Hashtag string (exactly 5 tags)
+ * @returns {string} Hashtag string (exactly 5 tags, always starts with #xuhuong #fyp)
  */
 function generateHashtagsFromSelections(selectedCategories) {
-	const hashtags = [];
+	// Base tags - ALWAYS included
+	const REQUIRED_TAGS = ['#xuhuong', '#fyp'];
 
 	// Fallback trending tags for when few filters selected
 	const FALLBACK_TAGS = [
-		'#xuhuong',
-		'#fyp',
 		'#gauxinh',
 		'#dance',
 		'#trend',
@@ -208,7 +206,8 @@ function generateHashtagsFromSelections(selectedCategories) {
 		'#girl',
 	];
 
-	// Collect 1 hashtag per selected option
+	// Collect hashtags from selected options
+	const categoryTags = [];
 	for (const [categoryKey, optionKeys] of Object.entries(selectedCategories)) {
 		const category = CATEGORIES[categoryKey];
 		if (!category) continue;
@@ -220,29 +219,33 @@ function generateHashtagsFromSelections(selectedCategories) {
 				// Pick 1 random hashtag from this option
 				const tag =
 					option.hashtags[Math.floor(Math.random() * option.hashtags.length)];
-				if (!hashtags.includes(tag)) {
-					hashtags.push(tag);
+				// Skip if already in required or already collected
+				if (!REQUIRED_TAGS.includes(tag) && !categoryTags.includes(tag)) {
+					categoryTags.push(tag);
 				}
 			}
 		}
 	}
 
-	// Shuffle collected hashtags for variety
-	hashtags.sort(() => Math.random() - 0.5);
+	// Shuffle category tags for variety
+	categoryTags.sort(() => Math.random() - 0.5);
 
-	// If fewer than 5, fill with fallback tags
-	if (hashtags.length < 5) {
+	// Need exactly 3 more tags (total 5 = 2 required + 3 specific)
+	let specificTags = categoryTags.slice(0, 3);
+
+	// If not enough, fill with fallback
+	if (specificTags.length < 3) {
 		const shuffledFallback = [...FALLBACK_TAGS].sort(() => Math.random() - 0.5);
 		for (const tag of shuffledFallback) {
-			if (hashtags.length >= 5) break;
-			if (!hashtags.includes(tag)) {
-				hashtags.push(tag);
+			if (specificTags.length >= 3) break;
+			if (!specificTags.includes(tag)) {
+				specificTags.push(tag);
 			}
 		}
 	}
 
-	// Return exactly 5 hashtags
-	return hashtags.slice(0, 5).join(' ');
+	// Return exactly 5 hashtags: #xuhuong #fyp + 3 specific
+	return [...REQUIRED_TAGS, ...specificTags].join(' ');
 }
 
 // Global tracking to avoid duplicates across all generated content
