@@ -277,10 +277,59 @@ export const CATEGORIES = {
 				],
 				hashtags: ['#streetstyle', '#fashion', '#ootd'],
 			},
-			COSPLAY: {
-				label: 'Cosplay',
-				keywords: ['bộ đồ cosplay', 'trang phục hầu gái', 'đồ thỏ sexy'],
-				hashtags: ['#cosplay', '#anime', '#costume'],
+			NURSE_UNIFORM: {
+				label: 'Đồ Y tá',
+				keywords: [
+					'bộ đồ y tá',
+					'áo blouse trắng',
+					'trang phục điều dưỡng',
+					'váy y tá ngắn',
+				],
+				hashtags: ['#nurse', '#yta', '#cosplay'],
+			},
+			STUDENT_UNIFORM: {
+				label: 'Đồng phục',
+				keywords: [
+					'đồng phục học sinh',
+					'váy xếp ly',
+					'sơ mi trắng thắt nơ',
+					'áo dài trắng',
+				],
+				hashtags: ['#student', '#nusinh', '#schoolgirl'],
+			},
+			MAID_UNIFORM: {
+				label: 'Đồ Hầu gái',
+				keywords: [
+					'trang phục hầu gái',
+					'váy tạp dề',
+					'đồ maid',
+					'váy hầu gái',
+				],
+				hashtags: ['#maid', '#haugai', '#cosplay'],
+			},
+			BUNNY: {
+				label: 'Đồ Thỏ',
+				keywords: ['đồ thỏ sexy', 'bikini tai thỏ', 'bodysuit thỏ'],
+				hashtags: ['#bunny', '#rabbit', '#cosplay'],
+			},
+			SECRETARY_WEAR: {
+				label: 'Đồ Thư ký',
+				keywords: [
+					'váy công sở bó sát',
+					'sơ mi hở cúc',
+					'đồ thư ký',
+					'zuýp ngắn',
+				],
+				hashtags: ['#secretary', '#thuky', '#office'],
+			},
+			POLICE_UNIFORM: {
+				label: 'Đồ Cảnh sát',
+				keywords: [
+					'trang phục cảnh sát',
+					'đồ nữ cảnh sát',
+					'quân phục cách điệu',
+				],
+				hashtags: ['#police', '#canhsat', '#cosplay'],
 			},
 			NO_CLOTHES: {
 				label: 'Không mặc',
@@ -654,6 +703,16 @@ export const CATEGORIES = {
 					'làm nô lệ',
 				],
 				hashtags: ['#submissive', '#obedient', '#gentle'],
+			},
+			COSPLAY: {
+				label: 'Cosplay',
+				keywords: [
+					'phong cách cosplay',
+					'hóa thân nhân vật',
+					'cosplay gợi cảm',
+					'đậm chất anime',
+				],
+				hashtags: ['#cosplay', '#anime', '#costume'],
 			},
 		},
 	},

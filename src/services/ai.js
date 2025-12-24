@@ -13,6 +13,238 @@ import { CATEGORIES } from '../data/category.js';
 // Re-export for compatibility
 export { TITLES, HASHTAG_SETS, CATEGORIES };
 
+// ============================================================
+// SENTENCE TEMPLATES - For Dynamic Generation
+// Templates should cover various category combinations
+// ============================================================
+
+const TEMPLATES = [
+	// Full coverage templates (8-10 categories)
+	'{CONTEXT}, {ROLE} {EMOTION} mặc {OUTFIT} {ACTIVITY} {LOCATION}, khoe {FOCUS} {THEME} với {HAIR}.',
+	'{ROLE} với {HAIR} {EMOTION} diện {OUTFIT} {POSE} {LOCATION}, {ACTIVITY} khoe {FOCUS} {THEME} {CONTEXT}.',
+
+	// 7-8 categories
+	'{CONTEXT}, {ROLE} {EMOTION} mặc {OUTFIT} {ACTIVITY} {LOCATION}, {POSE} khoe {FOCUS}.',
+	'{ROLE} với {HAIR} {EMOTION} {POSE} {LOCATION}, khoe {FOCUS} {THEME}.',
+	'{CONTEXT}, {ROLE} {HAIR} diện {OUTFIT} {THEME}, {EMOTION} {ACTIVITY} khoe {FOCUS}.',
+
+	// 6-7 categories
+	'{CONTEXT}, {ROLE} {EMOTION} mặc {OUTFIT} {ACTIVITY} {LOCATION}.',
+	'{CONTEXT}, {ROLE} {EMOTION} diện {OUTFIT} rồi {ACTIVITY}.',
+	'{CONTEXT}, {ROLE} cảm thấy {EMOTION} khi {ACTIVITY} {LOCATION}.',
+	'{CONTEXT}, {ROLE} với {HAIR} diện {OUTFIT} {THEME}, {EMOTION} khoe {FOCUS}.',
+	'Góc nhìn {THEME}: {ROLE} {EMOTION} với {FOCUS} trong bộ {OUTFIT} {LOCATION}.',
+
+	// 5-6 categories
+	'{CONTEXT}, {ROLE} {HAIR} tự tin khoe {FOCUS} {THEME}.',
+	'{CONTEXT}, {ROLE} {EMOTION} {POSE} {LOCATION}.',
+	'{ROLE} với {HAIR} đang {POSE} {LOCATION}, {EMOTION} khoe {FOCUS}.',
+	'{CONTEXT}, {ROLE} {EMOTION} gửi {FOCUS} {THEME} từ {POSE} {LOCATION}.',
+	'{CONTEXT}, {ROLE} {ACTIVITY} {LOCATION}, {EMOTION} khoe {FOCUS} {THEME}.',
+
+	// 4-5 categories
+	'{ROLE} {EMOTION} {ACTIVITY} để lộ {FOCUS} {CONTEXT}.',
+	'{ROLE} mặc {OUTFIT} {ACTIVITY}, cảm giác thật {EMOTION} {LOCATION}.',
+	'{CONTEXT}, {ROLE} {HAIR} {EMOTION} {ACTIVITY}.',
+	'{ROLE} {THEME} với {FOCUS} {LOCATION} {CONTEXT}.',
+	'{OUTFIT} {THEME} của {ROLE} {EMOTION} quá {CONTEXT}.',
+	'{CONTEXT}, thật {EMOTION} khi {ROLE} {HAIR} {POSE} {LOCATION}.',
+	'{CONTEXT}, {ROLE} với {HAIR} chỉ muốn {ACTIVITY}.',
+	'{ROLE} {EMOTION} check-in {LOCATION} với {OUTFIT} và {HAIR} {THEME}.',
+];
+
+// ============================================================
+// DYNAMIC TITLE GENERATION HELPERS
+// ============================================================
+
+/**
+ * Get a random keyword from a category option
+ */
+function getRandomKeyword(categoryKey, optionKey) {
+	const category = CATEGORIES[categoryKey];
+	if (!category) return '';
+	const option = category.options[optionKey];
+	if (!option || !option.keywords || option.keywords.length === 0) return '';
+	return option.keywords[Math.floor(Math.random() * option.keywords.length)];
+}
+
+/**
+ * Get a random option key from a category
+ */
+function getRandomOptionKey(categoryKey) {
+	const category = CATEGORIES[categoryKey];
+	if (!category) return null;
+	const keys = Object.keys(category.options);
+	if (keys.length === 0) return null;
+	return keys[Math.floor(Math.random() * keys.length)];
+}
+
+/**
+ * Get categories covered by a template
+ */
+function getTemplateCoverage(template) {
+	const matches = template.match(/\{([A-Z_]+)\}/g) || [];
+	return matches.map((m) => m.replace(/[{}]/g, ''));
+}
+
+/**
+ * Find best template that covers most of selected categories
+ */
+function findBestTemplate(selectedCategories) {
+	const selectedKeys = Object.keys(selectedCategories);
+	let bestTemplate = TEMPLATES[0];
+	let bestScore = 0;
+
+	for (const template of TEMPLATES) {
+		const coverage = getTemplateCoverage(template);
+		// Score = how many selected categories are covered
+		const score = selectedKeys.filter((k) => coverage.includes(k)).length;
+		if (score > bestScore) {
+			bestScore = score;
+			bestTemplate = template;
+		}
+	}
+
+	return bestTemplate;
+}
+
+/**
+ * Generate a title from template using selected categories
+ * Ensures all selected filters are represented
+ * @param {string} template - Template with {CATEGORY} placeholders
+ * @param {Object} selectedCategories - { CATEGORY_KEY: [optionKey1, optionKey2], ... }
+ * @returns {string} Generated title
+ */
+function generateTitleFromTemplate(template, selectedCategories = {}) {
+	let result = template;
+	const usedCategories = new Set();
+
+	// Find all placeholders in template
+	const placeholders = template.match(/\{([A-Z_]+)\}/g) || [];
+
+	for (const placeholder of placeholders) {
+		const categoryKey = placeholder.replace(/[{}]/g, '');
+		let keyword = '';
+
+		// Check if user selected this category
+		const selectedOptions = selectedCategories[categoryKey];
+		if (selectedOptions && selectedOptions.length > 0) {
+			// Pick random from selected options
+			const optionKey =
+				selectedOptions[Math.floor(Math.random() * selectedOptions.length)];
+			keyword = getRandomKeyword(categoryKey, optionKey);
+			usedCategories.add(categoryKey);
+		} else {
+			// Pick random option from this category
+			const randomOptKey = getRandomOptionKey(categoryKey);
+			if (randomOptKey) {
+				keyword = getRandomKeyword(categoryKey, randomOptKey);
+			}
+		}
+
+		// Replace placeholder with keyword
+		result = result.replace(placeholder, keyword);
+	}
+
+	// Check if any selected categories were NOT used - append them
+	const selectedKeys = Object.keys(selectedCategories);
+	const unusedCategories = selectedKeys.filter((k) => !usedCategories.has(k));
+
+	if (unusedCategories.length > 0) {
+		// Append unused selections as natural phrases
+		const extras = [];
+		for (const categoryKey of unusedCategories) {
+			const options = selectedCategories[categoryKey];
+			if (options && options.length > 0) {
+				const optionKey = options[Math.floor(Math.random() * options.length)];
+				const keyword = getRandomKeyword(categoryKey, optionKey);
+				if (keyword) {
+					extras.push(keyword);
+				}
+			}
+		}
+		if (extras.length > 0) {
+			// Remove trailing period, add extras, then period
+			result = result.replace(/[.!?]+$/, '');
+			result = result + ', ' + extras.join(' ') + '.';
+		}
+	}
+
+	// Clean up formatting
+	result = result.replace(/\s+/g, ' ').trim();
+	result = result.replace(/\s+([,.?!])/g, '$1');
+	result = result.replace(/([,.?!])\1+/g, '$1');
+	result = result.replace(/, ,/g, ',');
+
+	// Capitalize first letter
+	if (result.length > 0) {
+		result = result.charAt(0).toUpperCase() + result.slice(1);
+	}
+
+	return result;
+}
+
+/**
+ * Generate hashtags directly from selected categories
+ * Handles any number of selections (1 to CATEGORIES.length * options)
+ * Always outputs exactly 5 hashtags total
+ * @param {Object} selectedCategories - { CATEGORY_KEY: [optionKey1, optionKey2], ... }
+ * @returns {string} Hashtag string (exactly 5 tags)
+ */
+function generateHashtagsFromSelections(selectedCategories) {
+	const hashtags = [];
+
+	// Fallback trending tags for when few filters selected
+	const FALLBACK_TAGS = [
+		'#xuhuong',
+		'#fyp',
+		'#gauxinh',
+		'#dance',
+		'#trend',
+		'#body',
+		'#visual',
+		'#sexy',
+		'#hot',
+		'#girl',
+	];
+
+	// Collect 1 hashtag per selected option
+	for (const [categoryKey, optionKeys] of Object.entries(selectedCategories)) {
+		const category = CATEGORIES[categoryKey];
+		if (!category) continue;
+
+		const keys = Array.isArray(optionKeys) ? optionKeys : [optionKeys];
+		for (const optionKey of keys) {
+			const option = category.options[optionKey];
+			if (option && option.hashtags && option.hashtags.length > 0) {
+				// Pick 1 random hashtag from this option
+				const tag =
+					option.hashtags[Math.floor(Math.random() * option.hashtags.length)];
+				if (!hashtags.includes(tag)) {
+					hashtags.push(tag);
+				}
+			}
+		}
+	}
+
+	// Shuffle collected hashtags for variety
+	hashtags.sort(() => Math.random() - 0.5);
+
+	// If fewer than 5, fill with fallback tags
+	if (hashtags.length < 5) {
+		const shuffledFallback = [...FALLBACK_TAGS].sort(() => Math.random() - 0.5);
+		for (const tag of shuffledFallback) {
+			if (hashtags.length >= 5) break;
+			if (!hashtags.includes(tag)) {
+				hashtags.push(tag);
+			}
+		}
+	}
+
+	// Return exactly 5 hashtags
+	return hashtags.slice(0, 5).join(' ');
+}
+
 // Global tracking to avoid duplicates across all generated content
 const usedTitlesGlobal = new Set();
 
@@ -203,164 +435,74 @@ export function getCategoryOptions(categoryKey) {
 }
 
 /**
- * Generate content based on selected categories
- * Uses AND logic across categories: content must match at least one keyword from EACH selected category.
- * Uses OR logic within a category: any keyword match counts.
- * @param {Object} selectedCategories - e.g. { ROLE: ['TEACHER'], OUTFIT: ['BIKINI'], LOCATION: ['BEDROOM'] }
- * @param {number} count - Number of options to generate (default: 6)
+ * Generate content based on selected categories - DYNAMIC GENERATION
+ * Generates titles on-the-fly using templates and selected filter options.
+ * @param {Object} selectedCategories - e.g. { ROLE: ['TEACHER'], OUTFIT: ['NURSE_UNIFORM'], THEME: ['COSPLAY'] }
+ * @param {number} count - Number of options to generate (default: 5)
  * @returns {Array<{title: string, hashtags: string}>}
  */
 export function generateContentFromCategories(selectedCategories, count = 5) {
-	// Collect keyword sets from each selected category
-	const keywordSets = [];
-
-	for (const [categoryKey, optionKeys] of Object.entries(selectedCategories)) {
-		const category = CATEGORIES[categoryKey];
-		if (!category) continue;
-
-		// Handle both string (single) and array (multi) input
-		const keys = Array.isArray(optionKeys) ? optionKeys : [optionKeys];
-
-		// Collect all keywords from selected options in this category (OR within category)
-		const categoryKeywords = [];
-		for (const optionKey of keys) {
-			const option = category.options[optionKey];
-			if (option?.keywords?.length > 0) {
-				categoryKeywords.push(...option.keywords);
-			}
-		}
-
-		if (categoryKeywords.length > 0) {
-			keywordSets.push({
-				categoryKey,
-				keywords: categoryKeywords,
-			});
-		}
-	}
-
-	// If no valid selections, fall back to random
-	if (keywordSets.length === 0) {
+	// If no valid selections, fall back to random from static titles
+	if (!selectedCategories || Object.keys(selectedCategories).length === 0) {
 		return generateContentOptions(count);
 	}
 
-	/**
-	 * Check if a string matches at least one keyword from the set
-	 * Prioritize longer keywords (more specific)
-	 */
-	const matchesCategory = (str, keywords) => {
-		const lowerStr = str.toLowerCase();
-		return keywords.some((kw) => lowerStr.includes(kw.toLowerCase()));
-	};
-
-	/**
-	 * Count how many categories are matched
-	 */
-	const countCategoryMatches = (str) => {
-		return keywordSets.filter((set) => matchesCategory(str, set.keywords))
-			.length;
-	};
-
-	/**
-	 * Improved scoring:
-	 * - 10 points per category matched (big weight for category match)
-	 * - 1 point per individual keyword match (bonus for specificity)
-	 * - Extra bonus for longer keyword matches (more specific)
-	 */
-	const scoreByCategories = (str) => {
-		const lowerStr = str.toLowerCase();
-		let score = 0;
-
-		for (const set of keywordSets) {
-			if (matchesCategory(str, set.keywords)) {
-				score += 10; // Big bonus for matching a category
-				// Count individual keyword matches within category
-				for (const kw of set.keywords) {
-					if (lowerStr.includes(kw.toLowerCase())) {
-						// Bonus proportional to keyword length (longer = more specific)
-						score += 1 + kw.length * 0.1;
-					}
-				}
-			}
-		}
-		return score;
-	};
-
-	// Calculate minimum category match threshold (at least 50% of selected categories)
-	const minCategoryMatch = Math.max(1, Math.ceil(keywordSets.length * 0.5));
-
-	// Step 1: Filter to only items matching at least minCategoryMatch categories
-	let matchingItems = TITLES.filter(
-		(item) => countCategoryMatches(item) >= minCategoryMatch
-	);
-
-	// Step 2: If too few results with strict matching, lower threshold
-	if (matchingItems.length < count * 3 && minCategoryMatch > 1) {
-		const relaxedMatches = TITLES.filter(
-			(item) => countCategoryMatches(item) >= 1
-		);
-		for (const item of relaxedMatches) {
-			if (!matchingItems.includes(item)) {
-				matchingItems.push(item);
-			}
-		}
-	}
-
-	// Step 3: Score all matching items
-	const scoredItems = matchingItems.map((item) => ({
-		text: item,
-		score: scoreByCategories(item),
-		categoryCount: countCategoryMatches(item),
-	}));
-
-	// Step 4: Sort by category count first, then by score, then shuffle same scores
-	scoredItems.sort((a, b) => {
-		// First priority: number of categories matched
-		if (b.categoryCount !== a.categoryCount) {
-			return b.categoryCount - a.categoryCount;
-		}
-		// Second priority: detailed score
-		if (Math.abs(b.score - a.score) > 0.5) {
-			return b.score - a.score;
-		}
-		// Same score range: random shuffle for variety
-		return Math.random() - 0.5;
-	});
-
-	// Step 5: Pick top results, avoiding duplicates and recently used
 	const options = [];
 	const usedTitles = new Set();
+	const maxAttempts = count * 15; // More attempts for variety
+	let attempts = 0;
 
-	for (const titleObj of scoredItems) {
-		if (options.length >= count) break;
-		if (usedTitles.has(titleObj.text)) continue;
-		if (usedTitlesGlobal.has(titleObj.text)) continue; // Avoid globally used titles
+	// Get templates sorted by coverage of selected categories
+	const selectedKeys = Object.keys(selectedCategories);
+	const sortedTemplates = [...TEMPLATES].sort((a, b) => {
+		const aCoverage = getTemplateCoverage(a).filter((k) =>
+			selectedKeys.includes(k)
+		).length;
+		const bCoverage = getTemplateCoverage(b).filter((k) =>
+			selectedKeys.includes(k)
+		).length;
+		return bCoverage - aCoverage; // Higher coverage first
+	});
 
-		usedTitles.add(titleObj.text);
-		usedTitlesGlobal.add(titleObj.text); // Mark as used globally
-		options.push({
-			title: titleObj.text,
-			hashtags: generateMatchingHashtags(titleObj.text),
-		});
-	}
+	while (options.length < count && attempts < maxAttempts) {
+		attempts++;
 
-	// If still not enough (all top matches were used), pick from remaining scored items
-	if (options.length < count) {
-		for (const titleObj of scoredItems) {
-			if (options.length >= count) break;
-			if (usedTitles.has(titleObj.text)) continue;
+		// Pick template - prioritize high coverage ones
+		const templateIndex = Math.floor(
+			Math.random() * Math.min(5, sortedTemplates.length)
+		);
+		const template = sortedTemplates[templateIndex] || sortedTemplates[0];
 
-			usedTitles.add(titleObj.text);
-			options.push({
-				title: titleObj.text,
-				hashtags: generateMatchingHashtags(titleObj.text),
-			});
+		// Generate title using selected categories
+		const title = generateTitleFromTemplate(template, selectedCategories);
+
+		// Skip if too short or duplicate
+		if (title.length < 20 || usedTitles.has(title)) {
+			continue;
 		}
+
+		usedTitles.add(title);
+
+		// Generate hashtags directly from selections
+		const hashtags = generateHashtagsFromSelections(selectedCategories);
+
+		options.push({ title, hashtags });
 	}
 
-	// If still not enough, fill with random
+	// If still not enough, fill with more attempts using different templates
 	if (options.length < count) {
-		const remaining = generateContentOptions(count - options.length);
-		options.push(...remaining);
+		for (let i = 0; i < TEMPLATES.length && options.length < count; i++) {
+			const template = TEMPLATES[i];
+			const title = generateTitleFromTemplate(template, selectedCategories);
+
+			if (title.length >= 20 && !usedTitles.has(title)) {
+				usedTitles.add(title);
+				options.push({
+					title,
+					hashtags: generateHashtagsFromSelections(selectedCategories),
+				});
+			}
+		}
 	}
 
 	return options;
