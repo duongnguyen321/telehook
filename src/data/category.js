@@ -221,6 +221,16 @@ export const CATEGORIES = {
 				keywords: ['cô hàng xóm', 'em gái nhà bên', 'chị hàng xóm'],
 				hashtags: ['#hangxom', '#neighbor', '#girl'],
 			},
+			MASSAGE: {
+				label: 'Gái massage',
+				keywords: [
+					'em gái massage',
+					'cô nhân viên spa',
+					'kỹ thuật viên massage',
+					'gái xông hơi',
+				],
+				hashtags: ['#massage', '#spa', '#relax'],
+			},
 		},
 	},
 
