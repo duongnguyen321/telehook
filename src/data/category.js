@@ -495,6 +495,33 @@ export const CATEGORIES = {
 				],
 				hashtags: ['#mirror', '#selfie', '#ootd'],
 			},
+			KARAOKE: {
+				label: 'Karaoke',
+				keywords: [
+					'trong phòng karaoke',
+					'tại quán karaoke',
+					'dưới ánh đèn mờ ảo quán hát',
+				],
+				hashtags: ['#karaoke', '#ktv', '#hat'],
+			},
+			BAR: {
+				label: 'Quán Bar',
+				keywords: [
+					'tại quán bar sôi động',
+					'bên quầy rượu',
+					'trong pub nhỏ ấm cúng',
+				],
+				hashtags: ['#bar', '#pub', '#nightlife'],
+			},
+			CLUB: {
+				label: 'Club/Sàn',
+				keywords: [
+					'trên sàn nhảy',
+					'trong club náo nhiệt',
+					'dưới ánh đèn laser',
+				],
+				hashtags: ['#club', '#dance', '#music'],
+			},
 		},
 	},
 
