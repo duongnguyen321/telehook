@@ -84,14 +84,51 @@ function generateSentence(template) {
 	const placeholders = getTemplatePlaceholders(template);
 
 	for (const placeholder of placeholders) {
+		const category = CATEGORIES[placeholder];
 		const optionKeys = getOptionKeys(placeholder);
-		if (optionKeys.length > 0) {
-			const optionKey = randomItem(optionKeys);
-			const phrase = getRandomPhrase(placeholder, optionKey);
-			sentence = sentence.replace(
-				new RegExp(`\\{${placeholder}\\}`, 'g'),
-				phrase
-			);
+
+		if (optionKeys.length > 0 && category) {
+			let phrase = '';
+
+			// Check singleChoice exactly like src/services/ai.js
+			if (category.singleChoice) {
+				// Pick ONE random option
+				const optionKey = randomItem(optionKeys);
+				phrase = getRandomPhrase(placeholder, optionKey);
+			} else {
+				// Handle multiple selections (simulate 1-3 options)
+				// 70% chance to pick 1, 20% chance for 2, 10% chance for 3
+				const rand = Math.random();
+				let count = 1;
+				if (rand > 0.7) count = 2;
+				if (rand > 0.9) count = 3;
+
+				// Get 'count' unique random keys
+				const selectedKeys = [];
+				const availableKeys = [...optionKeys];
+
+				for (let i = 0; i < count && availableKeys.length > 0; i++) {
+					const idx = Math.floor(Math.random() * availableKeys.length);
+					selectedKeys.push(availableKeys[idx]);
+					availableKeys.splice(idx, 1);
+				}
+
+				// Map to keywords and join
+				const keywords = selectedKeys
+					.map((key) => getRandomPhrase(placeholder, key))
+					.filter((k) => k && k.length > 0);
+
+				if (keywords.length > 0) {
+					phrase = keywords.join(' và ');
+				}
+			}
+
+			if (phrase) {
+				sentence = sentence.replace(
+					new RegExp(`\\{${placeholder}\\}`, 'g'),
+					phrase
+				);
+			}
 		}
 	}
 

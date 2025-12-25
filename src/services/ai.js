@@ -91,19 +91,29 @@ function generateTitleFromTemplate(template, selectedCategories = {}) {
 
 		// Check if user selected this category
 		const selectedOptions = selectedCategories[categoryKey];
+		const categoryObject = CATEGORIES[categoryKey];
 
 		if (selectedOptions && selectedOptions.length > 0) {
-			// Handle multiple selections: Pick random keyword for EACH selected option
-			// Limit to 3 to avoid overly long sentences
-			const selectedKeysToUse = selectedOptions.slice(0, 3);
-			const keywords = selectedKeysToUse
-				.map((key) => getRandomKeyword(categoryKey, key))
-				.filter((k) => k.length > 0);
-
-			if (keywords.length > 0) {
-				// Join multiple keywords with ' và ' for natural flow
-				replacementText = keywords.join(' và ');
+			// Check if this category enforces single choice (e.g. ROLE, PEOPLE)
+			if (categoryObject && categoryObject.singleChoice) {
+				// Pick ONE random option from the selected list
+				const optionKey =
+					selectedOptions[Math.floor(Math.random() * selectedOptions.length)];
+				replacementText = getRandomKeyword(categoryKey, optionKey);
 				usedCategories.add(categoryKey);
+			} else {
+				// Handle multiple selections: Pick random keyword for EACH selected option
+				// Limit to 3 to avoid overly long sentences
+				const selectedKeysToUse = selectedOptions.slice(0, 3);
+				const keywords = selectedKeysToUse
+					.map((key) => getRandomKeyword(categoryKey, key))
+					.filter((k) => k.length > 0);
+
+				if (keywords.length > 0) {
+					// Join multiple keywords with ' và ' for natural flow
+					replacementText = keywords.join(' và ');
+					usedCategories.add(categoryKey);
+				}
 			}
 		} else {
 			// Randomly pick ONE option if not selected by user

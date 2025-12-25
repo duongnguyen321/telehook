@@ -19,6 +19,7 @@ export const CATEGORIES = {
 	CONTEXT: {
 		name: 'Bối cảnh',
 		emoji: '🎬',
+		singleChoice: true,
 		options: {
 			BREAK_TIME: {
 				label: 'Tranh thủ',
@@ -98,6 +99,7 @@ export const CATEGORIES = {
 	EMOTION: {
 		name: 'Cảm xúc',
 		emoji: '🥰',
+		singleChoice: true,
 		options: {
 			SHY: {
 				label: 'Ngại ngùng',
@@ -193,6 +195,7 @@ export const CATEGORIES = {
 	ROLE: {
 		name: 'Vai trò',
 		emoji: '🎭',
+		singleChoice: true,
 		options: {
 			TEACHER: {
 				label: 'Cô giáo',
@@ -252,6 +255,11 @@ export const CATEGORIES = {
 				keywords: ['tiểu thư đài các', 'con gái sếp', 'cô chủ nhỏ'],
 				hashtags: ['#richkid', '#tieuthuu', '#girl'],
 			},
+			GIRLFRIEND: {
+				label: 'Người yêu',
+				keywords: ['người yêu chiều chuộng', 'em yêu', 'bạn gái nhỏ bé'],
+				hashtags: ['#girlfriend', '#nguoiyeu', '#love'],
+			},
 			EX_GIRLFRIEND: {
 				label: 'Người yêu cũ',
 				keywords: ['người yêu cũ', 'tình cũ', 'bạn gái cũ'],
@@ -279,6 +287,7 @@ export const CATEGORIES = {
 	OUTFIT: {
 		name: 'Trang phục',
 		emoji: '👗',
+		singleChoice: true,
 		options: {
 			BIKINI: {
 				label: 'Bikini',
@@ -798,6 +807,7 @@ export const CATEGORIES = {
 	POSE: {
 		name: 'Tư thế',
 		emoji: '🧘',
+		singleChoice: true,
 		options: {
 			STANDING: {
 				label: 'Đứng',
@@ -846,6 +856,7 @@ export const CATEGORIES = {
 	PEOPLE: {
 		name: 'Số người',
 		emoji: '👥',
+		singleChoice: true,
 		options: {
 			SOLO: {
 				label: '1 mình',
