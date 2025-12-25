@@ -128,8 +128,11 @@ export const CATEGORIES = {
 					'vâng lời',
 					'ngọt ngào',
 					'dễ thương',
+					'ngọt như kẹo',
+					'đáng yêu hết nấc',
+					'như thiên thần',
 				],
-				hashtags: ['#sweet', '#cute', '#ngotngao'],
+				hashtags: ['#sweet', '#cute', '#ngotngao', '#kawaii'],
 			},
 			HORNY: {
 				label: 'Kích thích',
@@ -148,10 +151,53 @@ export const CATEGORIES = {
 				keywords: ['tự tin', 'kiêu hãnh', 'biết mình đẹp', 'chảnh chọe'],
 				hashtags: ['#confident', '#queen', '#boss'],
 			},
+			HOT: {
+				label: 'Nóng bỏng',
+				keywords: [
+					'cực kỳ nóng bỏng',
+					'thiêu đốt ánh nhìn',
+					'bốc lửa',
+					'rạo rực',
+				],
+				hashtags: ['#hot', '#nongbong', '#fire'],
+			},
+			DARK: {
+				label: 'Huyền bí',
+				keywords: ['đầy bí ẩn', 'ma mị', 'quyến rũ chết người', 'nguy hiểm'],
+				hashtags: ['#dark', '#mysterious', '#gothic'],
+			},
+			REALISTIC: {
+				label: 'Thực tế',
+				keywords: ['chân thực', 'không che đậy', 'mộc mạc', 'nguyên bản'],
+				hashtags: ['#real', '#natural', '#nofilter'],
+			},
+			HARDCORE: {
+				label: 'Mạnh bạo',
+				keywords: ['dữ dội', 'mạnh bạo', 'điên cuồng', 'thú tính'],
+				hashtags: ['#wild', '#intense', '#crazy'],
+			},
+			SUBMISSIVE: {
+				label: 'Phục tùng',
+				keywords: [
+					'ngoan ngoãn',
+					'chịu đựng',
+					'phục tùng tuyệt đối',
+					'làm nô lệ',
+				],
+				hashtags: ['#submissive', '#obedient', '#gentle'],
+			},
+			COSPLAY: {
+				label: 'Cosplay',
+				keywords: [
+					'phong cách cosplay',
+					'hóa thân nhân vật',
+					'cosplay gợi cảm',
+					'đậm chất anime',
+				],
+				hashtags: ['#cosplay', '#anime', '#costume'],
+			},
 		},
 	},
-
-	// 3. VAI TRÒ
 	ROLE: {
 		name: 'Vai trò',
 		emoji: '🎭',
@@ -704,69 +750,6 @@ export const CATEGORIES = {
 					'thân hình đồng hồ cát',
 				],
 				hashtags: ['#body', '#figure', '#curves'],
-			},
-		},
-	},
-
-	// 8. CHỦ ĐỀ / PHONG CÁCH
-	THEME: {
-		name: 'Chủ đề',
-		emoji: '✨',
-		options: {
-			HOT: {
-				label: 'Nóng bỏng',
-				keywords: [
-					'cực kỳ nóng bỏng',
-					'thiêu đốt ánh nhìn',
-					'bốc lửa',
-					'rạo rực',
-				],
-				hashtags: ['#hot', '#nongbong', '#fire'],
-			},
-			SWEET: {
-				label: 'Ngọt ngào',
-				keywords: [
-					'ngọt như kẹo',
-					'đáng yêu hết nấc',
-					'như thiên thần',
-					'baby',
-				],
-				hashtags: ['#cute', '#sweet', '#kawaii'],
-			},
-			DARK: {
-				label: 'Huyền bí',
-				keywords: ['đầy bí ẩn', 'ma mị', 'quyến rũ chết người', 'nguy hiểm'],
-				hashtags: ['#dark', '#mysterious', '#gothic'],
-			},
-			REALISTIC: {
-				label: 'Thực tế',
-				keywords: ['chân thực', 'không che đậy', 'mộc mạc', 'nguyên bản'],
-				hashtags: ['#real', '#natural', '#nofilter'],
-			},
-			HARDCORE: {
-				label: 'Mạnh bạo',
-				keywords: ['dữ dội', 'mạnh bạo', 'điên cuồng', 'thú tính'],
-				hashtags: ['#wild', '#intense', '#crazy'],
-			},
-			SUBMISSIVE: {
-				label: 'Phục tùng',
-				keywords: [
-					'ngoan ngoãn',
-					'chịu đựng',
-					'phục tùng tuyệt đối',
-					'làm nô lệ',
-				],
-				hashtags: ['#submissive', '#obedient', '#gentle'],
-			},
-			COSPLAY: {
-				label: 'Cosplay',
-				keywords: [
-					'phong cách cosplay',
-					'hóa thân nhân vật',
-					'cosplay gợi cảm',
-					'đậm chất anime',
-				],
-				hashtags: ['#cosplay', '#anime', '#costume'],
 			},
 		},
 	},
