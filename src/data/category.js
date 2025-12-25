@@ -172,16 +172,6 @@ export const CATEGORIES = {
 				],
 				hashtags: ['#hot', '#nongbong', '#fire', '#horny', '#turned'],
 			},
-			DARK: {
-				label: 'Huyền bí',
-				keywords: ['đầy bí ẩn', 'ma mị', 'quyến rũ chết người', 'nguy hiểm'],
-				hashtags: ['#dark', '#mysterious', '#gothic'],
-			},
-			REALISTIC: {
-				label: 'Thực tế',
-				keywords: ['chân thực', 'không che đậy', 'mộc mạc', 'nguyên bản'],
-				hashtags: ['#real', '#natural', '#nofilter'],
-			},
 			HARDCORE: {
 				label: 'Mạnh bạo',
 				keywords: ['dữ dội', 'mạnh bạo', 'điên cuồng', 'thú tính'],
@@ -751,6 +741,17 @@ export const CATEGORIES = {
 					'thân hình đồng hồ cát',
 				],
 				hashtags: ['#body', '#figure', '#curves'],
+			},
+			FACE: {
+				label: 'Khuôn mặt',
+				keywords: [
+					'gương mặt xinh đẹp',
+					'thần thái cuốn hút',
+					'nụ cười tỏa nắng',
+					'ánh mắt hút hồn',
+					'góc nghiêng thần thánh',
+				],
+				hashtags: ['#face', '#beauty', '#visual', '#xinh'],
 			},
 		},
 	},

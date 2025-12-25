@@ -10,56 +10,10 @@ import { TITLES } from '../data/titles.js';
 import { HASHTAG_SETS, BASE_HASHTAGS } from '../data/hashtags.js';
 import { CATEGORIES } from '../data/category.js';
 
+import { TEMPLATES } from '../data/templates.js';
+
 // Re-export for compatibility
-export { TITLES, HASHTAG_SETS, CATEGORIES };
-
-// ============================================================
-// SENTENCE TEMPLATES - For Dynamic Generation
-// Templates should cover various category combinations
-// ============================================================
-
-const TEMPLATES = [
-	// Full coverage templates (9-10 categories) with PEOPLE
-	'{CONTEXT}, {PEOPLE} {ROLE} {EMOTION} mặc {OUTFIT} {ACTIVITY} {LOCATION}, khoe {FOCUS} với {HAIR}.',
-	'{PEOPLE} {ROLE} với {HAIR} {EMOTION} diện {OUTFIT} {POSE} {LOCATION}, {ACTIVITY} khoe {FOCUS} {CONTEXT}.',
-	'{CONTEXT}, {PEOPLE} {ROLE} {EMOTION} {POSE} {LOCATION}, khoe {FOCUS} với {OUTFIT}.',
-
-	// 7-9 categories with PEOPLE
-	'{CONTEXT}, {PEOPLE} {ROLE} {EMOTION} mặc {OUTFIT} {ACTIVITY} {LOCATION}, {POSE} khoe {FOCUS}.',
-	'{PEOPLE} {ROLE} với {HAIR} {EMOTION} {POSE} {LOCATION}, khoe {FOCUS}.',
-	'{CONTEXT}, {PEOPLE} {ROLE} {HAIR} diện {OUTFIT}, {EMOTION} {ACTIVITY} khoe {FOCUS}.',
-
-	// 6-8 categories
-	'{CONTEXT}, {ROLE} {EMOTION} mặc {OUTFIT} {ACTIVITY} {LOCATION}, {POSE} khoe {FOCUS}.',
-	'{ROLE} với {HAIR} {EMOTION} {POSE} {LOCATION}, khoe {FOCUS}.',
-	'{CONTEXT}, {ROLE} {HAIR} diện {OUTFIT}, {EMOTION} {ACTIVITY} khoe {FOCUS}.',
-
-	// 5-7 categories
-	'{CONTEXT}, {ROLE} {EMOTION} mặc {OUTFIT} {ACTIVITY} {LOCATION}.',
-	'{CONTEXT}, {ROLE} {EMOTION} diện {OUTFIT} rồi {ACTIVITY}.',
-	'{CONTEXT}, {ROLE} cảm thấy {EMOTION} khi {ACTIVITY} {LOCATION}.',
-	'{CONTEXT}, {ROLE} với {HAIR} diện {OUTFIT}, {EMOTION} khoe {FOCUS}.',
-	'Góc nhìn {EMOTION}: {ROLE} với {FOCUS} trong bộ {OUTFIT} {LOCATION}.',
-	'{PEOPLE} {ROLE} {EMOTION} {ACTIVITY} {LOCATION}, khoe {FOCUS}.',
-
-	// 4-6 categories
-	'{CONTEXT}, {ROLE} {HAIR} tự tin khoe {FOCUS}.',
-	'{CONTEXT}, {ROLE} {EMOTION} {POSE} {LOCATION}.',
-	'{ROLE} với {HAIR} đang {POSE} {LOCATION}, {EMOTION} khoe {FOCUS}.',
-	'{CONTEXT}, {ROLE} {EMOTION} gửi {FOCUS} từ {POSE} {LOCATION}.',
-	'{CONTEXT}, {ROLE} {ACTIVITY} {LOCATION}, {EMOTION} khoe {FOCUS}.',
-	'{PEOPLE} {ROLE} {EMOTION} {ACTIVITY} khoe {FOCUS} {CONTEXT}.',
-
-	// 3-5 categories
-	'{ROLE} {EMOTION} {ACTIVITY} để lộ {FOCUS} {CONTEXT}.',
-	'{ROLE} mặc {OUTFIT} {ACTIVITY}, cảm giác thật {EMOTION} {LOCATION}.',
-	'{CONTEXT}, {ROLE} {HAIR} {EMOTION} {ACTIVITY}.',
-	'{ROLE} {EMOTION} với {FOCUS} {LOCATION} {CONTEXT}.',
-	'{OUTFIT} của {ROLE} {EMOTION} quá {CONTEXT}.',
-	'{CONTEXT}, thật {EMOTION} khi {ROLE} {HAIR} {POSE} {LOCATION}.',
-	'{CONTEXT}, {ROLE} với {HAIR} chỉ muốn {ACTIVITY}.',
-	'{ROLE} {EMOTION} check-in {LOCATION} với {OUTFIT} và {HAIR}.',
-];
+export { TITLES, HASHTAG_SETS, CATEGORIES, TEMPLATES };
 
 // ============================================================
 // DYNAMIC TITLE GENERATION HELPERS
@@ -119,6 +73,7 @@ function findBestTemplate(selectedCategories) {
 /**
  * Generate a title from template using selected categories
  * Ensures all selected filters are represented
+ * Handles MULTIPLE selections within a category by combining keywords
  * @param {string} template - Template with {CATEGORY} placeholders
  * @param {Object} selectedCategories - { CATEGORY_KEY: [optionKey1, optionKey2], ... }
  * @returns {string} Generated title
@@ -132,26 +87,34 @@ function generateTitleFromTemplate(template, selectedCategories = {}) {
 
 	for (const placeholder of placeholders) {
 		const categoryKey = placeholder.replace(/[{}]/g, '');
-		let keyword = '';
+		let replacementText = '';
 
 		// Check if user selected this category
 		const selectedOptions = selectedCategories[categoryKey];
+
 		if (selectedOptions && selectedOptions.length > 0) {
-			// Pick random from selected options
-			const optionKey =
-				selectedOptions[Math.floor(Math.random() * selectedOptions.length)];
-			keyword = getRandomKeyword(categoryKey, optionKey);
-			usedCategories.add(categoryKey);
+			// Handle multiple selections: Pick random keyword for EACH selected option
+			// Limit to 3 to avoid overly long sentences
+			const selectedKeysToUse = selectedOptions.slice(0, 3);
+			const keywords = selectedKeysToUse
+				.map((key) => getRandomKeyword(categoryKey, key))
+				.filter((k) => k.length > 0);
+
+			if (keywords.length > 0) {
+				// Join multiple keywords with ' và ' for natural flow
+				replacementText = keywords.join(' và ');
+				usedCategories.add(categoryKey);
+			}
 		} else {
-			// Pick random option from this category
+			// Randomly pick ONE option if not selected by user
 			const randomOptKey = getRandomOptionKey(categoryKey);
 			if (randomOptKey) {
-				keyword = getRandomKeyword(categoryKey, randomOptKey);
+				replacementText = getRandomKeyword(categoryKey, randomOptKey);
 			}
 		}
 
-		// Replace placeholder with keyword
-		result = result.replace(placeholder, keyword);
+		// Replace placeholder with keyword(s)
+		result = result.replace(placeholder, replacementText);
 	}
 
 	// Check if any selected categories were NOT used - append them
@@ -164,17 +127,21 @@ function generateTitleFromTemplate(template, selectedCategories = {}) {
 		for (const categoryKey of unusedCategories) {
 			const options = selectedCategories[categoryKey];
 			if (options && options.length > 0) {
-				const optionKey = options[Math.floor(Math.random() * options.length)];
-				const keyword = getRandomKeyword(categoryKey, optionKey);
-				if (keyword) {
-					extras.push(keyword);
+				// For unused categories, we also try to include all selected options
+				const selectedKeysToUse = options.slice(0, 2); // Limit to 2 for extras
+				const keywords = selectedKeysToUse
+					.map((key) => getRandomKeyword(categoryKey, key))
+					.filter((k) => k.length > 0);
+
+				if (keywords.length > 0) {
+					extras.push(keywords.join(' và '));
 				}
 			}
 		}
 		if (extras.length > 0) {
 			// Remove trailing period, add extras, then period
 			result = result.replace(/[.!?]+$/, '');
-			result = result + ', ' + extras.join(' ') + '.';
+			result = result + ', ' + extras.join(', ') + '.';
 		}
 	}
 
