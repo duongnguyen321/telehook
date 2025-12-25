@@ -26,32 +26,43 @@ const isPreview = process.argv.includes('--preview');
 // ============================================================
 
 const TEMPLATES = [
-	// 1. Storytelling (Bối cảnh + Nhân vật + Hành động + Địa điểm)
+	// Full coverage templates (9-11 categories) with PEOPLE
+	'{CONTEXT}, {PEOPLE} {ROLE} {EMOTION} mặc {OUTFIT} {ACTIVITY} {LOCATION}, khoe {FOCUS} {THEME} với {HAIR}.',
+	'{PEOPLE} {ROLE} với {HAIR} {EMOTION} diện {OUTFIT} {POSE} {LOCATION}, {ACTIVITY} khoe {FOCUS} {THEME} {CONTEXT}.',
+	'{CONTEXT}, {PEOPLE} {ROLE} {EMOTION} {POSE} {LOCATION}, khoe {FOCUS} {THEME} với {OUTFIT}.',
+
+	// 8-9 categories with PEOPLE
+	'{CONTEXT}, {PEOPLE} {ROLE} {EMOTION} mặc {OUTFIT} {ACTIVITY} {LOCATION}, {POSE} khoe {FOCUS}.',
+	'{PEOPLE} {ROLE} với {HAIR} {EMOTION} {POSE} {LOCATION}, khoe {FOCUS} {THEME}.',
+	'{CONTEXT}, {PEOPLE} {ROLE} {HAIR} diện {OUTFIT} {THEME}, {EMOTION} {ACTIVITY} khoe {FOCUS}.',
+
+	// 7-8 categories
+	'{CONTEXT}, {ROLE} {EMOTION} mặc {OUTFIT} {ACTIVITY} {LOCATION}, {POSE} khoe {FOCUS}.',
+	'{ROLE} với {HAIR} {EMOTION} {POSE} {LOCATION}, khoe {FOCUS} {THEME}.',
+	'{CONTEXT}, {ROLE} {HAIR} diện {OUTFIT} {THEME}, {EMOTION} {ACTIVITY} khoe {FOCUS}.',
+
+	// 6-7 categories
 	'{CONTEXT}, {ROLE} {EMOTION} mặc {OUTFIT} {ACTIVITY} {LOCATION}.',
 	'{CONTEXT}, {ROLE} {EMOTION} diện {OUTFIT} rồi {ACTIVITY}.',
 	'{CONTEXT}, {ROLE} cảm thấy {EMOTION} khi {ACTIVITY} {LOCATION}.',
-
-	// 2. Visual Focus (Trang phục + Điểm nhấn + Cảm xúc + Tóc)
 	'{CONTEXT}, {ROLE} với {HAIR} diện {OUTFIT} {THEME}, {EMOTION} khoe {FOCUS}.',
 	'Góc nhìn {THEME}: {ROLE} {EMOTION} với {FOCUS} trong bộ {OUTFIT} {LOCATION}.',
-	'{CONTEXT}, {ROLE} {HAIR} tự tin khoe {FOCUS} {THEME}.',
+	'{PEOPLE} {ROLE} {EMOTION} {ACTIVITY} {LOCATION}, khoe {FOCUS} {THEME}.',
 
-	// 3. Pose & Position (Tư thế + Địa điểm + Cảm xúc)
+	// 5-6 categories
+	'{CONTEXT}, {ROLE} {HAIR} tự tin khoe {FOCUS} {THEME}.',
 	'{CONTEXT}, {ROLE} {EMOTION} {POSE} {LOCATION}.',
 	'{ROLE} với {HAIR} đang {POSE} {LOCATION}, {EMOTION} khoe {FOCUS}.',
 	'{CONTEXT}, {ROLE} {EMOTION} gửi {FOCUS} {THEME} từ {POSE} {LOCATION}.',
-
-	// 4. Action Oriented (Hành động + Tư thế + Cảm xúc)
 	'{CONTEXT}, {ROLE} {ACTIVITY} {LOCATION}, {EMOTION} khoe {FOCUS} {THEME}.',
+	'{PEOPLE} {ROLE} {EMOTION} {ACTIVITY} khoe {FOCUS} {CONTEXT}.',
+
+	// 4-5 categories
 	'{ROLE} {EMOTION} {ACTIVITY} để lộ {FOCUS} {CONTEXT}.',
 	'{ROLE} mặc {OUTFIT} {ACTIVITY}, cảm giác thật {EMOTION} {LOCATION}.',
-
-	// 5. Short & Punchy (Ngắn gọn, ấn tượng)
 	'{CONTEXT}, {ROLE} {HAIR} {EMOTION} {ACTIVITY}.',
 	'{ROLE} {THEME} với {FOCUS} {LOCATION} {CONTEXT}.',
 	'{OUTFIT} {THEME} của {ROLE} {EMOTION} quá {CONTEXT}.',
-
-	// 6. Hair & Pose Focus
 	'{CONTEXT}, thật {EMOTION} khi {ROLE} {HAIR} {POSE} {LOCATION}.',
 	'{CONTEXT}, {ROLE} với {HAIR} chỉ muốn {ACTIVITY}.',
 	'{ROLE} {EMOTION} check-in {LOCATION} với {OUTFIT} và {HAIR} {THEME}.',

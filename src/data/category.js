@@ -435,6 +435,16 @@ export const CATEGORIES = {
 				keywords: ['đang thay đồ', 'đang kéo khóa áo', 'vừa cởi bỏ xiêm y'],
 				hashtags: ['#changing', '#behind', '#dressing'],
 			},
+			SINGING: {
+				label: 'Hát',
+				keywords: [
+					'đang hát karaoke',
+					'cầm mic hát nhép',
+					'nghêu ngao ca hát',
+					'hát theo nhạc',
+				],
+				hashtags: ['#singing', '#karaoke', '#hat'],
+			},
 		},
 	},
 
@@ -809,6 +819,43 @@ export const CATEGORIES = {
 				label: 'Giãn cơ',
 				keywords: ['giãn cơ', 'tư thế split', 'tư thế cobra'],
 				hashtags: ['#stretching', '#yoga', '#flexible'],
+			},
+		},
+	},
+
+	// 11. SỐ NGƯỜI
+	PEOPLE: {
+		name: 'Số người',
+		emoji: '👥',
+		options: {
+			SOLO: {
+				label: '1 mình',
+				keywords: ['một mình', 'tự sướng', 'solo', 'chỉ có một mình'],
+				hashtags: ['#solo', '#alone', '#single'],
+			},
+			COUPLE: {
+				label: 'Cặp đôi',
+				keywords: ['cùng anh', 'cặp đôi', 'hai người', 'với người yêu'],
+				hashtags: ['#couple', '#love', '#capdoi'],
+			},
+			ONE_GIRL_MANY_BOYS: {
+				label: '1 nữ nhiều nam',
+				keywords: [
+					'một mình em với các anh',
+					'em và nhóm bạn nam',
+					'cô gái giữa đám con trai',
+				],
+				hashtags: ['#gangbang', '#group', '#wild'],
+			},
+			ONE_BOY_MANY_GIRLS: {
+				label: '1 nam nhiều nữ',
+				keywords: ['anh và các em', '1 nam nhiều nữ', 'hậu cung'],
+				hashtags: ['#harem', '#lucky', '#group'],
+			},
+			GROUP: {
+				label: 'Tập thể',
+				keywords: ['cả nhóm', 'tập thể', 'party đông người', 'đám đông'],
+				hashtags: ['#group', '#party', '#tapthe'],
 			},
 		},
 	},

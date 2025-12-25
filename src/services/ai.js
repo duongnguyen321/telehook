@@ -19,9 +19,15 @@ export { TITLES, HASHTAG_SETS, CATEGORIES };
 // ============================================================
 
 const TEMPLATES = [
-	// Full coverage templates (8-10 categories)
-	'{CONTEXT}, {ROLE} {EMOTION} mặc {OUTFIT} {ACTIVITY} {LOCATION}, khoe {FOCUS} {THEME} với {HAIR}.',
-	'{ROLE} với {HAIR} {EMOTION} diện {OUTFIT} {POSE} {LOCATION}, {ACTIVITY} khoe {FOCUS} {THEME} {CONTEXT}.',
+	// Full coverage templates (9-11 categories) with PEOPLE
+	'{CONTEXT}, {PEOPLE} {ROLE} {EMOTION} mặc {OUTFIT} {ACTIVITY} {LOCATION}, khoe {FOCUS} {THEME} với {HAIR}.',
+	'{PEOPLE} {ROLE} với {HAIR} {EMOTION} diện {OUTFIT} {POSE} {LOCATION}, {ACTIVITY} khoe {FOCUS} {THEME} {CONTEXT}.',
+	'{CONTEXT}, {PEOPLE} {ROLE} {EMOTION} {POSE} {LOCATION}, khoe {FOCUS} {THEME} với {OUTFIT}.',
+
+	// 8-9 categories with PEOPLE
+	'{CONTEXT}, {PEOPLE} {ROLE} {EMOTION} mặc {OUTFIT} {ACTIVITY} {LOCATION}, {POSE} khoe {FOCUS}.',
+	'{PEOPLE} {ROLE} với {HAIR} {EMOTION} {POSE} {LOCATION}, khoe {FOCUS} {THEME}.',
+	'{CONTEXT}, {PEOPLE} {ROLE} {HAIR} diện {OUTFIT} {THEME}, {EMOTION} {ACTIVITY} khoe {FOCUS}.',
 
 	// 7-8 categories
 	'{CONTEXT}, {ROLE} {EMOTION} mặc {OUTFIT} {ACTIVITY} {LOCATION}, {POSE} khoe {FOCUS}.',
@@ -34,6 +40,7 @@ const TEMPLATES = [
 	'{CONTEXT}, {ROLE} cảm thấy {EMOTION} khi {ACTIVITY} {LOCATION}.',
 	'{CONTEXT}, {ROLE} với {HAIR} diện {OUTFIT} {THEME}, {EMOTION} khoe {FOCUS}.',
 	'Góc nhìn {THEME}: {ROLE} {EMOTION} với {FOCUS} trong bộ {OUTFIT} {LOCATION}.',
+	'{PEOPLE} {ROLE} {EMOTION} {ACTIVITY} {LOCATION}, khoe {FOCUS} {THEME}.',
 
 	// 5-6 categories
 	'{CONTEXT}, {ROLE} {HAIR} tự tin khoe {FOCUS} {THEME}.',
@@ -41,6 +48,7 @@ const TEMPLATES = [
 	'{ROLE} với {HAIR} đang {POSE} {LOCATION}, {EMOTION} khoe {FOCUS}.',
 	'{CONTEXT}, {ROLE} {EMOTION} gửi {FOCUS} {THEME} từ {POSE} {LOCATION}.',
 	'{CONTEXT}, {ROLE} {ACTIVITY} {LOCATION}, {EMOTION} khoe {FOCUS} {THEME}.',
+	'{PEOPLE} {ROLE} {EMOTION} {ACTIVITY} khoe {FOCUS} {CONTEXT}.',
 
 	// 4-5 categories
 	'{ROLE} {EMOTION} {ACTIVITY} để lộ {FOCUS} {CONTEXT}.',
