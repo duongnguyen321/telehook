@@ -1107,7 +1107,7 @@ async function handleCommand(ctx, command) {
 	// ========== /info - View activity summary ==========
 	if (command === '/info') {
 		const summary = await getUserActivitySummary(userId, userRole);
-		await ctx.reply(summary + tiktokLink, { parse_mode: 'Markdown' });
+		await ctx.reply(summary + tiktokLink, { parse_mode: 'HTML' });
 		await logAction(userId, 'view_info');
 		return;
 	}

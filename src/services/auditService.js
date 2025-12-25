@@ -88,10 +88,10 @@ export async function getUserActivitySummary(telegramId, userRole) {
 	const counts = await getActionCounts(telegramId);
 	const recentActions = await getRecentActions(telegramId, 5);
 
-	let summary = `📊 **HOẠT ĐỘNG CỦA BẠN**\n\n`;
+	let summary = `📊 <b>HOẠT ĐỘNG CỦA BẠN</b>\n\n`;
 
 	// Stats section
-	summary += `📈 **Thống kê:**\n`;
+	summary += `📈 <b>Thống kê:</b>\n`;
 	summary += `• Xem lịch: ${counts.view_queue || 0} lần\n`;
 	summary += `• Xem video: ${counts.view_videos || 0} lần\n`;
 
@@ -112,7 +112,7 @@ export async function getUserActivitySummary(telegramId, userRole) {
 
 	// Recent actions
 	if (recentActions.length > 0) {
-		summary += `\n🕐 **Hoạt động gần đây:**\n`;
+		summary += `\n🕐 <b>Hoạt động gần đây:</b>\n`;
 		for (const action of recentActions) {
 			const time = formatTimeAgo(action.createdAt);
 			const actionName = getActionDisplayName(action.action);
