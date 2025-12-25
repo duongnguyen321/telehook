@@ -46,4 +46,36 @@ export const TEMPLATES = [
 	'{CONTEXT}, thật {EMOTION} khi {ROLE} {HAIR} {POSE} {LOCATION}.',
 	'{CONTEXT}, {ROLE} với {HAIR} chỉ muốn {ACTIVITY}.',
 	'{ROLE} {EMOTION} check-in {LOCATION} với {OUTFIT} và {HAIR}.',
+
+	// ==================== NEW DIVERSE TEMPLATES (Added based on feedback) ====================
+
+	// Action-First & Direct
+	'{ACTIVITY} {LOCATION}, {PEOPLE} {ROLE} vô tình để lộ {FOCUS}.',
+	'{POSE} {LOCATION}, {PEOPLE} {ROLE} {EMOTION} khoe trọn {FOCUS}.',
+	'Chỉ cần {ACTIVITY}, {PEOPLE} {ROLE} đã khiến bao người {EMOTION}.',
+	'Thử thách {ACTIVITY} {CONTEXT}, {ROLE} {EMOTION} show {FOCUS}.',
+
+	// POV / Emotional / Storytelling
+	'POV: Bắt gặp {PEOPLE} {ROLE} {ACTIVITY} {LOCATION}, {EMOTION} quá.',
+	'Góc nhìn của {ROLE} khi {ACTIVITY} {LOCATION}: Thật {EMOTION}.',
+	'Cảm giác {EMOTION} khó tả khi {ROLE} diện {OUTFIT} {ACTIVITY}.',
+	'Ai làm {PEOPLE} {ROLE} {EMOTION} thế này? Chỉ là {ACTIVITY} thôi mà.',
+	'Một chút {EMOTION} {CONTEXT} cùng {PEOPLE} {ROLE}.',
+
+	// Focus on details
+	'{FOCUS} của {ROLE} hôm nay thật {EMOTION} trong bộ {OUTFIT}.',
+	'Không thể rời mắt khỏi {FOCUS} khi {ROLE} {ACTIVITY} {LOCATION}.',
+	'Vẻ đẹp {EMOTION} của {ROLE} khi {POSE} với {OUTFIT}.',
+
+	// Questions & Engagement
+	'Có ai thích {ROLE} {HAIR} diện {OUTFIT} {ACTIVITY} không?',
+	'{PEOPLE} {ROLE} {EMOTION} thế này đã đủ chuẩn chưa?',
+	'Mọi người chấm mấy điểm cho {FOCUS} của {ROLE} {CONTEXT}?',
+	'Thích {ROLE} {ACTIVITY} hay {POSE} hơn?',
+
+	// Short & Punchy
+	'{ROLE} {ACTIVITY}. {EMOTION} quá.',
+	'{CONTEXT}. {ROLE} {POSE}.',
+	'{OUTFIT} {EMOTION}. {ROLE} {ACTIVITY}.',
+	'{LOCATION}. {ROLE} {EMOTION}.',
 ];

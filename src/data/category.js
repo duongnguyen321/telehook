@@ -453,15 +453,6 @@ export const CATEGORIES = {
 		name: 'Hoạt động',
 		emoji: '🎬',
 		options: {
-			POSING: {
-				label: 'Tạo dáng',
-				keywords: [
-					'đang uốn người tạo dáng',
-					'cố tình tạo dáng',
-					'đứng trước ống kính',
-				],
-				hashtags: ['#pose', '#taodang', '#model'],
-			},
 			DANCING: {
 				label: 'Nhảy',
 				keywords: [
@@ -486,16 +477,7 @@ export const CATEGORIES = {
 				keywords: ['đang tập squat', 'đang tập yoga', 'đang chạy bộ'],
 				hashtags: ['#workout', '#exercise', '#gym'],
 			},
-			SHOWING_OFF: {
-				label: 'Khoe hàng',
-				keywords: [
-					'cố tình khoe',
-					'vạch áo cho xem',
-					'kéo váy xuống',
-					'vén áo lên',
-				],
-				hashtags: ['#khoe', '#show', '#flex'],
-			},
+
 			TOUCHING: {
 				label: 'Đụng chạm',
 				keywords: ['tự vuốt ve cơ thể', 'luồn tay vào trong', 'xoa nắn'],
@@ -504,12 +486,15 @@ export const CATEGORIES = {
 			TEASING: {
 				label: 'Khiêu khích',
 				keywords: [
+					'cố tình khoe',
+					'vén áo lên',
 					'liếm môi gợi tình',
 					'cắn nhẹ môi',
 					'nháy mắt đưa tình',
 					'nhìn chằm chằm',
+					'thách thức',
 				],
-				hashtags: ['#teasing', '#sexy', '#hot'],
+				hashtags: ['#teasing', '#sexy', '#hot', '#khoe'],
 			},
 			BATHING: {
 				label: 'Tắm',
@@ -860,8 +845,8 @@ export const CATEGORIES = {
 		options: {
 			SOLO: {
 				label: '1 mình',
-				keywords: ['một mình', 'tự sướng', 'chỉ có một mình'],
-				hashtags: ['#solo', '#alone', '#single'],
+				keywords: ['', '', ''],
+				hashtags: ['#solo', '#girl', '#single'],
 			},
 			COUPLE: {
 				label: 'Cặp đôi',
