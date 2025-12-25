@@ -864,7 +864,7 @@ export const CATEGORIES = {
 		options: {
 			SOLO: {
 				label: '1 mình',
-				keywords: ['một mình', 'tự sướng', 'solo', 'chỉ có một mình'],
+				keywords: ['một mình', 'tự sướng', 'chỉ có một mình'],
 				hashtags: ['#solo', '#alone', '#single'],
 			},
 			COUPLE: {
@@ -890,6 +890,16 @@ export const CATEGORIES = {
 				label: 'Tập thể',
 				keywords: ['cả nhóm', 'tập thể', 'party đông người', 'đám đông'],
 				hashtags: ['#group', '#party', '#tapthe'],
+			},
+			MANY_GIRLS_NO_BOY: {
+				label: 'Nhiều nữ không nam',
+				keywords: ['hội chị em', 'toàn các nàng', 'nhóm bạn gái'],
+				hashtags: ['#girls', '#sisters', '#party'],
+			},
+			MANY_BOYS_NO_GIRL: {
+				label: 'Nhiều nam không nữ',
+				keywords: ['hội anh em', 'toàn phái mạnh', 'nhóm bạn trai'],
+				hashtags: ['#boys', '#brothers', '#men'],
 			},
 		},
 	},
