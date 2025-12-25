@@ -546,6 +546,40 @@ export function setupVideoHandler(bot) {
 			return;
 		}
 
+		// Handle audit pagination (for /info command)
+		if (data.startsWith('audit_')) {
+			const parts = data.split('_');
+			const page = parseInt(parts[1]) || 0;
+			const role = parts[2] || 'user';
+			const { summary, hasMore, totalPages } = await getUserActivitySummary(
+				userId,
+				role,
+				page
+			);
+
+			// Build navigation keyboard
+			const keyboard = new InlineKeyboard();
+			if (page > 0) {
+				keyboard.text('◀️ Trước', `audit_${page - 1}_${role}`);
+			}
+			if (hasMore) {
+				keyboard.text('Sau ▶️', `audit_${page + 1}_${role}`);
+			}
+
+			await ctx.editMessageText(summary, {
+				parse_mode: 'HTML',
+				reply_markup: keyboard,
+			});
+			await logAction(
+				userId,
+				'view_audit',
+				null,
+				`Trang ${page + 1}/${totalPages}`
+			);
+			await safeAnswer();
+			return;
+		}
+
 		// Handle delete confirmation request (need delete permission)
 		if (data.startsWith('delask_') && canDelete) {
 			const parts = data.split('_');
@@ -1116,8 +1150,25 @@ async function handleCommand(ctx, command) {
 
 	// ========== /info - View activity summary ==========
 	if (command === '/info') {
-		const summary = await getUserActivitySummary(userId, userRole);
-		await ctx.reply(summary + tiktokLink, { parse_mode: 'HTML' });
+		const { summary, hasMore, totalPages } = await getUserActivitySummary(
+			userId,
+			userRole,
+			0
+		);
+
+		// Build keyboard with pagination if there are more pages
+		let keyboard = null;
+		if (hasMore) {
+			keyboard = new InlineKeyboard().text(
+				'Xem thêm ▶️',
+				`audit_1_${userRole}`
+			);
+		}
+
+		await ctx.reply(summary + tiktokLink, {
+			parse_mode: 'HTML',
+			reply_markup: keyboard,
+		});
 		await logAction(userId, 'view_info');
 		return;
 	}

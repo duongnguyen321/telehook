@@ -34,22 +34,29 @@ export async function logAction(
 }
 
 /**
- * Get recent actions for a user
+ * Get recent actions for a user with pagination
  * @param {number} telegramId - Telegram user ID
  * @param {number} limit - Max number of actions to return
- * @returns {Promise<Array>} Recent actions
+ * @param {number} offset - Number of actions to skip
+ * @returns {Promise<{actions: Array, total: number}>} Recent actions with total count
  */
-export async function getRecentActions(telegramId, limit = 10) {
+export async function getRecentActions(telegramId, limit = 10, offset = 0) {
 	try {
-		const actions = await prisma.auditLog.findMany({
-			where: { telegramId: BigInt(telegramId) },
-			orderBy: { createdAt: 'desc' },
-			take: limit,
-		});
-		return actions;
+		const [actions, total] = await Promise.all([
+			prisma.auditLog.findMany({
+				where: { telegramId: BigInt(telegramId) },
+				orderBy: { createdAt: 'desc' },
+				take: limit,
+				skip: offset,
+			}),
+			prisma.auditLog.count({
+				where: { telegramId: BigInt(telegramId) },
+			}),
+		]);
+		return { actions, total };
 	} catch (error) {
 		console.error('[Audit] Failed to get recent actions:', error.message);
-		return [];
+		return { actions: [], total: 0 };
 	}
 }
 
@@ -78,49 +85,67 @@ export async function getActionCounts(telegramId) {
 	}
 }
 
+const PAGE_SIZE = 5;
+
 /**
- * Get user activity summary for /info command
+ * Get user activity summary for /info command with pagination
  * @param {number} telegramId - Telegram user ID
  * @param {string} userRole - User role
- * @returns {Promise<string>} Formatted summary
+ * @param {number} page - Page number (0-indexed)
+ * @returns {Promise<{summary: string, hasMore: boolean, page: number, totalPages: number}>} Formatted summary with pagination info
  */
-export async function getUserActivitySummary(telegramId, userRole) {
+export async function getUserActivitySummary(telegramId, userRole, page = 0) {
 	const counts = await getActionCounts(telegramId);
-	const recentActions = await getRecentActions(telegramId, 5);
+	const offset = page * PAGE_SIZE;
+	const { actions: recentActions, total } = await getRecentActions(
+		telegramId,
+		PAGE_SIZE,
+		offset
+	);
+	const totalPages = Math.ceil(total / PAGE_SIZE);
+	const hasMore = page < totalPages - 1;
 
 	let summary = `📊 <b>HOẠT ĐỘNG CỦA BẠN</b>\n\n`;
 
-	// Stats section
-	summary += `📈 <b>Thống kê:</b>\n`;
-	summary += `• Xem lịch: ${counts.view_queue || 0} lần\n`;
-	summary += `• Xem video: ${counts.view_videos || 0} lần\n`;
+	// Only show stats on first page
+	if (page === 0) {
+		// Stats section
+		summary += `📈 <b>Thống kê:</b>\n`;
+		summary += `• Xem lịch: ${counts.view_queue || 0} lần\n`;
+		summary += `• Xem video: ${counts.view_videos || 0} lần\n`;
 
-	// Role-specific stats
-	if (userRole === 'mod' || userRole === 'admin') {
-		summary += `• Upload video: ${counts.upload_video || 0} video\n`;
-	}
+		// Role-specific stats
+		if (userRole === 'mod' || userRole === 'admin') {
+			summary += `• Upload video: ${counts.upload_video || 0} video\n`;
+		}
 
-	if (userRole === 'reviewer' || userRole === 'admin') {
-		summary += `• Sửa nội dung: ${counts.edit_content || 0} lần\n`;
-		summary += `• Reschedule: ${counts.reschedule || 0} lần\n`;
-	}
+		if (userRole === 'reviewer' || userRole === 'admin') {
+			summary += `• Sửa nội dung: ${counts.edit_content || 0} lần\n`;
+			summary += `• Reschedule: ${counts.reschedule || 0} lần\n`;
+		}
 
-	if (userRole === 'admin') {
-		summary += `• Xoá video: ${counts.delete_video || 0} video\n`;
-		summary += `• Fix database: ${counts.fix_database || 0} lần\n`;
+		if (userRole === 'admin') {
+			summary += `• Xoá video: ${counts.delete_video || 0} video\n`;
+			summary += `• Fix database: ${counts.fix_database || 0} lần\n`;
+		}
 	}
 
 	// Recent actions
 	if (recentActions.length > 0) {
-		summary += `\n🕐 <b>Hoạt động gần đây:</b>\n`;
+		summary += `\n🕐 <b>Lịch sử${
+			page > 0 ? ` (Trang ${page + 1}/${totalPages})` : ''
+		}:</b>\n`;
 		for (const action of recentActions) {
 			const time = formatTimeAgo(action.createdAt);
 			const actionName = getActionDisplayName(action.action);
-			summary += `• ${actionName} - ${time}\n`;
+			const details = action.details ? ` - ${action.details}` : '';
+			summary += `• ${actionName}${details} - ${time}\n`;
 		}
+	} else if (page > 0) {
+		summary += `\n<i>Không có hoạt động nào ở trang này.</i>\n`;
 	}
 
-	return summary;
+	return { summary, hasMore, page, totalPages };
 }
 
 /**
@@ -141,6 +166,7 @@ function getActionDisplayName(action) {
 		retitle: '🏷️ Retitle',
 		fix_database: '🔧 Fix database',
 		user_info_changed: '👤 Cập nhật thông tin',
+		view_audit: '📜 Xem lịch sử audit',
 		// Navigate video
 		navigate_video: '🔍 Xem video',
 		// Delete actions
