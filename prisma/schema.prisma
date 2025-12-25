@@ -11,10 +11,10 @@ datasource db {
 }
 
 model ScheduledPost {
-  id               String  @id
-  chatId           BigInt  @map("chat_id")
-  videoPath        String  @map("video_path")
-  title            String
+  id        String @id
+  chatId    BigInt @map("chat_id")
+  videoPath String @map("video_path")
+  title     String
 
   hashtags         String
   scheduledAt      String  @map("scheduled_at")
@@ -31,10 +31,10 @@ model ScheduledPost {
 }
 
 model VideoArchive {
-  id           String  @id
-  chatId       BigInt  @map("chat_id")
-  videoPath    String  @map("video_path")
-  title        String
+  id        String @id
+  chatId    BigInt @map("chat_id")
+  videoPath String @map("video_path")
+  title     String
 
   hashtags     String
   views        Int     @default(0)
@@ -86,4 +86,18 @@ model User {
 
   @@index([telegramId])
   @@map("users")
+}
+
+model AuditLog {
+  id         Int     @id @default(autoincrement())
+  telegramId BigInt  @map("telegram_id")
+  action     String // upload, edit, delete, reschedule, view_queue, view_videos, etc.
+  targetId   String? @map("target_id") // postId nếu có
+  details    String? // Chi tiết action
+  createdAt  String  @default(dbgenerated("CURRENT_TIMESTAMP")) @map("created_at")
+
+  @@index([telegramId])
+  @@index([action])
+  @@index([createdAt])
+  @@map("audit_logs")
 }

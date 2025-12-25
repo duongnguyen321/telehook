@@ -5,13 +5,12 @@ import {
 	addScheduledPost,
 	getPendingPostsByChat,
 	getAllPostsByChat,
-	getArchiveStats,
 	isVideoDuplicate,
 	trackDownloadedVideo,
 	updateVideoStatus,
 	updatePostStatus,
-	getVideoStats,
-	rescheduleAllPending,
+	rescheduleTimesOnly,
+	retitleAllPending,
 	deleteScheduledPost,
 	updatePostContent,
 	updatePostFileId,
@@ -20,11 +19,7 @@ import {
 	prisma,
 } from '../utils/storage.js';
 import { formatVietnameseTime } from '../utils/timeParser.js';
-import {
-	scheduleUpload,
-	setDefaultChatId,
-	triggerRepostCheck,
-} from '../services/scheduler.js';
+import { scheduleUpload, setDefaultChatId } from '../services/scheduler.js';
 import {
 	generateContentOptions,
 	getCategories,
@@ -37,6 +32,12 @@ import {
 } from '../services/ai.js';
 import { downloadVideo, queueDownload } from '../utils/downloader.js';
 import { createOrUpdateUser } from '../services/userService.js';
+import {
+	getUserRole,
+	hasPermission,
+	getRoleDisplayName,
+} from '../services/roleService.js';
+import { logAction, getUserActivitySummary } from '../services/auditService.js';
 
 // Temporary storage for category selections during content generation
 // Key: `${chatId}_${postId}`, Value: { POSE: 'FRONT', ACTION: 'SHOWING', ... }
@@ -184,14 +185,14 @@ async function safeEditMessage(ctx, text, keyboard) {
  * @param {number} chatId
  * @param {number} page - Page number, or -1 to use default (last posted video)
  * @param {number|null} messageId
- * @param {boolean} isAdmin - Whether user is admin
+ * @param {Object} permissions - User permission flags
  */
 async function sendQueuePage(
 	ctx,
 	chatId,
 	page,
 	messageId = null,
-	isAdmin = false
+	permissions = { canEdit: false, canDelete: false }
 ) {
 	const { InputFile } = await import('grammy');
 	const { posts, lastPostedIndex } = await getAllPostsByChat(chatId);
@@ -218,7 +219,7 @@ async function sendQueuePage(
 	const actualPage = page === -1 ? lastPostedIndex : page;
 	const post = posts[actualPage];
 	if (!post) {
-		await sendQueuePage(ctx, chatId, 0, messageId, isAdmin);
+		await sendQueuePage(ctx, chatId, 0, messageId, permissions);
 		return;
 	}
 
@@ -272,11 +273,24 @@ async function sendQueuePage(
 		keyboard.row(...fastNavRow);
 	}
 
-	// Admin: Add action buttons ONLY for pending videos (not posted)
-	if (isAdmin && post.status === 'pending') {
-		keyboard.row();
-		keyboard.text('✏️ Đổi nội dung', `regen_${post.id}_${actualPage}`);
-		keyboard.text('🗑️ Xóa', `delask_${post.id}_${actualPage}`);
+	// Add action buttons based on permissions ONLY for pending videos (not posted)
+	if (post.status === 'pending') {
+		const actionRow = [];
+		if (permissions.canEdit) {
+			actionRow.push({
+				text: '✏️ Đổi nội dung',
+				callback_data: `regen_${post.id}_${actualPage}`,
+			});
+		}
+		if (permissions.canDelete) {
+			actionRow.push({
+				text: '🗑️ Xóa',
+				callback_data: `delask_${post.id}_${actualPage}`,
+			});
+		}
+		if (actionRow.length > 0) {
+			keyboard.row(...actionRow);
+		}
 	}
 
 	// Check if video file exists
@@ -394,6 +408,12 @@ async function processVideoAfterDownload(ctx, video, videoPath, chatId) {
 		console.log(`[Video] Scheduled: ${time}`);
 
 		await ctx.reply(`Scheduled: ${time}`);
+
+		// Log upload action
+		const userId = ctx.from?.id;
+		if (userId) {
+			await logAction(userId, 'upload_video', post.id, `Scheduled at ${time}`);
+		}
 	} catch (error) {
 		console.error('[Video] Process error:', error.message);
 	}
@@ -404,20 +424,13 @@ async function processVideoAfterDownload(ctx, video, videoPath, chatId) {
  * @param {import('grammy').Bot} bot
  */
 export function setupVideoHandler(bot) {
-	// Admin user ID from env
-	const ADMIN_USER_ID = parseInt(process.env.ADMIN_USER_ID || '0', 10);
-
-	if (!ADMIN_USER_ID) {
-		console.warn('[Config] WARNING: ADMIN_USER_ID not set in .env');
-	}
-
 	// Handle video messages - auto schedule without user input
 	bot.on('message:video', async (ctx) => {
 		const userId = ctx.from?.id;
 
-		// Check authorization
-		if (userId !== ADMIN_USER_ID) {
-			await ctx.reply('You do not have permission to upload videos.');
+		// Check authorization - need upload permission (mod or admin)
+		if (!hasPermission(userId, 'upload')) {
+			await ctx.reply('Bạn không có quyền upload video.');
 			return;
 		}
 
@@ -499,7 +512,12 @@ export function setupVideoHandler(bot) {
 		const chatId = ctx.chat.id;
 		const userId = ctx.from?.id;
 		const messageId = ctx.callbackQuery.message.message_id;
-		const isAdmin = userId === ADMIN_USER_ID;
+
+		// Get user permissions
+		const canEdit = hasPermission(userId, 'edit');
+		const canDelete = hasPermission(userId, 'delete');
+		const permissions = { canEdit, canDelete };
+
 		const safeAnswer = async (text) => {
 			try {
 				await ctx.answerCallbackQuery(text);
@@ -511,13 +529,13 @@ export function setupVideoHandler(bot) {
 		// Handle pagination
 		if (data.startsWith('queue_')) {
 			const page = parseInt(data.replace('queue_', ''));
-			await sendQueuePage(ctx, chatId, page, messageId, isAdmin);
+			await sendQueuePage(ctx, chatId, page, messageId, permissions);
 			await safeAnswer();
 			return;
 		}
 
-		// Handle delete confirmation request (admin only)
-		if (data.startsWith('delask_') && isAdmin) {
+		// Handle delete confirmation request (need delete permission)
+		if (data.startsWith('delask_') && canDelete) {
 			const parts = data.split('_');
 			const postId = parts[1];
 			const currentPage = parseInt(parts[2]) || 0;
@@ -538,8 +556,8 @@ export function setupVideoHandler(bot) {
 			return;
 		}
 
-		// Handle delete confirmed (admin only)
-		if (data.startsWith('delyes_') && isAdmin) {
+		// Handle delete confirmed (need delete permission)
+		if (data.startsWith('delyes_') && canDelete) {
 			const parts = data.split('_');
 			const postId = parts[1];
 			const currentPage = parseInt(parts[2]) || 0;
@@ -547,17 +565,18 @@ export function setupVideoHandler(bot) {
 			const result = await deleteScheduledPost(postId, chatId);
 			if (result.success) {
 				await safeAnswer(`Đã xóa! Đã reschedule ${result.rescheduled} video`);
+				await logAction(userId, 'delete_video', postId);
 				// Reuse message bubble -> pass messageId
 				const newPage = Math.max(0, currentPage - 1);
-				await sendQueuePage(ctx, chatId, newPage, messageId, isAdmin);
+				await sendQueuePage(ctx, chatId, newPage, messageId, permissions);
 			} else {
 				await safeAnswer('Lỗi: Không tìm thấy video');
 			}
 			return;
 		}
 
-		// Handle delete cancelled (admin only)
-		if (data.startsWith('delno_') && isAdmin) {
+		// Handle delete cancelled (need delete permission)
+		if (data.startsWith('delno_') && canDelete) {
 			const parts = data.split('_');
 			const currentPage = parseInt(parts[2]) || 0;
 
@@ -565,12 +584,12 @@ export function setupVideoHandler(bot) {
 
 			// Return to queue view (restore video/caption)
 			// Pass messageId to reuse the bubble
-			await sendQueuePage(ctx, chatId, currentPage, messageId, isAdmin);
+			await sendQueuePage(ctx, chatId, currentPage, messageId, permissions);
 			return;
 		}
 
-		// Handle regenerate content - show category selection (admin only)
-		if (data.startsWith('regen_') && isAdmin) {
+		// Handle regenerate content - show category selection (need edit permission)
+		if (data.startsWith('regen_') && canEdit) {
 			const parts = data.split('_');
 			const postId = parts[1];
 			const currentPage = parseInt(parts[2]) || 0;
@@ -597,8 +616,8 @@ export function setupVideoHandler(bot) {
 			return;
 		}
 
-		// Handle category selection - show options (admin only)
-		if (data.startsWith('cat_') && isAdmin) {
+		// Handle category selection - show options (need edit permission)
+		if (data.startsWith('cat_') && canEdit) {
 			const parts = data.split('_');
 			const postId = parts[1];
 			const currentPage = parseInt(parts[2]) || 0;
@@ -629,8 +648,8 @@ export function setupVideoHandler(bot) {
 			return;
 		}
 
-		// Handle option selection - save and return to categories (admin only)
-		if (data.startsWith('opt_') && isAdmin) {
+		// Handle option selection - save and return to categories (need edit permission)
+		if (data.startsWith('opt_') && canEdit) {
 			const parts = data.split('_');
 			const postId = parts[1];
 			const currentPage = parseInt(parts[2]) || 0;
@@ -689,8 +708,8 @@ export function setupVideoHandler(bot) {
 			return;
 		}
 
-		// Handle back to categories (admin only)
-		if (data.startsWith('back_') && isAdmin) {
+		// Handle back to categories (need edit permission)
+		if (data.startsWith('back_') && canEdit) {
 			const parts = data.split('_');
 			const postId = parts[1];
 			const currentPage = parseInt(parts[2]) || 0;
@@ -712,8 +731,8 @@ export function setupVideoHandler(bot) {
 			return;
 		}
 
-		// Handle done - generate content options for selection (admin only)
-		if (data.startsWith('done_') && isAdmin) {
+		// Handle done - generate content options for selection (need edit permission)
+		if (data.startsWith('done_') && canEdit) {
 			const parts = data.split('_');
 			const postId = parts[1];
 			const currentPage = parseInt(parts[2]) || 0;
@@ -770,11 +789,11 @@ export function setupVideoHandler(bot) {
 			return;
 		}
 
-		// Handle option choice (admin only)
+		// Handle option choice (need edit permission)
 		if (
 			data.startsWith('choose_') &&
 			!data.startsWith('choose_random_') &&
-			isAdmin
+			canEdit
 		) {
 			const parts = data.split('_');
 			const postId = parts[1];
@@ -804,12 +823,18 @@ export function setupVideoHandler(bot) {
 			generatedOptions.delete(selectionKey);
 
 			await safeAnswer(`Đã chọn: "${content.title.slice(0, 20)}..."`);
-			await sendQueuePage(ctx, chatId, currentPage, messageId, isAdmin);
+			await logAction(
+				userId,
+				'edit_content',
+				postId,
+				content.title.slice(0, 50)
+			);
+			await sendQueuePage(ctx, chatId, currentPage, messageId, permissions);
 			return;
 		}
 
 		// Handle choose random (failed to load options or want fresh random)
-		if (data.startsWith('choose_random_') && isAdmin) {
+		if (data.startsWith('choose_random_') && canEdit) {
 			const parts = data.split('_');
 			const postId = parts[2];
 			const currentPage = parseInt(parts[3]) || 0;
@@ -828,12 +853,12 @@ export function setupVideoHandler(bot) {
 				await safeAnswer('Lỗi: Không tìm thấy video');
 			}
 			// Reuse message bubble with messageId
-			await sendQueuePage(ctx, chatId, currentPage, messageId, isAdmin);
+			await sendQueuePage(ctx, chatId, currentPage, messageId, permissions);
 			return;
 		}
 
-		// Handle random - generate random content (admin only)
-		if (data.startsWith('rand_') && isAdmin) {
+		// Handle random - generate random content (need edit permission)
+		if (data.startsWith('rand_') && canEdit) {
 			const parts = data.split('_');
 			const postId = parts[1];
 			const currentPage = parseInt(parts[2]) || 0;
@@ -851,12 +876,12 @@ export function setupVideoHandler(bot) {
 				await safeAnswer('Lỗi: Không tìm thấy video');
 			}
 			// Reuse message bubble with messageId
-			await sendQueuePage(ctx, chatId, currentPage, messageId, isAdmin);
+			await sendQueuePage(ctx, chatId, currentPage, messageId, permissions);
 			return;
 		}
 
-		// Handle cancel - abort category selection (admin only)
-		if (data.startsWith('cancel_') && isAdmin) {
+		// Handle cancel - abort category selection (need edit permission)
+		if (data.startsWith('cancel_') && canEdit) {
 			const parts = data.split('_');
 			const postId = parts[1];
 			const currentPage = parseInt(parts[2]) || 0;
@@ -870,7 +895,7 @@ export function setupVideoHandler(bot) {
 			// Since we act on the same message, we can just "go back".
 
 			await safeAnswer('Đã hủy');
-			await sendQueuePage(ctx, chatId, currentPage, null, isAdmin);
+			await sendQueuePage(ctx, chatId, currentPage, null, permissions);
 			return;
 		}
 
@@ -904,20 +929,96 @@ export function setupVideoHandler(bot) {
 }
 
 /**
- * Handle commands (admin only except /start)
+ * Build greeting message based on user role
+ * @param {Object} ctx - Telegram context
+ * @param {string} userRole - User role
+ * @param {string} tiktokLink - TikTok follow link
+ * @returns {string} Greeting message
+ */
+function buildGreetingMessage(ctx, userRole, tiktokLink) {
+	const firstName = ctx.from?.first_name || 'bạn';
+	const userId = ctx.from?.id;
+	const roleDisplayName = getRoleDisplayName(userRole);
+
+	let greeting = `👋 Xin chào **${firstName}**!\n\n`;
+	greeting += `🆔 ID của bạn: \`${userId}\`\n`;
+	greeting += `🏷️ Vai trò: ${roleDisplayName}\n\n`;
+
+	// Commands section based on role
+	greeting += `📋 **LỆNH KHẢ DỤNG:**\n`;
+
+	// Public commands (all roles)
+	greeting += `• /start - Hiển thị thông tin này\n`;
+	greeting += `• /queue - Xem lịch đăng video\n`;
+	greeting += `• /videos - Xem chi tiết video\n`;
+	greeting += `• /info - Xem hoạt động của bạn\n`;
+	greeting += `• /clear - Xoá tin nhắn, hiển thị lại lời chào\n`;
+
+	// Mod commands
+	if (userRole === 'mod' || userRole === 'admin') {
+		greeting += `\n📤 **Mod:**\n`;
+		greeting += `• Forward video → Tự động lên lịch đăng\n`;
+	}
+
+	// Reviewer commands
+	if (userRole === 'reviewer' || userRole === 'admin') {
+		greeting += `\n📝 **Kiểm duyệt viên:**\n`;
+		greeting += `• /reschedule - Sắp xếp lại lịch đăng\n`;
+		greeting += `• /retitle - Tạo nội dung mới cho video\n`;
+		greeting += `• Trong /videos: Sửa nội dung video\n`;
+	}
+
+	// Admin commands
+	if (userRole === 'admin') {
+		greeting += `\n👑 **Admin:**\n`;
+		greeting += `• /fix - Dọn dẹp database\n`;
+		greeting += `• Trong /videos: Xoá video\n`;
+	}
+
+	// Usage guide
+	greeting += `\n📖 **HƯỚNG DẪN:**\n`;
+
+	if (userRole === 'mod' || userRole === 'admin') {
+		greeting += `1️⃣ Forward video vào bot → Video tự động lên lịch\n`;
+		greeting += `2️⃣ Bot đăng 9 video/ngày (9:30, 14:30, 20:30)\n`;
+		greeting += `3️⃣ Khi đến giờ → Bot gửi thông báo + video + caption\n`;
+		greeting += `4️⃣ Copy caption → Đăng lên TikTok\n`;
+	} else if (userRole === 'reviewer') {
+		greeting += `1️⃣ Dùng /videos để xem danh sách video\n`;
+		greeting += `2️⃣ Bấm "Đổi nội dung" để sửa title\n`;
+		greeting += `3️⃣ Dùng /reschedule để đặt lại lịch\n`;
+	} else {
+		greeting += `1️⃣ Dùng /queue để xem lịch đăng\n`;
+		greeting += `2️⃣ Dùng /videos để xem chi tiết video\n`;
+	}
+
+	greeting += tiktokLink;
+	return greeting;
+}
+
+/**
+ * Handle commands - permissions based on role
  */
 async function handleCommand(ctx, command) {
 	const chatId = ctx.chat.id;
 	const userId = ctx.from?.id;
-	const ADMIN_USER_ID = parseInt(process.env.ADMIN_USER_ID || '0', 10);
 	const TIKTOK_USERNAME = process.env.TIKTOK_USERNAME || '';
 	const tiktokLink = TIKTOK_USERNAME
 		? `\n\n🔥 Follow TikTok: https://tiktok.com/@${TIKTOK_USERNAME}`
 		: '';
 
+	// Get user permissions
+	const userRole = getUserRole(userId);
+	const canEdit = hasPermission(userId, 'edit');
+	const canDelete = hasPermission(userId, 'delete');
+	const canReschedule = hasPermission(userId, 'reschedule');
+	const canFix = hasPermission(userId, 'fix');
+	const canUpload = hasPermission(userId, 'upload');
+	const permissions = { canEdit, canDelete };
+
 	setDefaultChatId(chatId);
 
-	// ========== PUBLIC COMMANDS (GET data) ==========
+	// ========== /start - Show greeting ==========
 	if (command === '/start') {
 		// Track user information
 		try {
@@ -926,14 +1027,13 @@ async function handleCommand(ctx, command) {
 				username: ctx.from?.username,
 				firstName: ctx.from?.first_name || 'Unknown',
 				lastName: ctx.from?.last_name,
-				role: userId === ADMIN_USER_ID ? 'admin' : 'user',
+				role: userRole,
 			};
 
 			await createOrUpdateUser(userInfo);
+			const roleDisplayName = getRoleDisplayName(userRole);
 			console.log(
-				`[User] ${
-					userInfo.role === 'admin' ? '👑 Admin' : '👤 User'
-				} tracked: ${userInfo.firstName} (@${
+				`[User] ${roleDisplayName} tracked: ${userInfo.firstName} (@${
 					userInfo.username || 'no_username'
 				}) - ID: ${userId}`
 			);
@@ -941,19 +1041,31 @@ async function handleCommand(ctx, command) {
 			console.error('[User] Failed to track user:', error.message);
 		}
 
-		await ctx.reply(
-			`Bot auto-schedule TikTok videos\n\n` +
-				`Forward video -> auto schedule\n` +
-				`9 videos/day (9:30-10:30, 14:30-15:30, 20:30-21:30 GMT+7)\n\n` +
-				`/queue /stats /reschedule` +
-				tiktokLink
-		);
-		// Show queue after welcome message (default to last posted video)
-		const isAdmin = userId === ADMIN_USER_ID;
-		await sendQueuePage(ctx, chatId, -1, null, isAdmin);
+		const greeting = buildGreetingMessage(ctx, userRole, tiktokLink);
+		await ctx.reply(greeting, { parse_mode: 'Markdown' });
+		await logAction(userId, 'start');
 		return;
 	}
 
+	// ========== /clear - Clear messages and show greeting again ==========
+	if (command === '/clear') {
+		const greeting = buildGreetingMessage(ctx, userRole, tiktokLink);
+		await ctx.reply('🧹 Đã làm mới!\n\n' + greeting, {
+			parse_mode: 'Markdown',
+		});
+		await logAction(userId, 'clear');
+		return;
+	}
+
+	// ========== /info - View activity summary ==========
+	if (command === '/info') {
+		const summary = await getUserActivitySummary(userId, userRole);
+		await ctx.reply(summary + tiktokLink, { parse_mode: 'Markdown' });
+		await logAction(userId, 'view_info');
+		return;
+	}
+
+	// ========== /queue - View schedule list ==========
 	if (command === '/queue') {
 		const posts = await getPendingPostsByChat(chatId);
 		if (!posts?.length) {
@@ -963,7 +1075,7 @@ async function handleCommand(ctx, command) {
 
 		// Format schedule list: title - date - time
 		const scheduleList = posts
-			.slice(0, 30)
+			.slice(0, 10)
 			.map((post, i) => {
 				const date = new Date(post.scheduledAt);
 				const gmt7 = new Date(date.getTime() + 7 * 60 * 60 * 1000);
@@ -983,61 +1095,79 @@ async function handleCommand(ctx, command) {
 			`📅 LỊCH ĐĂNG (${posts.length} video):\n\n${scheduleList}${moreText}` +
 				tiktokLink
 		);
+		await logAction(userId, 'view_queue');
 		return;
 	}
 
-	if (command === '/stats') {
-		const stats = await getArchiveStats(chatId);
-		const videoStats = await getVideoStats(chatId);
+	// ========== /videos - View video details ==========
+	if (command === '/videos') {
+		await sendQueuePage(ctx, chatId, -1, null, permissions);
+		await logAction(userId, 'view_videos');
+		return;
+	}
+
+	// ========== /reschedule - Fix schedule times only (reviewer + admin) ==========
+	if (command === '/reschedule') {
+		if (!canReschedule) {
+			await ctx.reply('Bạn không có quyền reschedule video.' + tiktokLink);
+			return;
+		}
+		await ctx.reply('⏳ Đang sắp xếp lại lịch đăng...' + tiktokLink);
+		const count = await rescheduleTimesOnly(chatId);
 		await ctx.reply(
-			`Stats:\n` +
-				`Downloaded: ${videoStats?.total || 0}\n` +
-				`Pending: ${videoStats?.scheduled || 0}\n` +
-				`Posted: ${stats?.total || 0}` +
+			`✅ Đã sắp xếp lại lịch cho ${count} video!\n(Giữ nguyên nội dung, chỉ đổi giờ)` +
 				tiktokLink
 		);
-		return;
-	}
-
-	if (command === '/videos') {
-		const isAdmin = userId === ADMIN_USER_ID;
-		// Use -1 to default to last posted video
-		await sendQueuePage(ctx, chatId, -1, null, isAdmin);
-		return;
-	}
-
-	// ========== ADMIN COMMANDS (UPDATE data) ==========
-	if (userId !== ADMIN_USER_ID) {
-		await ctx.reply('You do not have permission to use this command.');
-		return;
-	}
-
-	if (command === '/reschedule') {
-		await ctx.reply('Rescheduling all pending videos with new content...');
-		const count = await rescheduleAllPending(chatId);
-		await ctx.reply(
-			`Done! Rescheduled ${count} videos:\n- New schedule (9/day)\n- New Vietnamese content`
+		await logAction(
+			userId,
+			'reschedule',
+			null,
+			`Rescheduled times for ${count} videos`
 		);
 		return;
 	}
 
+	// ========== /retitle - Regenerate titles/tags only (reviewer + admin) ==========
+	if (command === '/retitle') {
+		if (!canReschedule) {
+			await ctx.reply('Bạn không có quyền sửa nội dung video.' + tiktokLink);
+			return;
+		}
+		await ctx.reply('⏳ Đang tạo nội dung mới cho các video...' + tiktokLink);
+		const count = await retitleAllPending(chatId);
+		await ctx.reply(
+			`✅ Đã tạo nội dung mới cho ${count} video!\n(Giữ nguyên lịch, chỉ đổi title/tags)` +
+				tiktokLink
+		);
+		await logAction(userId, 'retitle', null, `Retitled ${count} videos`);
+		return;
+	}
+
+	// ========== /fix - Clean database (admin only) ==========
 	if (command === '/fix') {
-		await ctx.reply('🔧 Đang kiểm tra và dọn dẹp dữ liệu...');
+		if (!canFix) {
+			await ctx.reply('Bạn không có quyền sử dụng lệnh này.' + tiktokLink);
+			return;
+		}
+		await ctx.reply('🔧 Đang kiểm tra và dọn dẹp dữ liệu...' + tiktokLink);
 		const result = await cleanOrphanedPosts(chatId);
 		if (result.deleted > 0) {
 			await ctx.reply(
 				`✅ Đã xóa ${result.deleted} record không có video file.\n` +
-					`📅 Đã reschedule ${result.rescheduled} video còn lại.`
+					`📅 Đã reschedule ${result.rescheduled} video còn lại.` +
+					tiktokLink
 			);
 		} else {
-			await ctx.reply('✅ Không có record lỗi. Database đã clean!');
+			await ctx.reply(
+				'✅ Không có record lỗi. Database đã clean!' + tiktokLink
+			);
 		}
-		return;
-	}
-
-	if (command === '/repost') {
-		await ctx.reply('Checking for repost...');
-		await triggerRepostCheck();
+		await logAction(
+			userId,
+			'fix_database',
+			null,
+			`Deleted: ${result.deleted}, Rescheduled: ${result.rescheduled}`
+		);
 		return;
 	}
 }

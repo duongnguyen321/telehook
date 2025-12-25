@@ -469,6 +469,50 @@ export async function rescheduleTimesOnly(chatId) {
 }
 
 /**
+ * Retitle all pending posts - ONLY update titles/hashtags, keep existing schedule
+ * Used for regenerating content without changing times
+ * @param {number} chatId
+ * @returns {Promise<number>} Number of posts retitled
+ */
+export async function retitleAllPending(chatId) {
+	// Import content generator dynamically to avoid circular deps
+	const { generateContentOptions } = await import('../services/ai.js');
+
+	// Get all pending posts
+	const posts = await prisma.scheduledPost.findMany({
+		where: { chatId: BigInt(chatId), status: 'pending' },
+	});
+
+	if (posts.length === 0) {
+		return 0;
+	}
+
+	console.log(`[Retitle] Generating new content for ${posts.length} posts...`);
+
+	// Update ONLY title/hashtags, keep scheduledAt
+	let count = 0;
+	for (const post of posts) {
+		const [content] = generateContentOptions();
+
+		await prisma.scheduledPost.update({
+			where: { id: post.id },
+			data: {
+				title: content.title,
+				hashtags: content.hashtags,
+			},
+		});
+		count++;
+
+		console.log(
+			`[Retitle] ${count}/${posts.length}: "${content.title.slice(0, 25)}..."`
+		);
+	}
+
+	console.log(`[Retitle] Generated new content for ${count} posts`);
+	return count;
+}
+
+/**
  * Get pending posts that are due AND haven't had notification sent yet
  * @returns {Promise<ScheduledPost[]>}
  */

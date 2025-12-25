@@ -1,7 +1,10 @@
 import { prisma } from '../utils/storage.js';
+import { getUserRole } from './roleService.js';
+import { logAction } from './auditService.js';
 
 /**
  * Create or update user in database
+ * Logs an audit entry if user info changes
  * @param {Object} userInfo - Telegram user information
  * @param {number} userInfo.telegramId - Telegram user ID
  * @param {string} userInfo.username - Telegram username (optional)
@@ -14,6 +17,29 @@ export async function createOrUpdateUser(userInfo) {
 	const { telegramId, username, firstName, lastName, role } = userInfo;
 
 	try {
+		// Get existing user to detect changes
+		const existingUser = await prisma.user.findUnique({
+			where: { telegramId: BigInt(telegramId) },
+		});
+
+		// Detect what changed
+		const changes = [];
+		if (existingUser) {
+			if (existingUser.username !== (username || null)) {
+				changes.push(
+					`username: ${existingUser.username || 'null'} → ${username || 'null'}`
+				);
+			}
+			if (existingUser.firstName !== firstName) {
+				changes.push(`firstName: ${existingUser.firstName} → ${firstName}`);
+			}
+			if (existingUser.lastName !== (lastName || null)) {
+				changes.push(
+					`lastName: ${existingUser.lastName || 'null'} → ${lastName || 'null'}`
+				);
+			}
+		}
+
 		const user = await prisma.user.upsert({
 			where: { telegramId: BigInt(telegramId) },
 			update: {
@@ -33,6 +59,14 @@ export async function createOrUpdateUser(userInfo) {
 				lastActiveAt: new Date().toISOString(),
 			},
 		});
+
+		// Log info change if there were changes
+		if (changes.length > 0) {
+			await logAction(telegramId, 'info_changed', null, changes.join(', '));
+			console.log(
+				`[User] Info changed for ${telegramId}: ${changes.join(', ')}`
+			);
+		}
 
 		return user;
 	} catch (error) {
