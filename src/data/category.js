@@ -104,11 +104,7 @@ export const CATEGORIES = {
 				keywords: ['ngại ngùng', 'e thẹn', 'mắc cỡ', 'lúng túng', 'hay mắc cỡ'],
 				hashtags: ['#shy', '#cute', '#ngaingung'],
 			},
-			BOLD: {
-				label: 'Táo bạo',
-				keywords: ['mạnh dạn', 'táo bạo', 'chủ động', 'bất chấp', 'thẳng thắn'],
-				hashtags: ['#bold', '#confident', '#taobao'],
-			},
+
 			NAUGHTY: {
 				label: 'Hư hỏng',
 				keywords: [
@@ -121,7 +117,7 @@ export const CATEGORIES = {
 				hashtags: ['#naughty', '#huhong'],
 			},
 			SWEET: {
-				label: 'Ngọt ngào/Nũng nịu',
+				label: 'Ngọt ngào/Ngoan ngoãn',
 				keywords: [
 					'nũng nịu',
 					'ngoan ngoãn',
@@ -131,35 +127,50 @@ export const CATEGORIES = {
 					'ngọt như kẹo',
 					'đáng yêu hết nấc',
 					'như thiên thần',
+					'baby',
+					'chịu đựng',
+					'phục tùng tuyệt đối',
+					'làm nô lệ',
 				],
-				hashtags: ['#sweet', '#cute', '#ngotngao', '#kawaii'],
-			},
-			HORNY: {
-				label: 'Kích thích',
-				keywords: [
-					'nứng',
-					'hứng',
-					'kích thích',
-					'rạo rực',
-					'nóng trong người',
-					'khao khát',
+				hashtags: [
+					'#sweet',
+					'#cute',
+					'#ngotngao',
+					'#kawaii',
+					'#submissive',
+					'#obedient',
 				],
-				hashtags: ['#horny', '#turned', '#excited'],
 			},
+
 			CONFIDENT: {
-				label: 'Tự tin',
-				keywords: ['tự tin', 'kiêu hãnh', 'biết mình đẹp', 'chảnh chọe'],
-				hashtags: ['#confident', '#queen', '#boss'],
+				label: 'Tự tin/Táo bạo',
+				keywords: [
+					'tự tin',
+					'kiêu hãnh',
+					'biết mình đẹp',
+					'chảnh chọe',
+					'mạnh dạn',
+					'táo bạo',
+					'chủ động',
+					'bất chấp',
+					'thẳng thắn',
+				],
+				hashtags: ['#confident', '#queen', '#boss', '#bold', '#taobao'],
 			},
 			HOT: {
-				label: 'Nóng bỏng',
+				label: 'Nóng bỏng/Kích thích',
 				keywords: [
 					'cực kỳ nóng bỏng',
 					'thiêu đốt ánh nhìn',
 					'bốc lửa',
 					'rạo rực',
+					'nứng',
+					'hứng',
+					'kích thích',
+					'nóng trong người',
+					'khao khát',
 				],
-				hashtags: ['#hot', '#nongbong', '#fire'],
+				hashtags: ['#hot', '#nongbong', '#fire', '#horny', '#turned'],
 			},
 			DARK: {
 				label: 'Huyền bí',
@@ -176,16 +187,7 @@ export const CATEGORIES = {
 				keywords: ['dữ dội', 'mạnh bạo', 'điên cuồng', 'thú tính'],
 				hashtags: ['#wild', '#intense', '#crazy'],
 			},
-			SUBMISSIVE: {
-				label: 'Phục tùng',
-				keywords: [
-					'ngoan ngoãn',
-					'chịu đựng',
-					'phục tùng tuyệt đối',
-					'làm nô lệ',
-				],
-				hashtags: ['#submissive', '#obedient', '#gentle'],
-			},
+
 			COSPLAY: {
 				label: 'Cosplay',
 				keywords: [
@@ -227,20 +229,23 @@ export const CATEGORIES = {
 				keywords: ['cô y tá', 'nữ bác sĩ', 'điều dưỡng viên'],
 				hashtags: ['#yta', '#bacsi', '#nurse'],
 			},
-			SECRETARY: {
-				label: 'Thư ký',
-				keywords: ['nữ thư ký', 'trợ lý giám đốc', 'cô nhân viên mới'],
-				hashtags: ['#thuky', '#troly', '#vanphong'],
-			},
+
 			MAID: {
 				label: 'Hầu gái',
 				keywords: ['cô hầu gái', 'người giúp việc', 'ô sin gợi cảm'],
 				hashtags: ['#haugai', '#maid', '#girl'],
 			},
 			OFFICE: {
-				label: 'Công sở',
-				keywords: ['em gái văn phòng', 'chị đồng nghiệp', 'chị trưởng phòng'],
-				hashtags: ['#congso', '#vanphong', '#office'],
+				label: 'Công sở/Thư ký',
+				keywords: [
+					'em gái văn phòng',
+					'chị đồng nghiệp',
+					'chị trưởng phòng',
+					'nữ thư ký',
+					'trợ lý giám đốc',
+					'cô nhân viên mới',
+				],
+				hashtags: ['#congso', '#vanphong', '#office', '#thuky', '#troly'],
 			},
 			KTV: {
 				label: 'KTV',
@@ -310,14 +315,25 @@ export const CATEGORIES = {
 				hashtags: ['#aodai', '#vietnam', '#art'],
 			},
 			OFFICE_WEAR: {
-				label: 'Công sở',
+				label: 'Đồ Công sở',
 				keywords: [
 					'sơ mi trắng bó sát',
 					'chân váy bút chì',
 					'quần tất đen',
 					'giày cao gót',
+					'váy công sở bó sát',
+					'sơ mi hở cúc',
+					'đồ thư ký',
+					'zuýp ngắn',
 				],
-				hashtags: ['#somi', '#vest', '#congso'],
+				hashtags: [
+					'#somi',
+					'#vest',
+					'#congso',
+					'#secretary',
+					'#thuky',
+					'#office',
+				],
 			},
 			GYM_WEAR: {
 				label: 'Đồ tập',
@@ -368,16 +384,7 @@ export const CATEGORIES = {
 				keywords: ['đồ thỏ sexy', 'bikini tai thỏ', 'bodysuit thỏ'],
 				hashtags: ['#bunny', '#rabbit', '#cosplay'],
 			},
-			SECRETARY_WEAR: {
-				label: 'Đồ Thư ký',
-				keywords: [
-					'váy công sở bó sát',
-					'sơ mi hở cúc',
-					'đồ thư ký',
-					'zuýp ngắn',
-				],
-				hashtags: ['#secretary', '#thuky', '#office'],
-			},
+
 			POLICE_UNIFORM: {
 				label: 'Đồ Cảnh sát',
 				keywords: [
@@ -654,22 +661,16 @@ export const CATEGORIES = {
 				hashtags: ['#karaoke', '#ktv', '#hat'],
 			},
 			BAR: {
-				label: 'Quán Bar',
+				label: 'Bar/Club',
 				keywords: [
 					'tại quán bar sôi động',
 					'bên quầy rượu',
 					'trong pub nhỏ ấm cúng',
-				],
-				hashtags: ['#bar', '#pub', '#nightlife'],
-			},
-			CLUB: {
-				label: 'Club/Sàn',
-				keywords: [
 					'trên sàn nhảy',
 					'trong club náo nhiệt',
 					'dưới ánh đèn laser',
 				],
-				hashtags: ['#club', '#dance', '#music'],
+				hashtags: ['#bar', '#pub', '#nightlife', '#club', '#dance', '#music'],
 			},
 		},
 	},
