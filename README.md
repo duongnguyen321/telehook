@@ -84,6 +84,45 @@ retitle - Tạo nội dung mới cho video
 fix - Dọn dẹp database
 ```
 
+### ⚙️ BotFather Settings
+
+Các thông tin cần thiết để setup bot profile:
+
+**About Text (Hiện ở trang profile):**
+
+```text
+Kho nội dung video TikTok tự động: cung cấp sẵn video, title, tags hot trend và tự động lên lịch đăng vào khung giờ vàng.
+```
+
+**Description Text (Hiện khi mới mở chat):**
+
+```text
+🔥 Chào mừng bạn đến với Kho Content TikTok Tự Động!
+
+Bot giúp bạn xây dựng kênh TikTok triệu view dễ dàng hơn bao giờ hết:
+
+📺 Nguồn Video Vô Tận: Cung cấp video chất lượng cao, sẵn sàng để đăng.
+✍️ Content Viral: Tự động tạo Title giật gân & Hashtags chuẩn SEO cho từng video.
+📅 Lên Lịch Thông Minh: Tự động tính toán và xếp lịch đăng vào các khung giờ vàng (Golden Hours) để tối đa hoá lượt xem.
+🚀 Công Việc Của Bạn: Chỉ cần duyệt và đăng. Bot lo phần còn lại!
+
+Gõ /start để khám phá kho nội dung ngay!
+```
+
+## 🔒 Privacy Policy
+
+Bot này thu thập các thông tin sau từ người dùng để phục vụ việc phân quyền và ghi nhật ký hoạt động (Audit Log):
+
+1. Telegram User ID
+2. Username
+3. Tên hiển thị (First Name, Last Name)
+
+**Cam kết:**
+
+- Chúng tôi **không** chia sẻ dữ liệu cá nhân này với bất kỳ bên thứ ba nào.
+- Dữ liệu video và lịch đăng được lưu trữ an toàn trên máy chủ của chúng tôi.
+- Chỉ Admin mới có quyền truy cập vào dữ liệu log hoạt động.
+
 ## 🚀 Tech Stack
 
 - **Runtime**: [Bun](https://bun.sh) (Fast JavaScript runtime)

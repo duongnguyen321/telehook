@@ -16,18 +16,61 @@ export const DATA_DIR = path.join(__dirname, '../../data');
 export const VIDEOS_DIR = path.join(DATA_DIR, 'videos');
 
 // 9 videos/day at optimal times (GMT+7)
-// 09:00, 10:45, 12:15, 14:00, 16:00, 18:00, 20:00, 22:00, 23:45
-export const DAILY_SLOTS = [
-	[9, 0], // Mở bát ngày mới
-	[10, 45], // Giờ giải lao giữa sáng
-	[12, 15], // ĐỈNH VIEW TRƯA - Nghỉ trưa
-	[14, 0], // Đầu giờ chiều
-	[16, 0], // Giờ "trà chiều"
-	[18, 0], // Tan tầm
-	[20, 0], // PRIME TIME - Giờ vàng
-	[22, 0], // Giờ riêng tư
-	[23, 45], // KHUNG GIỜ "HÚT" NHẤT - Content táo bạo
+// Weekday (Mon-Fri): 11:30, 12:15, 17:30, 19:45, 20:30, 21:15, 22:00, 22:45, 23:45
+export const WEEKDAY_SLOTS = [
+	[11, 30], // Lunch Open
+	[12, 15], // Lunch Peak
+	[17, 30], // Commute End
+	[19, 45], // Evening Prime Open
+	[20, 30], // Golden Hour
+	[21, 15], // Private Hour
+	[22, 0], // Gen Z Peak
+	[22, 45], // Late Night Peak
+	[23, 45], // The "Hut" Slot
 ];
+
+// Saturday: Remove 19:45, 20:30. Add 16:00.
+// 11:30, 12:15, 16:00, 17:30, 21:15, 22:00, 22:45, 23:45
+export const SATURDAY_SLOTS = [
+	[11, 30],
+	[12, 15],
+	[16, 0], // Get Ready slot
+	[17, 30],
+	[21, 15],
+	[22, 0],
+	[22, 45],
+	[23, 45],
+];
+
+// Sunday: Add 01:00 (Sat Post-Party), 09:00, 10:00. Remove 23:45.
+// 01:00, 09:00, 10:00, 11:30, 12:15, 17:30, 19:45, 20:30, 21:15, 22:00, 22:45
+export const SUNDAY_SLOTS = [
+	[1, 0], // Post-Party (technically Sun morning)
+	[9, 0], // Sleeping in
+	[10, 0], // Sleeping in
+	[11, 30],
+	[12, 15],
+	[17, 30],
+	[19, 45],
+	[20, 30],
+	[21, 15],
+	[22, 0],
+	[22, 45],
+];
+
+/**
+ * Get slots for a specific date (GMT+7)
+ * @param {Date} date
+ * @returns {Array<[number, number]>}
+ */
+export function getSlotsForDate(date) {
+	const gmt7Date = toGMT7(date);
+	const day = gmt7Date.getDay(); // 0 is Sunday, 6 is Saturday
+
+	if (day === 0) return SUNDAY_SLOTS;
+	if (day === 6) return SATURDAY_SLOTS;
+	return WEEKDAY_SLOTS;
+}
 /**
  * Convert relative video path (filename) to absolute path
  * @param {string} relativePath - filename or relative path
@@ -173,7 +216,6 @@ const recentlyUsedSlots = new Set();
  * @returns {Promise<string>} ISO date string
  */
 export async function getSmartScheduleSlot() {
-	const SLOTS_PER_DAY = DAILY_SLOTS.length; // 9 total
 	const now = nowGMT7();
 
 	// Get all scheduled slots from DB - convert each to GMT+7 slot key
@@ -183,38 +225,36 @@ export async function getSmartScheduleSlot() {
 		select: { scheduledAt: true },
 	});
 
-	// Count slots per GOLDEN HOUR (not actual hour)
-	// 9:30-10:30 -> 10 slot, 14:30-15:30 -> 15 slot, 20:30-21:30 -> 21 slot
+	// Count slots per SLOTS (using precise matching)
 	const slotCounts = new Map();
 
-	function getSlotHour(date) {
+	function getSlotKeyForTime(date) {
 		const d = toGMT7(date);
 		const hour = d.getHours();
 		const minute = d.getMinutes();
 		const dateKey = getDateKey(d);
+		const slots = getSlotsForDate(d);
 
 		// Find which slot this time belongs to
-		for (const [slotH, slotM] of DAILY_SLOTS) {
+		for (const [slotH, slotM] of slots) {
+			// Allow 15 min window
 			if (hour === slotH && Math.abs(minute - slotM) <= 15) {
 				return `${dateKey}-${slotH}-${slotM}`;
 			}
 		}
+		// Fallback for non-matching slots (shouldn't happen often)
 		return `${dateKey}-${hour}-${minute}`;
 	}
 
 	for (const r of dbRows) {
-		const key = getSlotHour(new Date(r.scheduledAt));
+		const key = getSlotKeyForTime(new Date(r.scheduledAt));
 		slotCounts.set(key, (slotCounts.get(key) || 0) + 1);
 	}
 
-	// Also count recently used slots (already using golden hour keys)
+	// Also count recently used slots
 	for (const key of recentlyUsedSlots) {
 		slotCounts.set(key, (slotCounts.get(key) || 0) + 1);
 	}
-
-	console.log(
-		`[Schedule] Total pending: ${dbRows.length}, recent: ${recentlyUsedSlots.size}`
-	);
 
 	// Start from today in GMT+7
 	let checkDate = new Date(now);
@@ -222,46 +262,39 @@ export async function getSmartScheduleSlot() {
 
 	for (let dayOffset = 0; dayOffset < 365; dayOffset++) {
 		const dateKey = getDateKey(checkDate);
+		const dailySlots = getSlotsForDate(checkDate);
 
-		// Count total videos scheduled for this day
-		let dayTotal = 0;
-		for (const [key, count] of slotCounts) {
-			if (key.startsWith(dateKey)) dayTotal += count;
-		}
+		// Check each slot for this day
+		for (const [slotHour, slotMinute] of dailySlots) {
+			const slotKey = `${dateKey}-${slotHour}-${slotMinute}`;
+			const slotCount = slotCounts.get(slotKey) || 0;
 
-		if (dayTotal < SLOTS_PER_DAY) {
-			// Find available slot
-			for (const [slotHour, slotMinute] of DAILY_SLOTS) {
-				const slotKey = `${dateKey}-${slotHour}-${slotMinute}`;
-				const slotCount = slotCounts.get(slotKey) || 0;
+			if (slotCount < 1) {
+				// Each slot only holds 1 video
+				const scheduleTime = createGMT7Time(
+					checkDate.getFullYear(),
+					checkDate.getMonth() + 1,
+					checkDate.getDate(),
+					slotHour
+				);
+				scheduleTime.setMinutes(slotMinute);
 
-				if (slotCount < 1) {
-					// Each slot only holds 1 video now
-					const scheduleTime = createGMT7Time(
-						checkDate.getFullYear(),
-						checkDate.getMonth() + 1,
-						checkDate.getDate(),
-						slotHour
+				// Make sure it's in the future
+				if (scheduleTime > new Date()) {
+					// Mark as used immediately
+					recentlyUsedSlots.add(slotKey);
+					slotCounts.set(slotKey, slotCount + 1);
+
+					// Clean up after 30 seconds
+					setTimeout(() => recentlyUsedSlots.delete(slotKey), 30000);
+
+					console.log(
+						`[Schedule] Found slot: ${slotHour}:${String(slotMinute).padStart(
+							2,
+							'0'
+						)} on ${dateKey}`
 					);
-					scheduleTime.setMinutes(slotMinute);
-
-					// Make sure it's in the future
-					if (scheduleTime > new Date()) {
-						// Mark as used immediately
-						recentlyUsedSlots.add(slotKey);
-						slotCounts.set(slotKey, slotCount + 1);
-
-						// Clean up after 30 seconds
-						setTimeout(() => recentlyUsedSlots.delete(slotKey), 30000);
-
-						console.log(
-							`[Schedule] Slot: ${slotHour}:${String(slotMinute).padStart(
-								2,
-								'0'
-							)} (GMT+7)`
-						);
-						return scheduleTime.toISOString();
-					}
+					return scheduleTime.toISOString();
 				}
 			}
 		}
@@ -298,7 +331,6 @@ export async function rescheduleAllPending(chatId) {
 	}
 
 	// Sort by timestamp in filename (number before first underscore)
-	// Filename format: 1234567890_abc123.mp4
 	posts = posts.sort((a, b) => {
 		const getTimestamp = (videoPath) => {
 			const filename = path.basename(videoPath);
@@ -315,30 +347,43 @@ export async function rescheduleAllPending(chatId) {
 	// Start from now
 	const nowGmt7 = nowGMT7();
 	let currentDate = new Date(nowGmt7);
-	currentDate.setHours(0, 0, 0, 0);
 
-	let slotIndex = 0;
+	// Find the next available slot from now
+	let slotIndex = -1;
+	let slots = getSlotsForDate(currentDate);
 
-	// Find first slot that's in the future
-	for (let i = 0; i < DAILY_SLOTS.length; i++) {
-		const [hour, minute] = DAILY_SLOTS[i];
-		const testTime = new Date(currentDate);
-		testTime.setHours(hour, minute, 0, 0);
-		if (testTime > nowGmt7) {
-			slotIndex = i;
-			break;
+	// Helper to find next valid slot index today
+	const findNextSlotIndex = () => {
+		for (let i = 0; i < slots.length; i++) {
+			const [hour, minute] = slots[i];
+			const testTime = createGMT7Time(
+				currentDate.getFullYear(),
+				currentDate.getMonth() + 1,
+				currentDate.getDate(),
+				hour
+			);
+			testTime.setMinutes(minute);
+			if (testTime > nowGmt7) {
+				return i;
+			}
 		}
-		// If all slots today are past, start from tomorrow
-		if (i === DAILY_SLOTS.length - 1) {
-			currentDate.setDate(currentDate.getDate() + 1);
-			slotIndex = 0;
-		}
+		return -1;
+	};
+
+	slotIndex = findNextSlotIndex();
+
+	// If no slots left today, move to tomorrow
+	if (slotIndex === -1) {
+		currentDate.setDate(currentDate.getDate() + 1);
+		currentDate.setHours(0, 0, 0, 0); // Reset to SOC
+		slots = getSlotsForDate(currentDate);
+		slotIndex = 0;
 	}
 
 	// Update all posts with new schedule AND new content
 	let count = 0;
 	for (const post of posts) {
-		const [hour, minute] = DAILY_SLOTS[slotIndex];
+		const [hour, minute] = slots[slotIndex];
 
 		// Create schedule time
 		const scheduleTime = createGMT7Time(
@@ -373,9 +418,11 @@ export async function rescheduleAllPending(chatId) {
 
 		// Move to next slot
 		slotIndex++;
-		if (slotIndex >= DAILY_SLOTS.length) {
-			slotIndex = 0;
+		if (slotIndex >= slots.length) {
+			// Move to next day
 			currentDate.setDate(currentDate.getDate() + 1);
+			slots = getSlotsForDate(currentDate);
+			slotIndex = 0;
 		}
 	}
 
@@ -418,29 +465,43 @@ export async function rescheduleTimesOnly(chatId) {
 	// Start from now
 	const nowGmt7 = nowGMT7();
 	let currentDate = new Date(nowGmt7);
-	currentDate.setHours(0, 0, 0, 0);
 
-	let slotIndex = 0;
+	// Find the next available slot from now
+	let slotIndex = -1;
+	let slots = getSlotsForDate(currentDate);
 
-	// Find first slot that's in the future
-	for (let i = 0; i < DAILY_SLOTS.length; i++) {
-		const [hour, minute] = DAILY_SLOTS[i];
-		const testTime = new Date(currentDate);
-		testTime.setHours(hour, minute, 0, 0);
-		if (testTime > nowGmt7) {
-			slotIndex = i;
-			break;
+	// Helper to find next valid slot index today
+	const findNextSlotIndex = () => {
+		for (let i = 0; i < slots.length; i++) {
+			const [hour, minute] = slots[i];
+			const testTime = createGMT7Time(
+				currentDate.getFullYear(),
+				currentDate.getMonth() + 1,
+				currentDate.getDate(),
+				hour
+			);
+			testTime.setMinutes(minute);
+			if (testTime > nowGmt7) {
+				return i;
+			}
 		}
-		if (i === DAILY_SLOTS.length - 1) {
-			currentDate.setDate(currentDate.getDate() + 1);
-			slotIndex = 0;
-		}
+		return -1;
+	};
+
+	slotIndex = findNextSlotIndex();
+
+	// If no slots left today, move to tomorrow
+	if (slotIndex === -1) {
+		currentDate.setDate(currentDate.getDate() + 1);
+		currentDate.setHours(0, 0, 0, 0);
+		slots = getSlotsForDate(currentDate);
+		slotIndex = 0;
 	}
 
 	// Update ONLY scheduled_at, keep title/hashtags
 	let count = 0;
 	for (const post of posts) {
-		const [hour, minute] = DAILY_SLOTS[slotIndex];
+		const [hour, minute] = slots[slotIndex];
 
 		const scheduleTime = createGMT7Time(
 			currentDate.getFullYear(),
@@ -458,9 +519,10 @@ export async function rescheduleTimesOnly(chatId) {
 
 		// Move to next slot
 		slotIndex++;
-		if (slotIndex >= DAILY_SLOTS.length) {
-			slotIndex = 0;
+		if (slotIndex >= slots.length) {
 			currentDate.setDate(currentDate.getDate() + 1);
+			slots = getSlotsForDate(currentDate);
+			slotIndex = 0;
 		}
 	}
 
