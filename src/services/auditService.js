@@ -130,16 +130,35 @@ export async function getUserActivitySummary(telegramId, userRole) {
  */
 function getActionDisplayName(action) {
 	const names = {
+		// General commands
 		start: '🚀 Khởi động bot',
 		view_queue: '📅 Xem lịch',
 		view_videos: '🎬 Xem video',
 		view_info: 'ℹ️ Xem thông tin',
 		clear: '🧹 Làm mới',
 		upload_video: '📤 Upload video',
-		edit_content: '✏️ Sửa nội dung',
-		delete_video: '🗑️ Xoá video',
 		reschedule: '🔄 Reschedule',
+		retitle: '🏷️ Retitle',
 		fix_database: '🔧 Fix database',
+		user_info_changed: '👤 Cập nhật thông tin',
+		// Navigate video
+		navigate_video: '🔍 Xem video',
+		// Delete actions
+		delete_ask: '❓ Hỏi xóa video',
+		delete_video: '🗑️ Xoá video',
+		delete_cancel: '↩️ Hủy xóa video',
+		// Edit actions
+		edit_start: '✏️ Bắt đầu sửa',
+		select_category: '📁 Chọn category',
+		toggle_option: '🔘 Chọn/bỏ chọn option',
+		generate_options: '📝 Tạo options',
+		edit_content: '✏️ Sửa nội dung',
+		edit_cancel: '↩️ Hủy sửa',
+		// Random content
+		choose_random: '🎲 Chọn ngẫu nhiên',
+		random_content: '🎲 Tạo random',
+		// Posted confirmation
+		confirm_posted: '✅ Xác nhận đã đăng',
 	};
 	return names[action] || action;
 }

@@ -530,8 +530,18 @@ export function setupVideoHandler(bot) {
 		// Handle pagination
 		if (data.startsWith('queue_')) {
 			const page = parseInt(data.replace('queue_', ''));
+			const { posts } = await getAllPostsByChat(chatId);
+			const post = posts[page];
+			const totalPosts = posts.length;
+			const videoTitle = post?.title?.slice(0, 30) || 'N/A';
+			const videoStatus = post?.status === 'posted' ? 'Đã đăng' : 'Chờ đăng';
 			await sendQueuePage(ctx, chatId, page, messageId, permissions);
-			await logAction(userId, 'navigate_video', null, `Page ${page + 1}`);
+			await logAction(
+				userId,
+				'navigate_video',
+				post?.id || null,
+				`Trang ${page + 1}/${totalPosts} | ${videoStatus} | "${videoTitle}..."`
+			);
 			await safeAnswer();
 			return;
 		}
