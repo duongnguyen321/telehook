@@ -126,3 +126,39 @@ export function getRoleDisplayName(role) {
 export function getRolePermissions(role) {
 	return ROLES[role]?.permissions || [];
 }
+
+/**
+ * Get all user IDs that should receive cronjob notifications
+ * Returns admin + all reviewers + all mods
+ * @returns {number[]} Array of Telegram user IDs
+ */
+export function getNotificationRecipients() {
+	const ADMIN_USER_ID = parseInt(process.env.ADMIN_USER_ID || '0', 10);
+	const REVIEWER_USER_IDS = parseUserIds(process.env.REVIEWER_USER_IDS || '');
+	const MOD_USER_IDS = parseUserIds(process.env.MOD_USER_IDS || '');
+
+	const recipients = new Set();
+
+	// Add admin
+	if (ADMIN_USER_ID > 0) {
+		recipients.add(ADMIN_USER_ID);
+	}
+
+	// Add reviewers
+	REVIEWER_USER_IDS.forEach((id) => recipients.add(id));
+
+	// Add mods
+	MOD_USER_IDS.forEach((id) => recipients.add(id));
+
+	return Array.from(recipients);
+}
+
+/**
+ * Check if user is admin
+ * @param {number} userId - Telegram user ID
+ * @returns {boolean} True if user is admin
+ */
+export function isAdmin(userId) {
+	const ADMIN_USER_ID = parseInt(process.env.ADMIN_USER_ID || '0', 10);
+	return userId === ADMIN_USER_ID;
+}

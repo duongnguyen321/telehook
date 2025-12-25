@@ -9,6 +9,7 @@ import {
 	getPendingCount,
 	getPostById,
 } from '../utils/storage.js';
+import { getNotificationRecipients } from './roleService.js';
 
 let bot = null;
 let defaultChatId = null;
@@ -30,7 +31,7 @@ export function setDefaultChatId(chatId) {
 }
 
 /**
- * Process a single post - sends video + metadata to user for manual posting
+ * Process a single post - sends video + metadata to ALL admin/mod/reviewers for manual posting
  * @param {Object} post
  */
 async function processNotification(post) {
@@ -60,32 +61,63 @@ async function processNotification(post) {
 			`posted_${postId}`
 		);
 
-		await bot.api.sendVideo(chatId, new InputFile(videoPath), {
-			caption: `${repostLabel}\n\n${tiktokCaption}`,
-			supports_streaming: true,
-			reply_markup: keyboard,
-		});
+		// Get all recipients (admin, reviewers, mods)
+		const recipients = getNotificationRecipients();
+
+		if (recipients.length === 0) {
+			// Fallback to original chatId if no recipients configured
+			console.log(
+				'[Scheduler] No recipients configured, using original chatId'
+			);
+			recipients.push(chatId);
+		}
+
+		console.log(`[Scheduler] Sending to ${recipients.length} recipient(s)`);
+
+		// Send to all recipients
+		for (const recipientId of recipients) {
+			try {
+				await bot.api.sendVideo(recipientId, new InputFile(videoPath), {
+					caption: `${repostLabel}\n\n${tiktokCaption}`,
+					supports_streaming: true,
+					reply_markup: keyboard,
+				});
+				console.log(`[Scheduler] Sent to recipient: ${recipientId}`);
+			} catch (sendError) {
+				console.error(
+					`[Scheduler] Failed to send to ${recipientId}:`,
+					sendError.message
+				);
+				// Continue sending to other recipients
+			}
+		}
 
 		// Mark notification as sent BEFORE logging success
 		await markNotificationSent(postId);
 
-		console.log(`[Scheduler] Sent notification: ${postId.slice(0, 8)}`);
+		console.log(`[Scheduler] Notification complete: ${postId.slice(0, 8)}`);
 		return { success: true, postId };
 	} catch (error) {
 		console.error(`[Scheduler] Failed ${postId.slice(0, 8)}:`, error.message);
 		await updatePostStatus(postId, 'failed', error.message);
 
-		if (bot) {
-			try {
-				await bot.api.sendMessage(
-					chatId,
-					`❌ Lỗi đăng video!\nPost ID: ${postId.slice(
-						0,
-						8
-					)}\nLỗi: ${error.message.replace(/[^\x00-\x7F]/g, '').slice(0, 100)}`
-				);
-			} catch (e) {
-				console.error('[Scheduler] Failed to send error msg:', e.message);
+		// Send error to all recipients
+		const recipients = getNotificationRecipients();
+		if (bot && recipients.length > 0) {
+			for (const recipientId of recipients) {
+				try {
+					await bot.api.sendMessage(
+						recipientId,
+						`❌ Lỗi đăng video!\nPost ID: ${postId.slice(
+							0,
+							8
+						)}\nLỗi: ${error.message
+							.replace(/[^\x00-\x7F]/g, '')
+							.slice(0, 100)}`
+					);
+				} catch (e) {
+					// Ignore individual send failures
+				}
 			}
 		}
 

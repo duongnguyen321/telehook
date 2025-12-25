@@ -36,6 +36,7 @@ import {
 	getUserRole,
 	hasPermission,
 	getRoleDisplayName,
+	isAdmin,
 } from '../services/roleService.js';
 import { logAction, getUserActivitySummary } from '../services/auditService.js';
 
@@ -530,6 +531,7 @@ export function setupVideoHandler(bot) {
 		if (data.startsWith('queue_')) {
 			const page = parseInt(data.replace('queue_', ''));
 			await sendQueuePage(ctx, chatId, page, messageId, permissions);
+			await logAction(userId, 'navigate_video', null, `Page ${page + 1}`);
 			await safeAnswer();
 			return;
 		}
@@ -546,6 +548,7 @@ export function setupVideoHandler(bot) {
 				.text('❌ Hủy', `delno_${postId}_${currentPage}`);
 
 			await safeAnswer('Bạn có chắc muốn xóa video này?');
+			await logAction(userId, 'delete_ask', postId, `Page ${currentPage + 1}`);
 
 			// Use safeEditMessage instead of delete+reply
 			await safeEditMessage(
@@ -578,9 +581,11 @@ export function setupVideoHandler(bot) {
 		// Handle delete cancelled (need delete permission)
 		if (data.startsWith('delno_') && canDelete) {
 			const parts = data.split('_');
+			const postId = parts[1];
 			const currentPage = parseInt(parts[2]) || 0;
 
 			await safeAnswer('Đã hủy xóa');
+			await logAction(userId, 'delete_cancel', postId);
 
 			// Return to queue view (restore video/caption)
 			// Pass messageId to reuse the bubble
@@ -602,6 +607,8 @@ export function setupVideoHandler(bot) {
 
 			const selections = categorySelections.get(selectionKey);
 			const keyboard = buildCategoryKeyboard(postId, currentPage, selections);
+
+			await logAction(userId, 'edit_start', postId, `Page ${currentPage + 1}`);
 
 			// Use safeEditMessage
 			await safeEditMessage(
@@ -638,6 +645,8 @@ export function setupVideoHandler(bot) {
 				categoryKey,
 				selectedOpts
 			);
+
+			await logAction(userId, 'select_category', postId, catName);
 
 			await safeEditMessage(
 				ctx,
@@ -689,6 +698,13 @@ export function setupVideoHandler(bot) {
 
 			const optLabel = getOptionLabel(categoryKey, optionKey);
 			const catName = getCategoryName(categoryKey);
+
+			await logAction(
+				userId,
+				'toggle_option',
+				postId,
+				`${catName}: ${optLabel} (${idx >= 0 ? 'off' : 'on'})`
+			);
 
 			// Stay on options screen with updated checkmarks
 			const keyboard = buildOptionsKeyboard(
@@ -785,6 +801,12 @@ export function setupVideoHandler(bot) {
 			// Edit message (caption safely)
 			await safeEditMessage(ctx, messageText, keyboard);
 
+			await logAction(
+				userId,
+				'generate_options',
+				postId,
+				`Page ${optionPage + 1}`
+			);
 			await safeAnswer();
 			return;
 		}
@@ -849,6 +871,12 @@ export function setupVideoHandler(bot) {
 
 			if (result.success) {
 				await safeAnswer(`Random: "${result.title.slice(0, 20)}..."`);
+				await logAction(
+					userId,
+					'choose_random',
+					postId,
+					result.title.slice(0, 50)
+				);
 			} else {
 				await safeAnswer('Lỗi: Không tìm thấy video');
 			}
@@ -872,6 +900,12 @@ export function setupVideoHandler(bot) {
 
 			if (result.success) {
 				await safeAnswer(`Random: "${result.title.slice(0, 20)}..."`);
+				await logAction(
+					userId,
+					'random_content',
+					postId,
+					result.title.slice(0, 50)
+				);
 			} else {
 				await safeAnswer('Lỗi: Không tìm thấy video');
 			}
@@ -895,15 +929,28 @@ export function setupVideoHandler(bot) {
 			// Since we act on the same message, we can just "go back".
 
 			await safeAnswer('Đã hủy');
+			await logAction(userId, 'edit_cancel', postId);
 			await sendQueuePage(ctx, chatId, currentPage, null, permissions);
 			return;
 		}
 
-		// Handle posted confirmation (from scheduler notification)
+		// Handle posted confirmation (from scheduler notification) - ADMIN ONLY
 		if (data.startsWith('posted_')) {
+			// Only admin can confirm posted
+			if (!isAdmin(userId)) {
+				await safeAnswer('❌ Chỉ Admin mới được xác nhận đã đăng!');
+				await logAction(
+					userId,
+					'confirm_posted_denied',
+					data.replace('posted_', '')
+				);
+				return;
+			}
+
 			const postId = data.replace('posted_', '');
 
 			await updatePostStatus(postId, 'posted');
+			await logAction(userId, 'confirm_posted', postId);
 
 			// Delete the message after confirmation
 			try {

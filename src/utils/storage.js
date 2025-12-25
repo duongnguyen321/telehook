@@ -811,13 +811,14 @@ export async function getPendingCount() {
 }
 
 /**
- * Get all pending posts for a chat
- * @param {number} chatId
+ * Get all pending posts (public - visible to all users)
+ * @param {number} chatId - Kept for backward compatibility, not used in query
  * @returns {Promise<ScheduledPost[]>}
  */
 export async function getPendingPostsByChat(chatId) {
+	// NOTE: chatId is ignored - videos are public to all users
 	const posts = await prisma.scheduledPost.findMany({
-		where: { chatId: BigInt(chatId), status: 'pending' },
+		where: { status: 'pending' },
 		orderBy: { scheduledAt: 'asc' },
 	});
 
@@ -825,16 +826,16 @@ export async function getPendingPostsByChat(chatId) {
 }
 
 /**
- * Get all posts for a chat (both pending and posted), sorted by scheduledAt asc (oldest first)
+ * Get all posts (public - visible to all users), sorted by scheduledAt asc (oldest first)
  * Order: oldest posted → ... → last posted (DEFAULT) → first pending → ... → newest pending
  * Also returns the index of the last posted video for default page
- * @param {number} chatId
+ * @param {number} chatId - Kept for backward compatibility, not used in query
  * @returns {Promise<{posts: ScheduledPost[], lastPostedIndex: number}>}
  */
 export async function getAllPostsByChat(chatId) {
+	// NOTE: chatId is ignored - videos are public to all users
 	const posts = await prisma.scheduledPost.findMany({
 		where: {
-			chatId: BigInt(chatId),
 			status: { in: ['pending', 'posted'] },
 		},
 		orderBy: { scheduledAt: 'asc' }, // Oldest first
