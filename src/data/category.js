@@ -359,6 +359,40 @@ export const CATEGORIES = {
 				],
 				hashtags: ['#khantam', '#shower', '#fresh'],
 			},
+			TIGHT_DRESS: {
+				label: 'Váy bó sát',
+				keywords: ['váy body ôm sát', 'đầm bodycon', 'váy bó tôn dáng'],
+				hashtags: ['#bodycon', '#vaybo', '#sexy'],
+			},
+			PRINCESS_DRESS: {
+				label: 'Váy công chúa',
+				keywords: ['váy xòe bồng bềnh', 'đầm công chúa', 'váy trắng tinh khôi'],
+				hashtags: ['#princess', '#banhbeo', '#cute'],
+			},
+			TIGHT_TOP: {
+				label: 'Áo bó',
+				keywords: ['áo thun bó sát', 'áo croptop ôm', 'áo ba lỗ bó'],
+				hashtags: ['#tighttop', '#aobo', '#curves'],
+			},
+			YOGA_PANTS: {
+				label: 'Quần Yoga',
+				keywords: ['quần tập bó sát', 'quần yoga tôn mông', 'legging bó'],
+				hashtags: ['#yogapants', '#legging', '#peach'],
+			},
+			OVERSIZED_SHIRT: {
+				label: 'Áo giấu quần',
+				keywords: [
+					'áo phông rộng giấu quần',
+					'sơ mi rộng thùng thình',
+					'mốt giấu quần',
+				],
+				hashtags: ['#oversized', '#giauquan', '#cute'],
+			},
+			MINI_SKIRT: {
+				label: 'Váy ngắn',
+				keywords: ['chân váy siêu ngắn', 'váy ngắn cũn cỡn', 'váy xếp ly ngắn'],
+				hashtags: ['#miniskirt', '#vayngan', '#legs'],
+			},
 		},
 	},
 
