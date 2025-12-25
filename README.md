@@ -14,15 +14,32 @@ A powerful Telegram bot that automatically downloads, schedules, and manages Tik
   - **Retry Queue**: Background queue with 3 retries (60s timeout) for slow connections.
   - **Non-blocking**: Failed downloads don't block other tasks.
 
-### 📅 Smart Schedule System (9 Videos/Day)
+### 📅 Smart Schedule System ("Private Wave" Protocol)
 
-Optimized for high engagement with 3 golden hours (GMT+7):
+Optimized for the Vietnamese demographic (GMT+7), focusing on lunch breaks and late-night "Private" hours.
 
-- **Morning**: 9:30, 10:00, 10:30
-- **Afternoon**: 14:30, 15:00, 15:30
-- **Evening**: 20:30, 21:00, 21:30
+**Weekday (Mon-Fri) - 9 Videos:**
 
-_Logic: Fills the first available future slot. If all slots today are full, it moves to tomorrow._
+- **Lunch**: 11:30, 12:15
+- **Commute**: 17:30
+- **Private Wave**: 19:45, 20:30, 21:15, 22:00, 22:45, 23:45
+
+**Saturday - 8 Videos:**
+
+- **Lunch**: 11:30, 12:15
+- **Get Ready**: 16:00
+- **Commute**: 17:30
+- **Night**: 21:15, 22:00, 22:45, 23:45 _(Skipped 19:45/20:30 for social hours)_
+
+**Sunday - 11 Videos:**
+
+- **Post-Party**: 01:00 _(Sat night spillover)_
+- **Sleep In**: 09:00, 10:00
+- **Lunch**: 11:30, 12:15
+- **Commute**: 17:30
+- **Private Wave**: 19:45, 20:30, 21:15, 22:00, 22:45 _(Ends early for Work Monday)_
+
+_Logic: Automatically detects the day of the week and fills the slots accordingly._
 
 ### 📝 AI Content Generation
 

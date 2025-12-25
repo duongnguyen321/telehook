@@ -212,7 +212,7 @@ const recentlyUsedSlots = new Set();
 
 /**
  * Get smart schedule slot for next video
- * 9 videos/day: 3 per timeslot at 10:00, 15:00, 21:00 (GMT+7)
+ * Uses dynamic slots based on Weekday/Saturday/Sunday schedule (GMT+7)
  * @returns {Promise<string>} ISO date string
  */
 export async function getSmartScheduleSlot() {
@@ -309,7 +309,7 @@ export async function getSmartScheduleSlot() {
 
 /**
  * Reschedule all pending posts with new schedule AND new content
- * 9 videos/day: 3 per golden hour (9:30/10:00/10:30, 14:30/15:00/15:30, 20:30/21:00/21:30)
+ * Uses dynamic "Private Wave" schedule (Weekday/Sat/Sun)
  * Videos are sorted by timestamp in filename (number before first underscore)
  * @param {number} chatId
  * @returns {Promise<number>} Number of posts rescheduled

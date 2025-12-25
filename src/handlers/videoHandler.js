@@ -980,7 +980,7 @@ function buildGreetingMessage(ctx, userRole, tiktokLink) {
 
 	if (userRole === 'mod' || userRole === 'admin') {
 		greeting += `1️⃣ Forward video vào bot → Video tự động lên lịch\n`;
-		greeting += `2️⃣ Bot đăng 9 video/ngày (9:30, 14:30, 20:30)\n`;
+		greeting += `2️⃣ Bot đăng theo lịch "Private Wave" (Lunch & Late Night)\n`;
 		greeting += `3️⃣ Khi đến giờ → Bot gửi thông báo + video + caption\n`;
 		greeting += `4️⃣ Copy caption → Đăng lên TikTok\n`;
 	} else if (userRole === 'reviewer') {
