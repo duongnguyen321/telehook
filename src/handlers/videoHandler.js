@@ -529,6 +529,14 @@ export function setupVideoHandler(bot) {
 				return;
 			}
 
+			// Check file size (>20MB)
+			const sizeMB = ((video.file_size || 0) / 1024 / 1024).toFixed(1);
+			if (video.file_size && video.file_size > 20 * 1024 * 1024) {
+				console.log(`[Video] Forwarded video too big: ${sizeMB}MB`);
+				await ctx.reply('Video too big (>20MB), skipped.');
+				return;
+			}
+
 			// Process as new video (download, upload to R2, save file_id, create schedule)
 			try {
 				const file = await ctx.api.getFile(video.file_id);
