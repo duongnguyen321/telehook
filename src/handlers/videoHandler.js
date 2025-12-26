@@ -1486,7 +1486,7 @@ async function handleCommand(ctx, command) {
 		}
 
 		const time = formatVietnameseTime(new Date(post.scheduledAt));
-		await ctx.reply(
+		const loadingMsg = await ctx.reply(
 			`🔍 **Video sắp đăng tiếp theo:**\n📅 ${time}\n\nĐang tải video...`
 		);
 
@@ -1516,6 +1516,15 @@ async function handleCommand(ctx, command) {
 				return;
 			}
 
+			// Format exact caption logic from scheduler.js
+			// const repostLabel = post.isRepost ? ' [REPOST]' : ''; // Logic from scheduler
+			// const tiktokCaption = `${post.title}\n\n${post.hashtags}`;
+			// caption: `${repostLabel}\n\n${tiktokCaption}`
+
+			const repostLabel = post.isRepost ? ' [REPOST]' : '';
+			const tiktokCaption = `${post.title}\n\n${post.hashtags}`;
+			const finalCaption = `${repostLabel}\n\n${tiktokCaption}`;
+
 			// Send with confirm button
 			const keyboard = new InlineKeyboard().text(
 				'✅ Duyệt đăng ngay',
@@ -1523,10 +1532,17 @@ async function handleCommand(ctx, command) {
 			);
 
 			const sentMessage = await ctx.replyWithVideo(videoInput, {
-				caption: `📝 **REVIEW PRE-POST**\n⏳ Dự kiến: ${time}\n\n${post.title}\n\n${post.hashtags}`,
+				caption: finalCaption,
 				reply_markup: keyboard,
 				supports_streaming: true,
 			});
+
+			// Delete loading message
+			try {
+				await ctx.api.deleteMessage(chatId, loadingMsg.message_id);
+			} catch (e) {
+				// Ignore delete error
+			}
 
 			// Cache file_id if we uploaded fresh
 			if (needsFileIdSave && sentMessage.video?.file_id) {
