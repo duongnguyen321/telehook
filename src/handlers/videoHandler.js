@@ -270,9 +270,6 @@ async function sendQueuePage(
 		fastNavRow.push({ text: '<< 5', callback_data: `queue_${actualPage - 5}` });
 	}
 
-	// RESET BUTTON (Go to last posted / default view)
-	fastNavRow.push({ text: '🔄 Reset', callback_data: `queue_-1` });
-
 	if (actualPage <= posts.length - 6) {
 		fastNavRow.push({ text: '5 >>', callback_data: `queue_${actualPage + 5}` });
 	}
@@ -286,9 +283,10 @@ async function sendQueuePage(
 		keyboard.row(...fastNavRow);
 	}
 
-	// Add action buttons based on permissions ONLY for pending videos (not posted)
+	// Action buttons (Edit/Delete for pending) + Reset
+	const actionRow = [];
+
 	if (post.status === 'pending') {
-		const actionRow = [];
 		if (permissions.canEdit) {
 			actionRow.push({
 				text: '✏️ Đổi nội dung',
@@ -301,9 +299,13 @@ async function sendQueuePage(
 				callback_data: `delask_${post.id}_${actualPage}`,
 			});
 		}
-		if (actionRow.length > 0) {
-			keyboard.row(...actionRow);
-		}
+	}
+
+	// Reset button always available
+	actionRow.push({ text: '🔄 Reset', callback_data: `queue_-1` });
+
+	if (actionRow.length > 0) {
+		keyboard.row(...actionRow);
 	}
 
 	// Prepare video source with priority: file_id > local > S3
