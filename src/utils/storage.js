@@ -1047,7 +1047,7 @@ export async function cleanOrphanedPosts(chatId) {
 					await prisma.scheduledPost.create({
 						data: {
 							chatId: BigInt(chatId),
-							videoPath: `data/videos/${videoKey}`,
+							videoPath: videoKey,
 							title,
 							hashtags,
 							status: 'pending',
