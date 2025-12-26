@@ -136,15 +136,25 @@ ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.audit_logs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.videos ENABLE ROW LEVEL SECURITY;
 
+-- Drop existing policies if they exist, then recreate
+DROP POLICY IF EXISTS "Allow all for service role" ON public.scheduled_posts;
+DROP POLICY IF EXISTS "Allow all for service role" ON public.video_archive;
+DROP POLICY IF EXISTS "Allow all for service role" ON public.repost_cycle;
+DROP POLICY IF EXISTS "Allow all for service role" ON public.settings;
+DROP POLICY IF EXISTS "Allow all for service role" ON public.downloaded_videos;
+DROP POLICY IF EXISTS "Allow all for service role" ON public.users;
+DROP POLICY IF EXISTS "Allow all for service role" ON public.audit_logs;
+DROP POLICY IF EXISTS "Allow all for service role" ON public.videos;
+
 -- Create permissive policies (allow all for service role)
-CREATE POLICY IF NOT EXISTS "Allow all for service role" ON public.scheduled_posts FOR ALL USING (true);
-CREATE POLICY IF NOT EXISTS "Allow all for service role" ON public.video_archive FOR ALL USING (true);
-CREATE POLICY IF NOT EXISTS "Allow all for service role" ON public.repost_cycle FOR ALL USING (true);
-CREATE POLICY IF NOT EXISTS "Allow all for service role" ON public.settings FOR ALL USING (true);
-CREATE POLICY IF NOT EXISTS "Allow all for service role" ON public.downloaded_videos FOR ALL USING (true);
-CREATE POLICY IF NOT EXISTS "Allow all for service role" ON public.users FOR ALL USING (true);
-CREATE POLICY IF NOT EXISTS "Allow all for service role" ON public.audit_logs FOR ALL USING (true);
-CREATE POLICY IF NOT EXISTS "Allow all for service role" ON public.videos FOR ALL USING (true);
+CREATE POLICY "Allow all for service role" ON public.scheduled_posts FOR ALL USING (true);
+CREATE POLICY "Allow all for service role" ON public.video_archive FOR ALL USING (true);
+CREATE POLICY "Allow all for service role" ON public.repost_cycle FOR ALL USING (true);
+CREATE POLICY "Allow all for service role" ON public.settings FOR ALL USING (true);
+CREATE POLICY "Allow all for service role" ON public.downloaded_videos FOR ALL USING (true);
+CREATE POLICY "Allow all for service role" ON public.users FOR ALL USING (true);
+CREATE POLICY "Allow all for service role" ON public.audit_logs FOR ALL USING (true);
+CREATE POLICY "Allow all for service role" ON public.videos FOR ALL USING (true);
 
 -- Grant permissions to service role
 GRANT ALL ON public.scheduled_posts TO service_role;
