@@ -269,6 +269,10 @@ async function sendQueuePage(
 	if (actualPage >= 5) {
 		fastNavRow.push({ text: '<< 5', callback_data: `queue_${actualPage - 5}` });
 	}
+
+	// RESET BUTTON (Go to last posted / default view)
+	fastNavRow.push({ text: '🔄 Reset', callback_data: `queue_-1` });
+
 	if (actualPage <= posts.length - 6) {
 		fastNavRow.push({ text: '5 >>', callback_data: `queue_${actualPage + 5}` });
 	}
@@ -1498,9 +1502,19 @@ async function handleCommand(ctx, command) {
 			// const tiktokCaption = `${post.title}\n\n${post.hashtags}`;
 			// caption: `${repostLabel}\n\n${tiktokCaption}`
 
+			// Calculate index and formatted time
+			const { posts } = await getAllPostsByChat(chatId);
+			const currentIndex = posts.findIndex((p) => p.id === post.id);
+			const totalPosts = posts.length;
+			const timeStr = formatVietnameseTime(new Date(post.scheduledAt));
+
 			const repostLabel = post.isRepost ? ' [REPOST]' : '';
 			const tiktokCaption = `${post.title}\n\n${post.hashtags}`;
-			const finalCaption = `${repostLabel}\n\n${tiktokCaption}`;
+
+			// New caption format with detailed info
+			const finalCaption = `[${
+				currentIndex + 1
+			}/${totalPosts}] ⏳ Sắp đăng - ${timeStr}\n\n${repostLabel}${tiktokCaption}`;
 
 			// Send with confirm button
 			const keyboard = new InlineKeyboard().text(
