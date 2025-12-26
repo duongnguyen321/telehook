@@ -71,6 +71,7 @@ async function migrateFilesToS3() {
 	const s3Module = await import('../src/utils/s3.js');
 	s3UploadVideo = s3Module.uploadVideo;
 	isS3Enabled = s3Module.isS3Enabled;
+	const s3VideoExists = s3Module.videoExists;
 
 	if (!isS3Enabled()) {
 		log('❌ S3 is not configured. Check S3_* environment variables.', 'red');
@@ -83,7 +84,7 @@ async function migrateFilesToS3() {
 	}
 
 	const files = fs.readdirSync(VIDEOS_DIR).filter((f) => f.endsWith('.mp4'));
-	log(`Found ${files.length} video files to migrate`, 'yellow');
+	log(`Found ${files.length} video files to check`, 'yellow');
 
 	if (DRY_RUN) {
 		log('🔍 DRY RUN - No files will be uploaded', 'yellow');
@@ -100,9 +101,18 @@ async function migrateFilesToS3() {
 		const filePath = path.join(VIDEOS_DIR, fileName);
 
 		try {
+			// Check if file already exists in S3
+			const exists = await s3VideoExists(fileName);
+			if (exists) {
+				skipped++;
+				logProgress(i + 1, files.length, `files (skip: ${skipped})`);
+				continue;
+			}
+
 			const uploaded = await s3UploadVideo(filePath, fileName);
 			if (uploaded) {
 				success++;
+				log(`\n✅ Uploaded: ${fileName}`, 'green');
 			} else {
 				failed++;
 			}
@@ -111,11 +121,15 @@ async function migrateFilesToS3() {
 			failed++;
 		}
 
-		logProgress(i + 1, files.length, 'files');
+		logProgress(
+			i + 1,
+			files.length,
+			`files (new: ${success}, skip: ${skipped})`
+		);
 	}
 
 	log(
-		`\n✅ S3 Migration Complete: ${success} uploaded, ${failed} failed`,
+		`\n✅ S3 Migration Complete: ${success} uploaded, ${skipped} already existed, ${failed} failed`,
 		'green'
 	);
 	return { success, failed, skipped };
