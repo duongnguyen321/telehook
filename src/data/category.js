@@ -515,6 +515,16 @@ export const CATEGORIES = {
 				],
 				hashtags: ['#singing', '#karaoke', '#hat'],
 			},
+			COOKING: {
+				label: 'Nấu ăn',
+				keywords: [
+					'đang nấu ăn',
+					'đang làm bếp',
+					'trổ tài nấu nướng',
+					'chuẩn bị bữa cơm',
+				],
+				hashtags: ['#cooking', '#nauan', '#noitro', '#kitchen'],
+			},
 		},
 	},
 
