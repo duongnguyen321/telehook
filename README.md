@@ -63,7 +63,6 @@ _Logic: Automatically detects the day of the week and fills the slots accordingl
 | `/queue`  | Xem lịch đăng video                      |
 | `/videos` | Xem chi tiết video với phân trang        |
 | `/info`   | Xem hoạt động và thống kê của bạn        |
-| `/clear`  | Xoá tin nhắn, hiển thị lại lời chào      |
 
 ### Mod Commands (📤 Mod + Admin)
 
@@ -96,8 +95,7 @@ start - Hiển thị lời chào và hướng dẫn
 queue - Xem lịch đăng video
 videos - Xem chi tiết video
 info - Xem hoạt động của bạn
-clear - Xoá tin nhắn, hiển thị lại lời chào
-check - Kiểm tra video sắp đăng
+check - Kiểm tra video sắp đăng (Admin)
 reschedule - Sắp xếp lại lịch đăng
 retitle - Tạo nội dung mới cho video
 fix - Dọn dẹp database

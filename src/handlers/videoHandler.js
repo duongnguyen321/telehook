@@ -57,10 +57,6 @@ const categorySelections = new Map();
 // Key: `${chatId}_${postId}`, Value: Array of content options
 const generatedOptions = new Map();
 
-// Map to track the last bot message for each user (for /clear deletion)
-// Key: userId, Value: messageId
-const lastBotMessages = new Map();
-
 /**
  * Build category selection keyboard
  * @param {string} postId
@@ -1221,7 +1217,7 @@ function buildGreetingMessage(ctx, userRole, tiktokLink) {
 	greeting += `• /queue - Xem lịch đăng video\n`;
 	greeting += `• /videos - Xem chi tiết video\n`;
 	greeting += `• /info - Xem hoạt động của bạn\n`;
-	greeting += `• /clear - Xoá tin nhắn, hiển thị lại lời chào\n`;
+	greeting += `• /info - Xem hoạt động của bạn\n`;
 
 	// Mod commands
 	if (userRole === 'mod' || userRole === 'admin') {
@@ -1315,39 +1311,6 @@ async function handleCommand(ctx, command) {
 		const greeting = buildGreetingMessage(ctx, userRole, tiktokLink);
 		await ctx.reply(greeting, { parse_mode: 'Markdown' });
 		await logAction(userId, 'start');
-		return;
-	}
-
-	// ========== /clear - Clear messages and show greeting again ==========
-	if (command === '/clear') {
-		// Try to delete the /clear command message itself cleanup
-		try {
-			await ctx.deleteMessage();
-		} catch (e) {
-			console.error('[Clear] Delete error:', e.message);
-		}
-
-		// Try to delete the previous bot message if tracked
-		const lastMsgId = lastBotMessages.get(userId);
-		if (lastMsgId) {
-			try {
-				await ctx.api.deleteMessage(chatId, lastMsgId);
-			} catch (e) {
-				// Ignore if can't delete (too old or already deleted)
-			}
-			lastBotMessages.delete(userId);
-		}
-
-		const greeting = buildGreetingMessage(ctx, userRole, tiktokLink);
-		// Send new greeting
-		const sent = await ctx.reply('🧹 Đã làm mới!\n\n' + greeting, {
-			parse_mode: 'Markdown',
-		});
-
-		// Track the new greeting message
-		lastBotMessages.set(userId, sent.message_id);
-
-		await logAction(userId, 'clear');
 		return;
 	}
 
