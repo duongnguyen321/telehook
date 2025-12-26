@@ -585,7 +585,7 @@ export async function getDuePosts() {
 		where: {
 			status: 'pending',
 			scheduledAt: { lte: now },
-			notificationSent: 0, // Only get posts that haven't been notified
+			notificationSent: false, // Only get posts that haven't been notified
 		},
 		orderBy: { scheduledAt: 'asc' },
 	});
@@ -600,7 +600,7 @@ export async function getDuePosts() {
 export async function markNotificationSent(postId) {
 	await prisma.scheduledPost.update({
 		where: { id: postId },
-		data: { notificationSent: 1 },
+		data: { notificationSent: true },
 	});
 	console.log(
 		`[Storage] Marked notification sent for post ${postId.slice(0, 8)}`
