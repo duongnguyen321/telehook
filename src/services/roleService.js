@@ -20,7 +20,7 @@ const ROLES = {
 	},
 	mod: {
 		level: 2,
-		permissions: ['view', 'upload'],
+		permissions: ['view', 'upload', 'delete'],
 	},
 	user: {
 		level: 1,

@@ -10,7 +10,11 @@ import {
 	getDateKey,
 	createGMT7Time,
 } from './timezone.js';
-import { isS3Enabled, videoExists as s3VideoExists } from './s3.js';
+import {
+	isS3Enabled,
+	videoExists as s3VideoExists,
+	deleteVideo as s3DeleteVideo,
+} from './s3.js';
 import { generateContentOptions } from '../services/ai.js';
 import { S3Client, ListObjectsV2Command } from '@aws-sdk/client-s3';
 
@@ -899,6 +903,14 @@ export async function deleteScheduledPost(postId, chatId) {
 		} catch (e) {
 			console.error(`[Delete] Failed to remove file: ${e.message}`);
 		}
+	}
+
+	// Delete from S3 if enabled (independent of local file)
+	if (isS3Enabled()) {
+		const videoKey = path.basename(post.videoPath);
+		// Note: We don't check existence first because delete is idempotent
+		await s3DeleteVideo(videoKey);
+		console.log(`[Delete] Removed S3 video: ${videoKey}`);
 	}
 
 	// Delete from downloaded_videos if exists (by video path)
