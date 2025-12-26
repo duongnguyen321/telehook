@@ -293,12 +293,9 @@ async function sendQueuePage(
 				callback_data: `regen_${post.id}_${actualPage}`,
 			});
 		}
-	}
 
-	// Reset button always available
-	actionRow.push({ text: '🔄 Reset', callback_data: `queue_-1` });
+		actionRow.push({ text: '🔄 Reset', callback_data: `queue_-1` });
 
-	if (post.status === 'pending') {
 		if (permissions.canDelete) {
 			actionRow.push({
 				text: '🗑️ Xóa',
