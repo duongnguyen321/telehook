@@ -57,6 +57,10 @@ const categorySelections = new Map();
 // Key: `${chatId}_${postId}`, Value: Array of content options
 const generatedOptions = new Map();
 
+// Map to track the last bot message for each user (for /clear deletion)
+// Key: userId, Value: messageId
+const lastBotMessages = new Map();
+
 /**
  * Build category selection keyboard
  * @param {string} postId
@@ -1316,18 +1320,33 @@ async function handleCommand(ctx, command) {
 
 	// ========== /clear - Clear messages and show greeting again ==========
 	if (command === '/clear') {
-		// Try to delete the /clear command message itself to clean up
+		// Try to delete the /clear command message itself cleanup
 		try {
 			await ctx.deleteMessage();
 		} catch (e) {
 			console.error('[Clear] Delete error:', e.message);
 		}
 
+		// Try to delete the previous bot message if tracked
+		const lastMsgId = lastBotMessages.get(userId);
+		if (lastMsgId) {
+			try {
+				await ctx.api.deleteMessage(chatId, lastMsgId);
+			} catch (e) {
+				// Ignore if can't delete (too old or already deleted)
+			}
+			lastBotMessages.delete(userId);
+		}
+
 		const greeting = buildGreetingMessage(ctx, userRole, tiktokLink);
 		// Send new greeting
-		await ctx.reply('🧹 Đã làm mới!\n\n' + greeting, {
+		const sent = await ctx.reply('🧹 Đã làm mới!\n\n' + greeting, {
 			parse_mode: 'Markdown',
 		});
+
+		// Track the new greeting message
+		lastBotMessages.set(userId, sent.message_id);
+
 		await logAction(userId, 'clear');
 		return;
 	}
@@ -1485,11 +1504,6 @@ async function handleCommand(ctx, command) {
 			return;
 		}
 
-		const time = formatVietnameseTime(new Date(post.scheduledAt));
-		const loadingMsg = await ctx.reply(
-			`🔍 **Video sắp đăng tiếp theo:**\n📅 ${time}\n\nĐang tải video...`
-		);
-
 		try {
 			// Prepare video source
 			const videoKey = path.basename(post.videoPath);
@@ -1536,13 +1550,6 @@ async function handleCommand(ctx, command) {
 				reply_markup: keyboard,
 				supports_streaming: true,
 			});
-
-			// Delete loading message
-			try {
-				await ctx.api.deleteMessage(chatId, loadingMsg.message_id);
-			} catch (e) {
-				// Ignore delete error
-			}
 
 			// Cache file_id if we uploaded fresh
 			if (needsFileIdSave && sentMessage.video?.file_id) {
