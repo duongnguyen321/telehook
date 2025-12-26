@@ -171,10 +171,13 @@ function mapScheduledPost(row) {
 		title: row.title,
 
 		hashtags: row.hashtags,
-		scheduledAt: row.scheduledAt,
+		scheduledAt:
+			row.scheduledAt instanceof Date
+				? row.scheduledAt.toISOString()
+				: row.scheduledAt,
 		status: row.status,
 		error: row.error,
-		isRepost: row.isRepost === 1,
+		isRepost: Boolean(row.isRepost),
 		telegramFileId: row.telegramFileId || null,
 	};
 }
@@ -185,7 +188,6 @@ function mapScheduledPost(row) {
  * @returns {Promise<ScheduledPost>}
  */
 export async function addScheduledPost(post) {
-	const id = crypto.randomUUID();
 	const scheduledAt = await getSmartScheduleSlot();
 
 	// Store relative path only
@@ -193,13 +195,12 @@ export async function addScheduledPost(post) {
 
 	const created = await prisma.scheduledPost.create({
 		data: {
-			id,
 			chatId: BigInt(post.chatId),
 			videoPath: relativePath,
 			title: post.title,
 			hashtags: post.hashtags,
-			scheduledAt,
-			isRepost: post.isRepost ? 1 : 0,
+			scheduledAt: new Date(scheduledAt),
+			isRepost: Boolean(post.isRepost),
 		},
 	});
 

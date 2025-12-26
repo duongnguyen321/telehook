@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import os from 'os';
 import { InlineKeyboard } from 'grammy';
 import {
 	addScheduledPost,
@@ -39,6 +40,13 @@ import {
 	isAdmin,
 } from '../services/roleService.js';
 import { logAction, getUserActivitySummary } from '../services/auditService.js';
+import {
+	isS3Enabled,
+	uploadVideo as s3UploadVideo,
+	downloadVideo as s3DownloadVideo,
+	videoExists as s3VideoExists,
+	deleteVideo as s3DeleteVideo,
+} from '../utils/s3.js';
 
 // Temporary storage for category selections during content generation
 // Key: `${chatId}_${postId}`, Value: { POSE: 'FRONT', ACTION: 'SHOWING', ... }
@@ -294,8 +302,19 @@ async function sendQueuePage(
 		}
 	}
 
-	// Check if video file exists
-	if (!fs.existsSync(post.videoPath)) {
+	// Check if video file exists (local or S3)
+	const videoKey = path.basename(post.videoPath);
+	let videoBuffer = null;
+
+	// First check local file
+	const localExists = fs.existsSync(post.videoPath);
+
+	// If not local, try S3
+	if (!localExists && isS3Enabled()) {
+		videoBuffer = await s3DownloadVideo(videoKey);
+	}
+
+	if (!localExists && !videoBuffer) {
 		const text =
 			`[${page + 1}/${posts.length}] Video file missing!\n${time}` + tiktokLink;
 		if (messageId) {
@@ -318,6 +337,8 @@ async function sendQueuePage(
 			let videoSource;
 			if (post.telegramFileId) {
 				videoSource = post.telegramFileId;
+			} else if (videoBuffer) {
+				videoSource = new InputFile(videoBuffer, videoKey);
 			} else {
 				videoSource = new InputFile(post.videoPath);
 			}
@@ -352,10 +373,12 @@ async function sendQueuePage(
 	}
 
 	// Send new message (or fallback from failed edit)
-	// Use cached file_id if available, otherwise upload from disk
+	// Use cached file_id if available, otherwise upload from disk or S3 buffer
 	let videoSource;
 	if (post.telegramFileId) {
 		videoSource = post.telegramFileId;
+	} else if (videoBuffer) {
+		videoSource = new InputFile(videoBuffer, videoKey);
 	} else {
 		videoSource = new InputFile(post.videoPath);
 	}
@@ -382,6 +405,26 @@ async function sendQueuePage(
  */
 async function processVideoAfterDownload(ctx, video, videoPath, chatId) {
 	try {
+		const fileName = path.basename(videoPath);
+
+		// Upload to S3 if enabled
+		if (isS3Enabled()) {
+			const uploaded = await s3UploadVideo(videoPath, fileName);
+			if (uploaded) {
+				// Delete local file after successful S3 upload
+				try {
+					fs.unlinkSync(videoPath);
+					console.log(
+						`[Video] Deleted local file after S3 upload: ${fileName}`
+					);
+				} catch (e) {
+					console.error(`[Video] Failed to delete local file: ${e.message}`);
+				}
+			} else {
+				console.log('[Video] S3 upload failed, keeping local file');
+			}
+		}
+
 		// Track video
 		await trackDownloadedVideo(
 			video.file_id,
@@ -406,7 +449,8 @@ async function processVideoAfterDownload(ctx, video, videoPath, chatId) {
 		await updateVideoStatus(video.file_id, 'scheduled');
 
 		const time = formatVietnameseTime(new Date(post.scheduledAt));
-		console.log(`[Video] Scheduled: ${time}`);
+		const storageNote = isS3Enabled() ? ' (S3)' : ' (local)';
+		console.log(`[Video] Scheduled: ${time}${storageNote}`);
 
 		await ctx.reply(`Scheduled: ${time}`);
 

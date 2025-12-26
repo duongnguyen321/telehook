@@ -1,5 +1,6 @@
 import cron from 'node-cron';
 import fs from 'fs';
+import path from 'path';
 import {
 	getDuePosts,
 	updatePostStatus,
@@ -10,6 +11,7 @@ import {
 	getPostById,
 } from '../utils/storage.js';
 import { getNotificationRecipients } from './roleService.js';
+import { isS3Enabled, downloadVideo as s3DownloadVideo } from '../utils/s3.js';
 
 let bot = null;
 let defaultChatId = null;
@@ -45,9 +47,27 @@ async function processNotification(post) {
 			throw new Error('Bot not initialized');
 		}
 
-		// Check if video file exists
-		if (!fs.existsSync(videoPath)) {
-			throw new Error(`Video file not found: ${videoPath}`);
+		// Check if video file exists (local or S3)
+		const videoKey = path.basename(videoPath);
+		let videoSource = null;
+		let videoBuffer = null;
+
+		// First check local file
+		if (fs.existsSync(videoPath)) {
+			console.log(`[Scheduler] Using local file: ${videoKey}`);
+			videoSource = 'local';
+		} else if (isS3Enabled()) {
+			// Try S3 if local file not found
+			console.log(`[Scheduler] Local file not found, trying S3: ${videoKey}`);
+			videoBuffer = await s3DownloadVideo(videoKey);
+			if (videoBuffer) {
+				console.log(`[Scheduler] Loaded from S3: ${videoKey}`);
+				videoSource = 's3';
+			}
+		}
+
+		if (!videoSource) {
+			throw new Error(`Video file not found (local or S3): ${videoKey}`);
 		}
 
 		// Format caption for TikTok (title + hashtags)
@@ -74,10 +94,15 @@ async function processNotification(post) {
 
 		console.log(`[Scheduler] Sending to ${recipients.length} recipient(s)`);
 
+		// Prepare video input
+		const videoInput = videoBuffer
+			? new InputFile(videoBuffer, videoKey)
+			: new InputFile(videoPath);
+
 		// Send to all recipients
 		for (const recipientId of recipients) {
 			try {
-				await bot.api.sendVideo(recipientId, new InputFile(videoPath), {
+				await bot.api.sendVideo(recipientId, videoInput, {
 					caption: `${repostLabel}\n\n${tiktokCaption}`,
 					supports_streaming: true,
 					reply_markup: keyboard,

@@ -6,24 +6,27 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
+// ==================== TELEGRAM BOT TABLES ====================
+
 model ScheduledPost {
-  id        String @id
+  id        String @id @default(uuid())
   chatId    BigInt @map("chat_id")
   videoPath String @map("video_path")
   title     String
 
   hashtags         String
-  scheduledAt      String  @map("scheduled_at")
-  status           String  @default("pending")
+  scheduledAt      DateTime @map("scheduled_at")
+  status           String   @default("pending")
   error            String?
-  createdAt        String? @default(dbgenerated("CURRENT_TIMESTAMP")) @map("created_at")
-  isRepost         Int     @default(0) @map("is_repost")
-  telegramFileId   String? @map("telegram_file_id")
-  notificationSent Int     @default(0) @map("notification_sent")
+  createdAt        DateTime @default(now()) @map("created_at")
+  isRepost         Boolean  @default(false) @map("is_repost")
+  telegramFileId   String?  @map("telegram_file_id")
+  notificationSent Boolean  @default(false) @map("notification_sent")
 
   @@index([status])
   @@index([scheduledAt])
@@ -31,27 +34,27 @@ model ScheduledPost {
 }
 
 model VideoArchive {
-  id        String @id
+  id        String @id @default(uuid())
   chatId    BigInt @map("chat_id")
   videoPath String @map("video_path")
   title     String
 
   hashtags     String
-  views        Int     @default(0)
-  likes        Int     @default(0)
-  postedAt     String  @map("posted_at")
-  lastRepostAt String? @map("last_repost_at")
-  repostCount  Int     @default(0) @map("repost_count")
+  views        Int       @default(0)
+  likes        Int       @default(0)
+  postedAt     DateTime  @map("posted_at")
+  lastRepostAt DateTime? @map("last_repost_at")
+  repostCount  Int       @default(0) @map("repost_count")
 
   @@index([views(sort: Desc)])
   @@map("video_archive")
 }
 
 model RepostCycle {
-  id          Int    @id @default(autoincrement())
-  videoId     String @map("video_id")
-  repostDate  String @map("repost_date")
-  cycleNumber Int    @default(1) @map("cycle_number")
+  id          Int      @id @default(autoincrement())
+  videoId     String   @map("video_id")
+  repostDate  DateTime @map("repost_date")
+  cycleNumber Int      @default(1) @map("cycle_number")
 
   @@map("repost_cycle")
 }
@@ -64,40 +67,101 @@ model Setting {
 }
 
 model DownloadedVideo {
-  fileId       String  @id @map("file_id")
-  chatId       BigInt  @map("chat_id")
-  videoPath    String  @map("video_path")
-  fileSize     Int?    @map("file_size")
-  downloadedAt String? @default(dbgenerated("CURRENT_TIMESTAMP")) @map("downloaded_at")
-  status       String  @default("pending")
+  fileId       String   @id @map("file_id")
+  chatId       BigInt   @map("chat_id")
+  videoPath    String   @map("video_path")
+  fileSize     Int?     @map("file_size")
+  downloadedAt DateTime @default(now()) @map("downloaded_at")
+  status       String   @default("pending")
 
   @@index([chatId])
   @@map("downloaded_videos")
 }
 
 model User {
-  telegramId   BigInt  @id @map("telegram_id")
+  telegramId   BigInt   @id @map("telegram_id")
   username     String?
-  firstName    String  @map("first_name")
-  lastName     String? @map("last_name")
-  role         String  @default("user")
-  createdAt    String  @default(dbgenerated("CURRENT_TIMESTAMP")) @map("created_at")
-  lastActiveAt String  @default(dbgenerated("CURRENT_TIMESTAMP")) @map("last_active_at")
+  firstName    String   @map("first_name")
+  lastName     String?  @map("last_name")
+  role         String   @default("user")
+  createdAt    DateTime @default(now()) @map("created_at")
+  lastActiveAt DateTime @default(now()) @map("last_active_at")
 
   @@index([telegramId])
   @@map("users")
 }
 
 model AuditLog {
-  id         Int     @id @default(autoincrement())
-  telegramId BigInt  @map("telegram_id")
+  id         Int      @id @default(autoincrement())
+  telegramId BigInt   @map("telegram_id")
   action     String // upload, edit, delete, reschedule, view_queue, view_videos, etc.
-  targetId   String? @map("target_id") // postId nếu có
+  targetId   String?  @map("target_id") // postId nếu có
   details    String? // Chi tiết action
-  createdAt  String  @default(dbgenerated("CURRENT_TIMESTAMP")) @map("created_at")
+  createdAt  DateTime @default(now()) @map("created_at")
 
   @@index([telegramId])
   @@index([action])
   @@index([createdAt])
   @@map("audit_logs")
+}
+
+// ==================== CONTENT MANAGEMENT TABLES ====================
+
+model Video {
+  id          String   @id @default(uuid())
+  title       String
+  storagePath String   @map("storage_path")
+  duration    Int?
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  videoTags     VideoTag[]
+  watchTracking WatchTracking[]
+
+  @@map("videos")
+}
+
+model Tag {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  createdAt DateTime @default(now()) @map("created_at")
+
+  videoTags     VideoTag[]
+  watchTracking WatchTracking[]
+
+  @@map("tags")
+}
+
+model VideoTag {
+  id        String   @id @default(uuid())
+  videoId   String   @map("video_id")
+  tagId     String   @map("tag_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  video Video @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  tag   Tag   @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@unique([videoId, tagId])
+  @@index([videoId])
+  @@index([tagId])
+  @@map("video_tags")
+}
+
+model WatchTracking {
+  id            String   @id @default(uuid())
+  userId        String?  @map("user_id")
+  deviceId      String?  @map("device_id")
+  videoId       String   @map("video_id")
+  tagId         String?  @map("tag_id")
+  watchedAt     DateTime @default(now()) @map("watched_at")
+  watchDuration Int      @default(0) @map("watch_duration")
+  completed     Boolean  @default(false)
+
+  video Video @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  tag   Tag?  @relation(fields: [tagId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([deviceId])
+  @@index([tagId])
+  @@map("watch_tracking")
 }
