@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import os from 'os';
-import { InlineKeyboard } from 'grammy';
+import { InlineKeyboard, InputFile } from 'grammy';
 import {
 	addScheduledPost,
 	getPendingPostsByChat,
@@ -203,7 +203,6 @@ async function sendQueuePage(
 	messageId = null,
 	permissions = { canEdit: false, canDelete: false }
 ) {
-	const { InputFile } = await import('grammy');
 	const { posts, lastPostedIndex } = await getAllPostsByChat(chatId);
 	const TIKTOK_USERNAME = process.env.TIKTOK_USERNAME || '';
 	const tiktokLink = TIKTOK_USERNAME
@@ -302,19 +301,36 @@ async function sendQueuePage(
 		}
 	}
 
-	// Check if video file exists (local or S3)
+	// Prepare video source with priority: file_id > local > S3
 	const videoKey = path.basename(post.videoPath);
+	const localPath = path.join(DATA_DIR, 'videos', videoKey);
 	let videoBuffer = null;
+	let needsFileIdSave = false;
 
-	// First check local file
-	const localExists = fs.existsSync(post.videoPath);
-
-	// If not local, try S3
-	if (!localExists && isS3Enabled()) {
-		videoBuffer = await s3DownloadVideo(videoKey);
+	// Priority 1: Use cached Telegram file_id (skip all downloads)
+	if (post.telegramFileId) {
+		console.log(`[Queue] Using cached file_id: ${videoKey}`);
+		// videoBuffer stays null, we'll use telegramFileId directly
+	} else {
+		// Priority 2: Check local file
+		if (fs.existsSync(localPath)) {
+			console.log(`[Queue] Using local file: ${videoKey}`);
+			needsFileIdSave = true;
+		} else if (isS3Enabled()) {
+			// Priority 3: Download from S3 AND cache locally
+			console.log(`[Queue] Downloading from S3: ${videoKey}`);
+			const cacheDir = path.join(DATA_DIR, 'videos');
+			videoBuffer = await s3DownloadVideo(videoKey, cacheDir);
+			needsFileIdSave = true;
+		}
 	}
 
-	if (!localExists && !videoBuffer) {
+	// Check if video source is available
+	if (
+		!post.telegramFileId &&
+		!fs.existsSync(path.join(DATA_DIR, 'videos', videoKey)) &&
+		!videoBuffer
+	) {
 		const text =
 			`[${page + 1}/${posts.length}] Video file missing!\n${time}` + tiktokLink;
 		if (messageId) {
@@ -340,7 +356,7 @@ async function sendQueuePage(
 			} else if (videoBuffer) {
 				videoSource = new InputFile(videoBuffer, videoKey);
 			} else {
-				videoSource = new InputFile(post.videoPath);
+				videoSource = new InputFile(localPath);
 			}
 
 			await ctx.api.editMessageMedia(
@@ -380,7 +396,7 @@ async function sendQueuePage(
 	} else if (videoBuffer) {
 		videoSource = new InputFile(videoBuffer, videoKey);
 	} else {
-		videoSource = new InputFile(post.videoPath);
+		videoSource = new InputFile(localPath);
 	}
 
 	try {
@@ -390,9 +406,10 @@ async function sendQueuePage(
 			supports_streaming: true,
 		});
 
-		// Save file_id for future use if we uploaded from disk
-		if (!post.telegramFileId && sentMessage.video?.file_id) {
+		// Save file_id for future use if we uploaded from disk/S3
+		if (needsFileIdSave && sentMessage.video?.file_id) {
 			await updatePostFileId(post.id, sentMessage.video.file_id);
+			console.log(`[Queue] Cached file_id for: ${videoKey}`);
 		}
 	} catch (e) {
 		console.error('[Queue] Error sending video:', e.message);
@@ -436,13 +453,14 @@ async function processVideoAfterDownload(ctx, video, videoPath, chatId) {
 		// Generate random content
 		const [content] = generateContentOptions();
 
-		// Auto schedule
+		// Auto schedule with file_id for instant sends later
 		const post = await addScheduledPost({
 			chatId,
 			videoPath,
 			title: content.title,
 			hashtags: content.hashtags,
 			isRepost: false,
+			telegramFileId: video.file_id, // Save for instant sends
 		});
 
 		await scheduleUpload(post, new Date(post.scheduledAt));
@@ -1301,17 +1319,26 @@ async function handleCommand(ctx, command) {
 			await ctx.reply('Bạn không có quyền sử dụng lệnh này.' + tiktokLink);
 			return;
 		}
-		await ctx.reply('🔧 Đang kiểm tra và dọn dẹp dữ liệu...' + tiktokLink);
+		await ctx.reply(
+			'🔧 Đang kiểm tra, dọn dẹp và cache dữ liệu...' + tiktokLink
+		);
 		const result = await cleanOrphanedPosts(chatId);
-		if (result.deleted > 0) {
-			await ctx.reply(
-				`✅ Đã xóa ${result.deleted} record không có video file.\n` +
-					`📅 Đã reschedule ${result.rescheduled} video còn lại.` +
-					tiktokLink
-			);
+		if (result.deleted > 0 || result.created > 0 || result.cached > 0) {
+			let message = '✅ Kết quả dọn dẹp:\n';
+			if (result.deleted > 0) {
+				message += `🗑️ Đã xóa ${result.deleted} record không có video.\n`;
+			}
+			if (result.created > 0) {
+				message += `➕ Đã tạo ${result.created} record cho video thiếu.\n`;
+			}
+			if (result.cached > 0) {
+				message += `� Đã cache ${result.cached} video từ S3.\n`;
+			}
+			message += `�📅 Đã reschedule ${result.rescheduled} video.`;
+			await ctx.reply(message + tiktokLink);
 		} else {
 			await ctx.reply(
-				'✅ Không có record lỗi. Database đã clean!' + tiktokLink
+				'✅ Không có thay đổi. Database và cache đã đồng bộ!' + tiktokLink
 			);
 		}
 		await logAction(

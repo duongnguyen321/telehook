@@ -1,6 +1,7 @@
 import cron from 'node-cron';
 import fs from 'fs';
 import path from 'path';
+import { InputFile, InlineKeyboard } from 'grammy';
 import {
 	getDuePosts,
 	updatePostStatus,
@@ -9,6 +10,8 @@ import {
 	scheduleReposts,
 	getPendingCount,
 	getPostById,
+	updatePostFileId,
+	DATA_DIR,
 } from '../utils/storage.js';
 import { getNotificationRecipients } from './roleService.js';
 import { isS3Enabled, downloadVideo as s3DownloadVideo } from '../utils/s3.js';
@@ -37,7 +40,15 @@ export function setDefaultChatId(chatId) {
  * @param {Object} post
  */
 async function processNotification(post) {
-	const { id: postId, chatId, videoPath, title, hashtags, isRepost } = post;
+	const {
+		id: postId,
+		chatId,
+		videoPath,
+		title,
+		hashtags,
+		isRepost,
+		telegramFileId,
+	} = post;
 	const repostLabel = isRepost ? ' [REPOST]' : '';
 
 	console.log(`[Scheduler] Processing: ${postId.slice(0, 8)}`);
@@ -47,34 +58,40 @@ async function processNotification(post) {
 			throw new Error('Bot not initialized');
 		}
 
-		// Check if video file exists (local or S3)
 		const videoKey = path.basename(videoPath);
-		let videoSource = null;
-		let videoBuffer = null;
+		let videoInput = null;
+		let needsFileIdSave = false;
 
-		// First check local file
-		if (fs.existsSync(videoPath)) {
-			console.log(`[Scheduler] Using local file: ${videoKey}`);
-			videoSource = 'local';
-		} else if (isS3Enabled()) {
-			// Try S3 if local file not found
-			console.log(`[Scheduler] Local file not found, trying S3: ${videoKey}`);
-			videoBuffer = await s3DownloadVideo(videoKey);
-			if (videoBuffer) {
-				console.log(`[Scheduler] Loaded from S3: ${videoKey}`);
-				videoSource = 's3';
+		// Priority 1: Use cached Telegram file_id (instant, no upload)
+		if (telegramFileId) {
+			console.log(`[Scheduler] Using cached file_id: ${videoKey}`);
+			videoInput = telegramFileId;
+		} else {
+			// Priority 2: Check local file
+			const localPath = path.join(DATA_DIR, 'videos', videoKey);
+			if (fs.existsSync(localPath)) {
+				console.log(`[Scheduler] Using local file: ${videoKey}`);
+				videoInput = new InputFile(localPath);
+				needsFileIdSave = true;
+			} else if (isS3Enabled()) {
+				// Priority 3: Download from S3 AND cache locally
+				console.log(`[Scheduler] Downloading from S3: ${videoKey}`);
+				const cacheDir = path.join(DATA_DIR, 'videos');
+				const videoBuffer = await s3DownloadVideo(videoKey, cacheDir);
+				if (videoBuffer) {
+					console.log(`[Scheduler] Loaded from S3: ${videoKey}`);
+					videoInput = new InputFile(videoBuffer, videoKey);
+					needsFileIdSave = true;
+				}
 			}
 		}
 
-		if (!videoSource) {
+		if (!videoInput) {
 			throw new Error(`Video file not found (local or S3): ${videoKey}`);
 		}
 
 		// Format caption for TikTok (title + hashtags)
 		const tiktokCaption = `${title}\n\n${hashtags}`;
-
-		// Send video with full caption and confirm button
-		const { InputFile, InlineKeyboard } = await import('grammy');
 
 		const keyboard = new InlineKeyboard().text(
 			'✅ Đã đăng TikTok',
@@ -85,7 +102,6 @@ async function processNotification(post) {
 		const recipients = getNotificationRecipients();
 
 		if (recipients.length === 0) {
-			// Fallback to original chatId if no recipients configured
 			console.log(
 				'[Scheduler] No recipients configured, using original chatId'
 			);
@@ -94,27 +110,33 @@ async function processNotification(post) {
 
 		console.log(`[Scheduler] Sending to ${recipients.length} recipient(s)`);
 
-		// Prepare video input
-		const videoInput = videoBuffer
-			? new InputFile(videoBuffer, videoKey)
-			: new InputFile(videoPath);
-
-		// Send to all recipients
+		// Send to all recipients and capture file_id from first successful send
+		let savedFileId = null;
 		for (const recipientId of recipients) {
 			try {
-				await bot.api.sendVideo(recipientId, videoInput, {
+				const sentMessage = await bot.api.sendVideo(recipientId, videoInput, {
 					caption: `${repostLabel}\n\n${tiktokCaption}`,
 					supports_streaming: true,
 					reply_markup: keyboard,
 				});
 				console.log(`[Scheduler] Sent to recipient: ${recipientId}`);
+
+				// Capture file_id from first successful send
+				if (!savedFileId && sentMessage.video?.file_id) {
+					savedFileId = sentMessage.video.file_id;
+				}
 			} catch (sendError) {
 				console.error(
 					`[Scheduler] Failed to send to ${recipientId}:`,
 					sendError.message
 				);
-				// Continue sending to other recipients
 			}
+		}
+
+		// Save file_id for future use (skip download next time)
+		if (needsFileIdSave && savedFileId) {
+			await updatePostFileId(postId, savedFileId);
+			console.log(`[Scheduler] Cached file_id for: ${videoKey}`);
 		}
 
 		// Mark notification as sent BEFORE logging success

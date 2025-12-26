@@ -10,6 +10,9 @@ import {
 	getDateKey,
 	createGMT7Time,
 } from './timezone.js';
+import { isS3Enabled, videoExists as s3VideoExists } from './s3.js';
+import { generateContentOptions } from '../services/ai.js';
+import { S3Client, ListObjectsV2Command } from '@aws-sdk/client-s3';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 export const DATA_DIR = path.join(__dirname, '../../data');
@@ -201,6 +204,7 @@ export async function addScheduledPost(post) {
 			hashtags: post.hashtags,
 			scheduledAt: new Date(scheduledAt),
 			isRepost: Boolean(post.isRepost),
+			telegramFileId: post.telegramFileId || null, // Save file_id for instant sends
 		},
 	});
 
@@ -317,7 +321,6 @@ export async function getSmartScheduleSlot() {
  */
 export async function rescheduleAllPending(chatId) {
 	// Import content generator dynamically to avoid circular deps
-	const { generateContentOptions } = await import('../services/ai.js');
 
 	// Clear cache
 	recentlyUsedSlots.clear();
@@ -539,7 +542,6 @@ export async function rescheduleTimesOnly(chatId) {
  */
 export async function retitleAllPending(chatId) {
 	// Import content generator dynamically to avoid circular deps
-	const { generateContentOptions } = await import('../services/ai.js');
 
 	// Get all pending posts
 	const posts = await prisma.scheduledPost.findMany({
@@ -769,7 +771,6 @@ export async function needsRepost(chatId) {
  */
 export async function scheduleReposts(chatId) {
 	// Import content generator dynamically to avoid circular deps
-	const { generateContentOptions } = await import('../services/ai.js');
 
 	const videos = await getVideosForRepost(chatId);
 
@@ -914,11 +915,14 @@ export async function updatePostFileId(postId, fileId) {
 }
 
 /**
- * Clean orphaned posts where video file no longer exists
+ * Clean orphaned posts and recover missing records
+ * - Deletes records where video file no longer exists (local OR S3)
+ * - Creates records for videos in S3 that don't have database entries
  * @param {number} chatId
- * @returns {Promise<{deleted: number, rescheduled: number}>}
+ * @returns {Promise<{deleted: number, created: number, rescheduled: number}>}
  */
 export async function cleanOrphanedPosts(chatId) {
+	// Part 1: Delete orphaned records (video doesn't exist)
 	const posts = await prisma.scheduledPost.findMany({
 		where: { chatId: BigInt(chatId), status: 'pending' },
 		select: { id: true, videoPath: true },
@@ -927,8 +931,18 @@ export async function cleanOrphanedPosts(chatId) {
 	let deleted = 0;
 	for (const post of posts) {
 		const fullPath = getVideoFullPath(post.videoPath);
-		if (!fs.existsSync(fullPath)) {
-			// Delete record
+		const videoKey = path.basename(post.videoPath);
+
+		// Check local file first
+		let fileExists = fs.existsSync(fullPath);
+
+		// If not local, check S3
+		if (!fileExists && isS3Enabled()) {
+			fileExists = await s3VideoExists(videoKey);
+		}
+
+		if (!fileExists) {
+			// Delete record only if file doesn't exist anywhere
 			await prisma.scheduledPost.delete({ where: { id: post.id } });
 			await prisma.downloadedVideo.deleteMany({
 				where: { videoPath: post.videoPath },
@@ -938,13 +952,142 @@ export async function cleanOrphanedPosts(chatId) {
 		}
 	}
 
-	// Reschedule remaining posts
+	// Part 2: Create missing records for S3 videos without DB entries
+	let created = 0;
+	if (isS3Enabled()) {
+		console.log('[Fix] Scanning S3 for videos without records...');
+
+		// Get all existing video paths
+		const allPosts = await prisma.scheduledPost.findMany({
+			select: { videoPath: true },
+		});
+		const existingKeys = new Set(
+			allPosts.map((p) => path.basename(p.videoPath))
+		);
+
+		// List all S3 videos
+		const s3Client = new S3Client({
+			endpoint: process.env.S3_ENDPOINT,
+			region: 'auto',
+			credentials: {
+				accessKeyId: process.env.S3_ACCESS_KEY_ID,
+				secretAccessKey: process.env.S3_SECRET_ACCESS_KEY,
+			},
+			forcePathStyle: true,
+		});
+
+		const missingVideos = [];
+		let continuationToken = undefined;
+
+		do {
+			const response = await s3Client.send(
+				new ListObjectsV2Command({
+					Bucket: process.env.S3_BUCKET || 'videos',
+					MaxKeys: 1000,
+					ContinuationToken: continuationToken,
+				})
+			);
+
+			for (const file of response.Contents || []) {
+				if (file.Key?.endsWith('.mp4') && !existingKeys.has(file.Key)) {
+					missingVideos.push(file.Key);
+				}
+			}
+			continuationToken = response.NextContinuationToken;
+		} while (continuationToken);
+
+		if (missingVideos.length > 0) {
+			console.log(
+				`[Fix] Found ${missingVideos.length} videos without records, creating...`
+			);
+
+			// Sort by timestamp (number at start of filename)
+			missingVideos.sort((a, b) => {
+				const tsA = parseInt(a.match(/^(\d+)_/)?.[1] || '0', 10);
+				const tsB = parseInt(b.match(/^(\d+)_/)?.[1] || '0', 10);
+				return tsA - tsB;
+			});
+
+			for (const videoKey of missingVideos) {
+				try {
+					// generateContentOptions returns an array, get first item
+					const options = generateContentOptions(1);
+					const { title, hashtags } = options[0];
+
+					// Get next available schedule slot (uses getSlotsForDate internally)
+					const scheduledAt = await getSmartScheduleSlot();
+
+					await prisma.scheduledPost.create({
+						data: {
+							chatId: BigInt(chatId),
+							videoPath: `data/videos/${videoKey}`,
+							title,
+							hashtags,
+							status: 'pending',
+							scheduledAt: new Date(scheduledAt),
+							isRepost: false,
+							notificationSent: false,
+						},
+					});
+					console.log(
+						`[Fix] Created record for: ${videoKey} at ${scheduledAt}`
+					);
+					created++;
+				} catch (error) {
+					console.error(
+						`[Fix] Failed to create record for ${videoKey}:`,
+						error.message
+					);
+				}
+			}
+		}
+	}
+
+	// Part 3: Cache all S3 videos locally for faster access
+	let cached = 0;
+	if (isS3Enabled()) {
+		console.log('[Fix] Caching videos locally from S3...');
+		const cacheDir = path.join(DATA_DIR, 'videos');
+
+		// Ensure cache directory exists
+		if (!fs.existsSync(cacheDir)) {
+			fs.mkdirSync(cacheDir, { recursive: true });
+		}
+
+		// Get all pending posts to cache their videos
+		const pendingPosts = await prisma.scheduledPost.findMany({
+			where: { status: 'pending' },
+			select: { videoPath: true },
+		});
+
+		for (const post of pendingPosts) {
+			const videoKey = path.basename(post.videoPath);
+			const localPath = path.join(cacheDir, videoKey);
+
+			if (!fs.existsSync(localPath)) {
+				try {
+					// Download from S3 with local caching
+					const { downloadVideo } = await import('./s3.js');
+					const buffer = await downloadVideo(videoKey, cacheDir);
+					if (buffer) {
+						cached++;
+						process.stdout.write('.');
+					}
+				} catch (e) {
+					process.stdout.write('x');
+				}
+			}
+		}
+		if (cached > 0) console.log(`\n[Fix] Cached ${cached} videos locally`);
+	}
+
+	// Reschedule remaining posts only if items were deleted (created items already have proper slots)
 	let rescheduled = 0;
 	if (deleted > 0) {
 		rescheduled = await rescheduleTimesOnly(chatId);
 	}
 
-	return { deleted, rescheduled };
+	return { deleted, created, cached, rescheduled };
 }
 
 /**
@@ -954,7 +1097,6 @@ export async function cleanOrphanedPosts(chatId) {
  */
 export async function updatePostContent(postId) {
 	// Import content generator dynamically to avoid circular deps
-	const { generateContentOptions } = await import('../services/ai.js');
 
 	// Check if post exists
 	const post = await prisma.scheduledPost.findUnique({ where: { id: postId } });

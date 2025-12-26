@@ -71,11 +71,12 @@ export async function uploadVideo(localPath, key) {
 }
 
 /**
- * Download a video from S3 to a buffer
+ * Download a video from S3 to a buffer AND cache locally
  * @param {string} key - S3 object key (filename)
+ * @param {string} cacheDir - Optional local cache directory (default: data/videos)
  * @returns {Promise<Buffer|null>} Video buffer or null on failure
  */
-export async function downloadVideo(key) {
+export async function downloadVideo(key, cacheDir = null) {
 	const client = getS3Client();
 	if (!client) {
 		console.log('[S3] Not configured');
@@ -93,8 +94,24 @@ export async function downloadVideo(key) {
 		for await (const chunk of response.Body) {
 			chunks.push(chunk);
 		}
+		const buffer = Buffer.concat(chunks);
 		console.log(`[S3] Downloaded: ${key}`);
-		return Buffer.concat(chunks);
+
+		// Cache locally for faster future access
+		if (cacheDir) {
+			try {
+				if (!fs.existsSync(cacheDir)) {
+					fs.mkdirSync(cacheDir, { recursive: true });
+				}
+				const localPath = path.join(cacheDir, key);
+				fs.writeFileSync(localPath, buffer);
+				console.log(`[S3] Cached locally: ${key}`);
+			} catch (cacheError) {
+				console.error(`[S3] Failed to cache locally: ${cacheError.message}`);
+			}
+		}
+
+		return buffer;
 	} catch (error) {
 		console.error(`[S3] Download failed for ${key}:`, error.message);
 		return null;
@@ -166,16 +183,35 @@ export async function deleteVideo(key) {
 }
 
 /**
- * Get the public URL for a video (Supabase S3 public bucket)
+ * Get the public URL for a video
+ * - R2: Requires public bucket or custom domain
+ * - Supabase: Uses /storage/v1/object/public format
  * @param {string} key - S3 object key (filename)
  * @returns {string} Public URL
  */
 export function getPublicUrl(key) {
 	if (!S3_ENDPOINT) return '';
-	// Supabase public URL format
-	const baseUrl = S3_ENDPOINT.replace(
-		'/storage/v1/s3',
-		'/storage/v1/object/public'
-	);
-	return `${baseUrl}/${S3_BUCKET}/${key}`;
+
+	// Check if it's Supabase (has /storage/v1/s3 in endpoint)
+	if (S3_ENDPOINT.includes('/storage/v1/s3')) {
+		// Supabase public URL format
+		const baseUrl = S3_ENDPOINT.replace(
+			'/storage/v1/s3',
+			'/storage/v1/object/public'
+		);
+		return `${baseUrl}/${S3_BUCKET}/${key}`;
+	}
+
+	// Cloudflare R2 - need public access via custom domain or R2.dev subdomain
+	// For R2, you need to enable public access in dashboard first
+	// Default format: https://<account-id>.r2.dev/<bucket>/<key>
+	const accountId = S3_ENDPOINT.match(
+		/https:\/\/([^.]+)\.r2\.cloudflarestorage\.com/
+	)?.[1];
+	if (accountId) {
+		return `https://pub-${accountId}.r2.dev/${S3_BUCKET}/${key}`;
+	}
+
+	// Fallback - direct S3 URL (may not work without auth)
+	return `${S3_ENDPOINT}/${S3_BUCKET}/${key}`;
 }
