@@ -84,6 +84,7 @@ _Logic: Automatically detects the day of the week and fills the slots accordingl
 | Command       | Description                       |
 | :------------ | :-------------------------------- |
 | `/fix`        | Dọn dẹp database, xoá records lỗi |
+| `/check`      | Kiểm tra & duyệt video sắp đăng   |
 | Trong /videos | Xoá video                         |
 
 ### 📋 BotFather Command List
@@ -96,6 +97,7 @@ queue - Xem lịch đăng video
 videos - Xem chi tiết video
 info - Xem hoạt động của bạn
 clear - Xoá tin nhắn, hiển thị lại lời chào
+check - Kiểm tra video sắp đăng
 reschedule - Sắp xếp lại lịch đăng
 retitle - Tạo nội dung mới cho video
 fix - Dọn dẹp database

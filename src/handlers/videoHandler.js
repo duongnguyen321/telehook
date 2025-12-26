@@ -16,6 +16,7 @@ import {
 	updatePostContent,
 	updatePostFileId,
 	cleanOrphanedPosts,
+	getNextScheduledPost,
 	DATA_DIR,
 	prisma,
 } from '../utils/storage.js';
@@ -1222,6 +1223,7 @@ function buildGreetingMessage(ctx, userRole, tiktokLink) {
 	if (userRole === 'mod' || userRole === 'admin') {
 		greeting += `\n📤 **Mod:**\n`;
 		greeting += `• Forward video → Tự động lên lịch đăng\n`;
+		greeting += `• /check - Kiểm tra video sắp đăng\n`;
 	}
 
 	// Reviewer commands
@@ -1236,6 +1238,7 @@ function buildGreetingMessage(ctx, userRole, tiktokLink) {
 	if (userRole === 'admin') {
 		greeting += `\n👑 **Admin:**\n`;
 		greeting += `• /fix - Dọn dẹp database\n`;
+		greeting += `• /check - Kiểm tra video sắp đăng\n`;
 		greeting += `• Trong /videos: Xoá video\n`;
 	}
 
@@ -1313,7 +1316,15 @@ async function handleCommand(ctx, command) {
 
 	// ========== /clear - Clear messages and show greeting again ==========
 	if (command === '/clear') {
+		// Try to delete the /clear command message itself to clean up
+		try {
+			await ctx.deleteMessage();
+		} catch (e) {
+			// Ignore if can't delete
+		}
+
 		const greeting = buildGreetingMessage(ctx, userRole, tiktokLink);
+		// Send new greeting
 		await ctx.reply('🧹 Đã làm mới!\n\n' + greeting, {
 			parse_mode: 'Markdown',
 		});
@@ -1458,6 +1469,73 @@ async function handleCommand(ctx, command) {
 			null,
 			`Deleted: ${result.deleted}, Rescheduled: ${result.rescheduled}`
 		);
-		return;
+		// ========== /check - Check next scheduled post (Admin only) ==========
+		if (command === '/check') {
+			if (!isAdmin(userId)) {
+				await ctx.reply('❌ Chỉ Admin mới được dùng lệnh này.');
+				return;
+			}
+
+			const post = await getNextScheduledPost();
+			if (!post) {
+				await ctx.reply('✅ Không có video nào đang chờ đăng.');
+				return;
+			}
+
+			const time = formatVietnameseTime(new Date(post.scheduledAt));
+			await ctx.reply(
+				`🔍 **Video sắp đăng tiếp theo:**\n📅 ${time}\n\nĐang tải video...`
+			);
+
+			try {
+				// Prepare video source
+				const videoKey = path.basename(post.videoPath);
+				const localPath = path.join(DATA_DIR, 'videos', videoKey);
+				let videoInput = null;
+				let needsFileIdSave = false;
+
+				if (post.telegramFileId) {
+					videoInput = post.telegramFileId;
+				} else if (fs.existsSync(localPath)) {
+					videoInput = new InputFile(localPath);
+					needsFileIdSave = true;
+				} else if (isS3Enabled()) {
+					const cacheDir = path.join(DATA_DIR, 'videos');
+					const videoBuffer = await s3DownloadVideo(videoKey, cacheDir);
+					if (videoBuffer) {
+						videoInput = new InputFile(videoBuffer, videoKey);
+						needsFileIdSave = true;
+					}
+				}
+
+				if (!videoInput) {
+					await ctx.reply('❌ Lỗi: Không tìm thấy file video (Local/S3).');
+					return;
+				}
+
+				// Send with confirm button
+				const keyboard = new InlineKeyboard().text(
+					'✅ Duyệt đăng ngay',
+					`posted_${post.id}`
+				);
+
+				const sentMessage = await ctx.replyWithVideo(videoInput, {
+					caption: `📝 **REVIEW PRE-POST**\n⏳ Dự kiến: ${time}\n\n${post.title}\n\n${post.hashtags}`,
+					reply_markup: keyboard,
+					supports_streaming: true,
+				});
+
+				// Cache file_id if we uploaded fresh
+				if (needsFileIdSave && sentMessage.video?.file_id) {
+					await updatePostFileId(post.id, sentMessage.video.file_id);
+				}
+
+				await logAction(userId, 'check_next', post.id);
+			} catch (error) {
+				console.error('[Check] Error:', error);
+				await ctx.reply(`❌ Lỗi khi tải video: ${error.message}`);
+			}
+			return;
+		}
 	}
 }

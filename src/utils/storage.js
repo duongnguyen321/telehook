@@ -578,6 +578,21 @@ export async function retitleAllPending(chatId) {
 }
 
 /**
+ * Get the next scheduled post (nearest future pending post)
+ * @returns {Promise<ScheduledPost | null>}
+ */
+export async function getNextScheduledPost() {
+	const post = await prisma.scheduledPost.findFirst({
+		where: {
+			status: 'pending',
+		},
+		orderBy: { scheduledAt: 'asc' },
+	});
+
+	return mapScheduledPost(post);
+}
+
+/**
  * Get pending posts that are due AND haven't had notification sent yet
  * @returns {Promise<ScheduledPost[]>}
  */
