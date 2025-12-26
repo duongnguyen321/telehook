@@ -1148,7 +1148,7 @@ export function setupVideoHandler(bot) {
 
 			await safeAnswer('Đã hủy');
 			await logAction(userId, 'edit_cancel', postId);
-			await sendQueuePage(ctx, chatId, currentPage, null, permissions);
+			await sendQueuePage(ctx, chatId, currentPage, messageId, permissions);
 			return;
 		}
 
