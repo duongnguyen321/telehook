@@ -28,10 +28,15 @@ bot.catch((err) => {
 
 // Start bot
 console.log('🤖 Starting Telegram TikTok Hook Bot...');
-bot.start({
-	drop_pending_updates: true, // Don't process old messages on restart
-	onStart: (botInfo) => {
-		console.log(`✅ Bot started: @${botInfo.username}`);
-		console.log('📹 Ready to receive videos!');
-	},
-});
+bot
+	.start({
+		drop_pending_updates: true, // Don't process old messages on restart
+		onStart: (botInfo) => {
+			console.log(`✅ Bot started: @${botInfo.username}`);
+			console.log('📹 Ready to receive videos!');
+		},
+	})
+	.catch((err) => {
+		console.error('❌ Failed to start bot:', err.message);
+		process.exit(1);
+	});
