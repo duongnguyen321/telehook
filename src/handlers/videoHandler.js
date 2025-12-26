@@ -293,6 +293,12 @@ async function sendQueuePage(
 				callback_data: `regen_${post.id}_${actualPage}`,
 			});
 		}
+	}
+
+	// Reset button always available
+	actionRow.push({ text: '🔄 Reset', callback_data: `queue_-1` });
+
+	if (post.status === 'pending') {
 		if (permissions.canDelete) {
 			actionRow.push({
 				text: '🗑️ Xóa',
@@ -300,9 +306,6 @@ async function sendQueuePage(
 			});
 		}
 	}
-
-	// Reset button always available
-	actionRow.push({ text: '🔄 Reset', callback_data: `queue_-1` });
 
 	if (actionRow.length > 0) {
 		keyboard.row(...actionRow);
@@ -1262,7 +1265,7 @@ function buildGreetingMessage(ctx, userRole, tiktokLink) {
 		greeting += `3️⃣ Dùng /reschedule để đặt lại lịch\n`;
 	} else {
 		greeting += `1️⃣ Dùng /queue để xem lịch đăng\n`;
-		greeting += `2️⃣ Dùng /videos để xem chi tiết video\n`;
+		greeting += `2️⃣ Dùng /videos [trang] để xem chi tiết video (VD: /videos 5)\n`;
 	}
 
 	greeting += tiktokLink;
@@ -1380,9 +1383,19 @@ async function handleCommand(ctx, command) {
 	}
 
 	// ========== /videos - View video details ==========
-	if (command === '/videos') {
-		await sendQueuePage(ctx, chatId, -1, null, permissions);
-		await logAction(userId, 'view_videos');
+	if (command.startsWith('/videos')) {
+		const parts = command.split(' ');
+		let page = -1;
+
+		if (parts.length > 1) {
+			const pageNum = parseInt(parts[1], 10);
+			if (!isNaN(pageNum) && pageNum > 0) {
+				page = pageNum - 1; // Convert 1-based to 0-based
+			}
+		}
+
+		await sendQueuePage(ctx, chatId, page, null, permissions);
+		await logAction(userId, 'view_videos', null, `Page ${page + 1}`);
 		return;
 	}
 

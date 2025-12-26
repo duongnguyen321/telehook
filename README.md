@@ -57,12 +57,12 @@ _Logic: Automatically detects the day of the week and fills the slots accordingl
 
 ### Public Commands (Tất cả người dùng)
 
-| Command   | Description                              |
-| :-------- | :--------------------------------------- |
-| `/start`  | Hiển thị lời chào và hướng dẫn theo role |
-| `/queue`  | Xem lịch đăng video                      |
-| `/videos` | Xem chi tiết video với phân trang        |
-| `/info`   | Xem hoạt động và thống kê của bạn        |
+| Command          | Description                              |
+| :--------------- | :--------------------------------------- |
+| `/start`         | Hiển thị lời chào và hướng dẫn theo role |
+| `/queue`         | Xem lịch đăng video                      |
+| `/videos [page]` | Xem chi tiết video (VD: `/videos 5`)     |
+| `/info`          | Xem hoạt động và thống kê của bạn        |
 
 ### Mod Commands (📤 Mod + Admin)
 
