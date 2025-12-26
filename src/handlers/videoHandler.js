@@ -510,111 +510,52 @@ export function setupVideoHandler(bot) {
 
 		setDefaultChatId(chatId);
 
-		// Handle forwarded videos - try to match with existing posts and cache file_id
+		// Handle forwarded videos - only skip if file_id already exists
 		if (isForwarded) {
 			console.log(
 				`[Video] Forwarded video received: ${video.file_id.slice(-8)}`
 			);
 
-			// Try to find a post without file_id that we can associate
-			const postsWithoutFileId = await prisma.scheduledPost.findMany({
-				where: {
-					telegramFileId: null,
-				},
-				orderBy: { createdAt: 'desc' },
-				take: 100,
+			// Check if this file_id already exists in database
+			const existingPost = await prisma.scheduledPost.findFirst({
+				where: { telegramFileId: video.file_id },
 			});
 
-			// Try to match by downloading and comparing, or just update the first one without file_id
-			// For now, we'll provide a way to manually associate
-			if (postsWithoutFileId.length > 0) {
-				// Download video to local cache first
-				try {
-					const file = await ctx.api.getFile(video.file_id);
-					const fileUrl = `https://api.telegram.org/file/bot${process.env.TELEGRAM_BOT_TOKEN}/${file.file_path}`;
+			if (existingPost) {
+				console.log(
+					`[Video] Duplicate file_id, skipping: ${video.file_id.slice(-8)}`
+				);
+				await ctx.reply('ℹ️ Video này đã tồn tại trong hệ thống.');
+				return;
+			}
 
-					const videoDir = path.join(DATA_DIR, 'videos');
-					if (!fs.existsSync(videoDir)) {
-						fs.mkdirSync(videoDir, { recursive: true });
-					}
+			// Process as new video (download, upload to R2, save file_id, create schedule)
+			try {
+				const file = await ctx.api.getFile(video.file_id);
+				const fileUrl = `https://api.telegram.org/file/bot${process.env.TELEGRAM_BOT_TOKEN}/${file.file_path}`;
 
-					// Use a temp filename for now
-					const tempFileName = `forwarded_${Date.now()}_${video.file_id.slice(
-						-8
-					)}.mp4`;
-					const tempPath = path.join(videoDir, tempFileName);
-
-					console.log('[Video] Downloading forwarded video to local cache...');
-					const success = await downloadVideo(fileUrl, tempPath, 30000);
-
-					if (success) {
-						// Find posts and check file sizes to match
-						const forwardedSize = fs.statSync(tempPath).size;
-						let matchedPost = null;
-
-						for (const post of postsWithoutFileId) {
-							const postVideoKey = path.basename(post.videoPath);
-							const postLocalPath = path.join(DATA_DIR, 'videos', postVideoKey);
-
-							if (fs.existsSync(postLocalPath)) {
-								const postSize = fs.statSync(postLocalPath).size;
-								// Match by file size (within 1KB tolerance)
-								if (Math.abs(postSize - forwardedSize) < 1024) {
-									matchedPost = post;
-									break;
-								}
-							}
-						}
-
-						if (matchedPost) {
-							// Update the matched post with file_id
-							await updatePostFileId(matchedPost.id, video.file_id);
-
-							// Remove temp file since we already have the original
-							fs.unlinkSync(tempPath);
-
-							await ctx.reply(
-								`✅ Đã lưu file_id cho video: ${
-									matchedPost.title?.slice(0, 30) || matchedPost.id.slice(0, 8)
-								}...`
-							);
-							await logAction(
-								userId,
-								'capture_file_id',
-								matchedPost.id,
-								'Via forwarded video'
-							);
-							console.log(
-								`[Video] Matched forwarded video to post: ${matchedPost.id}`
-							);
-						} else {
-							// No match found - keep the downloaded file and create a new scheduled post
-							console.log(
-								'[Video] No matching post found, treating as new upload'
-							);
-
-							// Rename temp file to proper name
-							const properFileName = `${Date.now()}_${video.file_id.slice(
-								-8
-							)}.mp4`;
-							const properPath = path.join(videoDir, properFileName);
-							fs.renameSync(tempPath, properPath);
-
-							// Process as new video
-							await processVideoAfterDownload(ctx, video, properPath, chatId);
-						}
-					} else {
-						await ctx.reply('❌ Không thể tải video forwarded.');
-					}
-				} catch (error) {
-					console.error(
-						'[Video] Error processing forwarded video:',
-						error.message
-					);
-					await ctx.reply(`Error: ${error.message.slice(0, 50)}`);
+				const videoDir = path.join(DATA_DIR, 'videos');
+				if (!fs.existsSync(videoDir)) {
+					fs.mkdirSync(videoDir, { recursive: true });
 				}
-			} else {
-				await ctx.reply('ℹ️ Tất cả video đã có file_id cached.');
+
+				const fileName = `${Date.now()}_${video.file_id.slice(-8)}.mp4`;
+				const videoPath = path.join(videoDir, fileName);
+
+				console.log('[Video] Downloading forwarded video...');
+				const success = await downloadVideo(fileUrl, videoPath, 30000);
+
+				if (success) {
+					await processVideoAfterDownload(ctx, video, videoPath, chatId);
+				} else {
+					await ctx.reply('❌ Không thể tải video forwarded.');
+				}
+			} catch (error) {
+				console.error(
+					'[Video] Error processing forwarded video:',
+					error.message
+				);
+				await ctx.reply(`Error: ${error.message.slice(0, 50)}`);
 			}
 			return;
 		}

@@ -95,7 +95,7 @@ start - Hiển thị lời chào và hướng dẫn
 queue - Xem lịch đăng video
 videos - Xem chi tiết video
 info - Xem hoạt động của bạn
-check - Kiểm tra video sắp đăng (Admin)
+check - Kiểm tra video sắp đăng
 reschedule - Sắp xếp lại lịch đăng
 retitle - Tạo nội dung mới cho video
 fix - Dọn dẹp database
