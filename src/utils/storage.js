@@ -673,12 +673,11 @@ async function archiveVideo(post) {
 
 	await prisma.videoArchive.create({
 		data: {
-			id: crypto.randomUUID(),
 			chatId: post.chatId,
 			videoPath: post.videoPath,
 			title: post.title,
 			hashtags: post.hashtags,
-			postedAt: new Date().toISOString(),
+			postedAt: new Date(),
 		},
 	});
 }
