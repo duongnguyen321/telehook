@@ -1637,10 +1637,13 @@ async function handleCommand(ctx, command) {
 		return;
 	}
 
-	// ========== /clip - Clip video by removing time ranges (edit permission) ==========
+	// ========== /clip - Clip video by removing time ranges (Admin/Mod only) ==========
 	if (command.startsWith('/clip')) {
-		if (!canEdit) {
-			await ctx.reply('Bạn không có quyền chỉnh sửa video.' + tiktokLink);
+		const isMod = getUserRole(userId) === 'mod';
+		if (!isAdmin(userId) && !isMod) {
+			await ctx.reply(
+				'❌ Chỉ Admin hoặc Mod mới được dùng lệnh này.' + tiktokLink
+			);
 			return;
 		}
 
