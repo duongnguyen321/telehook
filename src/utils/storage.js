@@ -137,7 +137,7 @@ export async function setSetting(key, value) {
 // Initialize default settings
 async function initSettings() {
 	const defaults = [
-		['videos_per_day', '2'],
+		['videos_per_day', '9'],
 		['current_repost_cycle', '0'],
 		['repost_index', '0'],
 	];
