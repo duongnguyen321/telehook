@@ -601,7 +601,7 @@ export async function getNextScheduledPost() {
  * @returns {Promise<ScheduledPost[]>}
  */
 export async function getDuePosts() {
-	const now = new Date().toISOString();
+	const now = new Date();
 	const posts = await prisma.scheduledPost.findMany({
 		where: {
 			status: 'pending',
@@ -610,6 +610,14 @@ export async function getDuePosts() {
 		},
 		orderBy: { scheduledAt: 'asc' },
 	});
+
+	if (posts.length > 0) {
+		console.log(
+			`[getDuePosts] Found ${
+				posts.length
+			} due posts (now: ${now.toISOString()})`
+		);
+	}
 
 	return posts.map(mapScheduledPost);
 }

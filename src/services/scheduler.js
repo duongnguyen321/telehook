@@ -249,9 +249,20 @@ export async function scheduleUpload(post, scheduledAt) {
 export function startWorker() {
 	console.log('[Scheduler] Starting TikTok notification scheduler');
 
+	let minuteCounter = 0;
+
 	// Check for due posts every minute
 	console.log('[Scheduler] Setting up every-minute check for due posts');
 	cron.schedule('* * * * *', () => {
+		minuteCounter++;
+
+		// Log heartbeat every 5 minutes
+		if (minuteCounter % 5 === 0) {
+			console.log(
+				`[Scheduler] ❤️ Heartbeat: ${minuteCounter} minutes running, checking at ${new Date().toISOString()}`
+			);
+		}
+
 		checkAndProcessDuePosts().catch(console.error);
 	});
 
