@@ -942,6 +942,23 @@ export async function updatePostFileId(postId, fileId) {
 }
 
 /**
+ * Update video file path and file_id for a post (used after clipping)
+ * @param {string} postId
+ * @param {string} newVideoPath - New video filename (just filename, not full path)
+ * @param {string} newFileId - New Telegram file_id
+ */
+export async function updatePostVideo(postId, newVideoPath, newFileId) {
+	await prisma.scheduledPost.update({
+		where: { id: postId },
+		data: {
+			videoPath: newVideoPath,
+			telegramFileId: newFileId,
+		},
+	});
+	console.log(`[Clip] Updated video for post ${postId}: ${newVideoPath}`);
+}
+
+/**
  * Clean orphaned posts and recover missing records
  * - Deletes records where video file no longer exists (local OR S3)
  * - Creates records for videos in S3 that don't have database entries

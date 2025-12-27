@@ -93,10 +93,9 @@ async function processNotification(post) {
 		// Format caption for TikTok (title + hashtags)
 		const tiktokCaption = `${title}\n\n${hashtags}`;
 
-		const keyboard = new InlineKeyboard().text(
-			'✅ Đã đăng TikTok',
-			`posted_${postId}`
-		);
+		const keyboard = new InlineKeyboard()
+			.text('✅ Đã đăng TikTok', `posted_${postId}`)
+			.text('❌ Huỷ đăng', `cancelpost_${postId}`);
 
 		// Get all recipients (admin, reviewers, mods)
 		const recipients = getNotificationRecipients();

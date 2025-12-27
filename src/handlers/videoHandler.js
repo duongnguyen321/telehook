@@ -15,6 +15,7 @@ import {
 	deleteScheduledPost,
 	updatePostContent,
 	updatePostFileId,
+	updatePostVideo,
 	cleanOrphanedPosts,
 	getNextScheduledPost,
 	DATA_DIR,
@@ -48,6 +49,11 @@ import {
 	videoExists as s3VideoExists,
 	deleteVideo as s3DeleteVideo,
 } from '../utils/s3.js';
+import {
+	parseClipArgs,
+	clipVideo,
+	cleanupTempFile,
+} from '../services/clipService.js';
 
 // Temporary storage for category selections during content generation
 // Key: `${chatId}_${postId}`, Value: { POSE: 'FRONT', ACTION: 'SHOWING', ... }
@@ -56,6 +62,10 @@ const categorySelections = new Map();
 // Temporary storage for generated options to allow user selection
 // Key: `${chatId}_${postId}`, Value: Array of content options
 const generatedOptions = new Map();
+
+// Temporary storage for pending clip operations
+// Key: `clip_${chatId}_${postId}`, Value: { postId, originalVideoPath, tempOutputPath, previewMessageId, newVideoPath }
+const pendingClips = new Map();
 
 /**
  * Build category selection keyboard
@@ -1136,6 +1146,132 @@ export function setupVideoHandler(bot) {
 			return;
 		}
 
+		// Handle cancel post (from scheduler notification or /check) - ADMIN ONLY
+		if (data.startsWith('cancelpost_')) {
+			// Only admin can cancel post
+			if (!isAdmin(userId)) {
+				await safeAnswer('❌ Chỉ Admin mới được huỷ đăng!');
+				await logAction(
+					userId,
+					'cancel_post_denied',
+					data.replace('cancelpost_', '')
+				);
+				return;
+			}
+
+			const postId = data.replace('cancelpost_', '');
+
+			await updatePostStatus(postId, 'cancelled');
+			await logAction(userId, 'cancel_post', postId);
+
+			// Delete the message after cancellation
+			try {
+				await ctx.api.deleteMessage(chatId, messageId);
+			} catch (e) {
+				// Ignore if can't delete
+			}
+
+			await safeAnswer('❌ Đã huỷ đăng video này!');
+			return;
+		}
+
+		// Handle clip confirm - save clipped video
+		if (data.startsWith('clipconfirm_')) {
+			const postId = data.replace('clipconfirm_', '');
+			const clipKey = `clip_${chatId}_${postId}`;
+			const clipInfo = pendingClips.get(clipKey);
+
+			if (!clipInfo) {
+				await safeAnswer('❌ Không tìm thấy thông tin clip!');
+				return;
+			}
+
+			try {
+				// Get file_id from the preview message
+				const videoMessage = ctx.callbackQuery.message;
+				const newFileId = videoMessage.video?.file_id;
+
+				if (!newFileId) {
+					await safeAnswer('❌ Không lấy được file_id từ video!');
+					return;
+				}
+
+				// Upload clipped video to R2
+				if (isS3Enabled()) {
+					const uploaded = await s3UploadVideo(
+						clipInfo.tempOutputPath,
+						clipInfo.newVideoPath
+					);
+					if (!uploaded) {
+						await safeAnswer('❌ Upload R2 thất bại!');
+						return;
+					}
+
+					// Delete old video from R2
+					await s3DeleteVideo(clipInfo.originalVideoPath);
+					console.log(
+						`[Clip] Deleted old R2 video: ${clipInfo.originalVideoPath}`
+					);
+				}
+
+				// Update database record
+				await updatePostVideo(postId, clipInfo.newVideoPath, newFileId);
+
+				// Cleanup temp file
+				cleanupTempFile(clipInfo.tempOutputPath);
+
+				// Remove from pending
+				pendingClips.delete(clipKey);
+
+				await logAction(
+					userId,
+					'clip_confirm',
+					postId,
+					`New video: ${clipInfo.newVideoPath}`
+				);
+
+				// Edit message to show success
+				try {
+					await ctx.editMessageCaption({
+						caption: '✅ Đã lưu video đã cắt thành công!',
+					});
+				} catch {
+					/* ignore */
+				}
+
+				await safeAnswer('✅ Đã lưu video!');
+			} catch (error) {
+				console.error('[Clip] Confirm error:', error);
+				await safeAnswer(`❌ Lỗi: ${error.message.slice(0, 50)}`);
+			}
+			return;
+		}
+
+		// Handle clip cancel - cleanup temp files
+		if (data.startsWith('clipcancel_')) {
+			const postId = data.replace('clipcancel_', '');
+			const clipKey = `clip_${chatId}_${postId}`;
+			const clipInfo = pendingClips.get(clipKey);
+
+			if (clipInfo) {
+				// Cleanup temp file
+				cleanupTempFile(clipInfo.tempOutputPath);
+				pendingClips.delete(clipKey);
+			}
+
+			await logAction(userId, 'clip_cancel', postId);
+
+			// Delete the preview message
+			try {
+				await ctx.api.deleteMessage(chatId, messageId);
+			} catch {
+				/* ignore */
+			}
+
+			await safeAnswer('❌ Đã huỷ clip video!');
+			return;
+		}
+
 		await safeAnswer();
 	});
 
@@ -1478,10 +1614,9 @@ async function handleCommand(ctx, command) {
 			}/${totalPosts}] ⏳ Sắp đăng - ${timeStr}\n\n${repostLabel}${tiktokCaption}`;
 
 			// Send with confirm button
-			const keyboard = new InlineKeyboard().text(
-				'✅ Duyệt đăng ngay',
-				`posted_${post.id}`
-			);
+			const keyboard = new InlineKeyboard()
+				.text('✅ Duyệt đăng ngay', `posted_${post.id}`)
+				.text('❌ Huỷ đăng', `cancelpost_${post.id}`);
 
 			const sentMessage = await ctx.replyWithVideo(videoInput, {
 				caption: finalCaption,
@@ -1498,6 +1633,154 @@ async function handleCommand(ctx, command) {
 		} catch (error) {
 			console.error('[Check] Error:', error);
 			await ctx.reply(`❌ Lỗi khi tải video: ${error.message}`);
+		}
+		return;
+	}
+
+	// ========== /clip - Clip video by removing time ranges (edit permission) ==========
+	if (command.startsWith('/clip')) {
+		if (!canEdit) {
+			await ctx.reply('Bạn không có quyền chỉnh sửa video.' + tiktokLink);
+			return;
+		}
+
+		// Parse: /clip 5 3-7 15-20
+		const argsString = command.replace('/clip', '').trim();
+		const parsed = parseClipArgs(argsString);
+
+		if (!parsed) {
+			await ctx.reply(
+				'❌ Sai cú pháp. Dùng: /clip [trang] giây1-giây2 giây3-giây4 ...\n' +
+					'Ví dụ: /clip 5 3-7 15-20 (cắt bỏ 3s-7s và 15s-20s từ video trang 5)' +
+					tiktokLink
+			);
+			return;
+		}
+
+		const { page, ranges } = parsed;
+
+		// Get all posts
+		const { posts } = await getAllPostsByChat(chatId);
+		if (page >= posts.length) {
+			await ctx.reply(
+				`❌ Không tìm thấy video trang ${page + 1}. Tổng: ${
+					posts.length
+				} video.` + tiktokLink
+			);
+			return;
+		}
+
+		const post = posts[page];
+		if (!post) {
+			await ctx.reply('❌ Không tìm thấy video.' + tiktokLink);
+			return;
+		}
+
+		await ctx.reply(
+			`⏳ Đang xử lý clip video trang ${page + 1}...\nCắt bỏ: ${ranges
+				.map((r) => `${r.start}s-${r.end}s`)
+				.join(', ')}`
+		);
+
+		try {
+			// Download video to temp
+			const videoKey = path.basename(post.videoPath);
+			const tempDir = path.join(os.tmpdir(), `clip_input_${Date.now()}`);
+			fs.mkdirSync(tempDir, { recursive: true });
+			const tempInputPath = path.join(tempDir, videoKey);
+
+			// Get video from file_id, local, or S3
+			let videoBuffer = null;
+
+			if (post.telegramFileId) {
+				// Download from Telegram using file_id
+				try {
+					const file = await ctx.api.getFile(post.telegramFileId);
+					const fileUrl = `https://api.telegram.org/file/bot${process.env.TELEGRAM_BOT_TOKEN}/${file.file_path}`;
+					const response = await fetch(fileUrl);
+					videoBuffer = Buffer.from(await response.arrayBuffer());
+				} catch (e) {
+					console.error('[Clip] Failed to download from Telegram:', e.message);
+				}
+			}
+
+			if (!videoBuffer) {
+				const localPath = path.join(DATA_DIR, 'videos', videoKey);
+				if (fs.existsSync(localPath)) {
+					videoBuffer = fs.readFileSync(localPath);
+				} else if (isS3Enabled()) {
+					videoBuffer = await s3DownloadVideo(videoKey);
+				}
+			}
+
+			if (!videoBuffer) {
+				await ctx.reply('❌ Không tìm thấy file video.' + tiktokLink);
+				return;
+			}
+
+			// Save to temp
+			fs.writeFileSync(tempInputPath, videoBuffer);
+
+			// Clip video
+			const clipResult = await clipVideo(tempInputPath, ranges);
+
+			// Cleanup input temp
+			try {
+				fs.unlinkSync(tempInputPath);
+				fs.rmdirSync(tempDir);
+			} catch {
+				/* ignore */
+			}
+
+			if (!clipResult.success) {
+				await ctx.reply(`❌ Lỗi clip: ${clipResult.error}` + tiktokLink);
+				return;
+			}
+
+			// Generate new video filename
+			const newVideoPath = `${Date.now()}_clipped_${videoKey}`;
+
+			// Send preview with confirm/cancel buttons
+			const keyboard = new InlineKeyboard()
+				.text('✅ Xác nhận', `clipconfirm_${post.id}`)
+				.text('❌ Huỷ', `clipcancel_${post.id}`);
+
+			const previewCaption =
+				`✂️ XEM TRƯỚC VIDEO ĐÃ CẮT\n\n` +
+				`📄 Trang: ${page + 1}\n` +
+				`🗑️ Đã cắt bỏ: ${ranges
+					.map((r) => `${r.start}s-${r.end}s`)
+					.join(', ')}\n\n` +
+				`Bấm ✅ để lưu video mới, hoặc ❌ để huỷ.`;
+
+			const sentMessage = await ctx.replyWithVideo(
+				new InputFile(clipResult.outputPath),
+				{
+					caption: previewCaption,
+					reply_markup: keyboard,
+					supports_streaming: true,
+				}
+			);
+
+			// Store pending clip info
+			const clipKey = `clip_${chatId}_${post.id}`;
+			pendingClips.set(clipKey, {
+				postId: post.id,
+				originalVideoPath: videoKey,
+				tempOutputPath: clipResult.outputPath,
+				previewMessageId: sentMessage.message_id,
+				newVideoPath: newVideoPath,
+			});
+
+			await logAction(
+				userId,
+				'clip_start',
+				post.id,
+				`Ranges: ${ranges.map((r) => `${r.start}-${r.end}`).join(', ')}`
+			);
+		} catch (error) {
+			console.error('[Clip] Error:', error);
+			await ctx.reply(`❌ Lỗi: ${error.message}` + tiktokLink);
 		}
 		return;
 	}
