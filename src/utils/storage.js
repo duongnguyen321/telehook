@@ -770,14 +770,14 @@ export async function markAsReposted(videoIds) {
 export async function needsRepost(chatId) {
 	const tomorrow = new Date();
 	tomorrow.setDate(tomorrow.getDate() + 1);
-	const tomorrowStr = tomorrow.toISOString().split('T')[0];
+	tomorrow.setHours(0, 0, 0, 0);
 
 	// Check if there are pending posts for tomorrow or later
 	const count = await prisma.scheduledPost.count({
 		where: {
 			chatId: BigInt(chatId),
 			status: 'pending',
-			scheduledAt: { gte: tomorrowStr },
+			scheduledAt: { gte: tomorrow },
 		},
 	});
 
