@@ -66,9 +66,10 @@ _Logic: Automatically detects the day of the week and fills the slots accordingl
 
 ### Mod Commands (📤 Mod + Admin)
 
-| Command       | Description           |
-| :------------ | :-------------------- |
-| Forward video | Tự động lên lịch đăng |
+| Command                       | Description                                                |
+| :---------------------------- | :--------------------------------------------------------- |
+| Forward video                 | Tự động lên lịch đăng                                      |
+| `/clip [page] [sec1-sec2]...` | Cắt bỏ đoạn thời gian khỏi video (VD: `/clip 5 3-7 15-20`) |
 
 ### Reviewer Commands (📝 Kiểm duyệt viên + Admin)
 
@@ -96,6 +97,7 @@ queue - Xem lịch đăng video
 videos - Xem chi tiết video
 info - Xem hoạt động của bạn
 check - Kiểm tra video sắp đăng
+clip - Cắt bỏ đoạn thời gian khỏi video
 reschedule - Sắp xếp lại lịch đăng
 retitle - Tạo nội dung mới cho video
 fix - Dọn dẹp database

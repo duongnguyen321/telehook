@@ -1315,6 +1315,7 @@ function buildGreetingMessage(ctx, userRole, tiktokLink) {
 		greeting += `\n📤 **Mod:**\n`;
 		greeting += `• Forward video → Tự động lên lịch đăng\n`;
 		greeting += `• /check - Kiểm tra video sắp đăng\n`;
+		greeting += `• /clip [trang] [giây-giây] - Cắt bỏ đoạn video\n`;
 	}
 
 	// Reviewer commands
