@@ -11,7 +11,6 @@ import {
 	updateVideoStatus,
 	updatePostStatus,
 	rescheduleTimesOnly,
-	retitleAllPending,
 	deleteScheduledPost,
 	updatePostContent,
 	updatePostFileId,
@@ -1322,7 +1321,6 @@ function buildGreetingMessage(ctx, userRole, tiktokLink) {
 	if (userRole === 'reviewer' || userRole === 'admin') {
 		greeting += `\n📝 **Kiểm duyệt viên:**\n`;
 		greeting += `• /reschedule - Sắp xếp lại lịch đăng\n`;
-		greeting += `• /retitle - Tạo nội dung mới cho video\n`;
 		greeting += `• Trong /videos: Sửa nội dung video\n`;
 	}
 
@@ -1488,34 +1486,27 @@ async function handleCommand(ctx, command) {
 			await ctx.reply('Bạn không có quyền reschedule video.' + tiktokLink);
 			return;
 		}
-		await ctx.reply('⏳ Đang sắp xếp lại lịch đăng...' + tiktokLink);
-		const count = await rescheduleTimesOnly(chatId);
-		await ctx.reply(
-			`✅ Đã sắp xếp lại lịch cho ${count} video!\n(Giữ nguyên nội dung, chỉ đổi giờ)` +
-				tiktokLink
-		);
-		await logAction(
-			userId,
-			'reschedule',
-			null,
-			`Rescheduled times for ${count} videos`
-		);
-		return;
-	}
+		await ctx.reply('⏳ Đang sắp xếp lại lịch đăng... (chạy nền)' + tiktokLink);
 
-	// ========== /retitle - Regenerate titles/tags only (reviewer + admin) ==========
-	if (command === '/retitle') {
-		if (!canReschedule) {
-			await ctx.reply('Bạn không có quyền sửa nội dung video.' + tiktokLink);
-			return;
-		}
-		await ctx.reply('⏳ Đang tạo nội dung mới cho các video...' + tiktokLink);
-		const count = await retitleAllPending(chatId);
-		await ctx.reply(
-			`✅ Đã tạo nội dung mới cho ${count} video!\n(Giữ nguyên lịch, chỉ đổi title/tags)` +
-				tiktokLink
-		);
-		await logAction(userId, 'retitle', null, `Retitled ${count} videos`);
+		// Run in background to not block other users
+		setImmediate(async () => {
+			try {
+				const count = await rescheduleTimesOnly(chatId);
+				await ctx.reply(
+					`✅ Đã sắp xếp lại lịch cho ${count} video!\n(Giữ nguyên nội dung, chỉ đổi giờ)` +
+						tiktokLink
+				);
+				await logAction(
+					userId,
+					'reschedule',
+					null,
+					`Rescheduled times for ${count} videos`
+				);
+			} catch (error) {
+				console.error('[Reschedule] Error:', error);
+				await ctx.reply('❌ Lỗi khi reschedule: ' + error.message);
+			}
+		});
 		return;
 	}
 
@@ -1526,33 +1517,42 @@ async function handleCommand(ctx, command) {
 			return;
 		}
 		await ctx.reply(
-			'🔧 Đang kiểm tra, dọn dẹp và cache dữ liệu...' + tiktokLink
+			'🔧 Đang kiểm tra, dọn dẹp và cache dữ liệu... (chạy nền)' + tiktokLink
 		);
-		const result = await cleanOrphanedPosts(chatId);
-		if (result.deleted > 0 || result.created > 0 || result.cached > 0) {
-			let message = '✅ Kết quả dọn dẹp:\n';
-			if (result.deleted > 0) {
-				message += `🗑️ Đã xóa ${result.deleted} record không có video.\n`;
+
+		// Run in background to not block other users
+		setImmediate(async () => {
+			try {
+				const result = await cleanOrphanedPosts(chatId);
+				if (result.deleted > 0 || result.created > 0 || result.cached > 0) {
+					let message = '✅ Kết quả dọn dẹp:\n';
+					if (result.deleted > 0) {
+						message += `🗑️ Đã xóa ${result.deleted} record không có video.\n`;
+					}
+					if (result.created > 0) {
+						message += `➕ Đã tạo ${result.created} record cho video thiếu.\n`;
+					}
+					if (result.cached > 0) {
+						message += `💾 Đã cache ${result.cached} video từ S3.\n`;
+					}
+					message += `📅 Đã reschedule ${result.rescheduled} video.`;
+					await ctx.reply(message + tiktokLink);
+				} else {
+					await ctx.reply(
+						'✅ Không có thay đổi. Database và cache đã đồng bộ!' + tiktokLink
+					);
+				}
+				await logAction(
+					userId,
+					'fix_database',
+					null,
+					`Deleted: ${result.deleted}, Rescheduled: ${result.rescheduled}`
+				);
+			} catch (error) {
+				console.error('[Fix] Error:', error);
+				await ctx.reply('❌ Lỗi khi fix database: ' + error.message);
 			}
-			if (result.created > 0) {
-				message += `➕ Đã tạo ${result.created} record cho video thiếu.\n`;
-			}
-			if (result.cached > 0) {
-				message += `� Đã cache ${result.cached} video từ S3.\n`;
-			}
-			message += `�📅 Đã reschedule ${result.rescheduled} video.`;
-			await ctx.reply(message + tiktokLink);
-		} else {
-			await ctx.reply(
-				'✅ Không có thay đổi. Database và cache đã đồng bộ!' + tiktokLink
-			);
-		}
-		await logAction(
-			userId,
-			'fix_database',
-			null,
-			`Deleted: ${result.deleted}, Rescheduled: ${result.rescheduled}`
-		);
+		});
 		return;
 	}
 

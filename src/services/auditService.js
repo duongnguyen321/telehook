@@ -25,7 +25,7 @@ export async function logAction(
 				action,
 				targetId,
 				details,
-				createdAt: new Date().toISOString(),
+				createdAt: new Date(),
 			},
 		});
 	} catch (error) {
@@ -163,7 +163,6 @@ function getActionDisplayName(action) {
 		clear: '🧹 Làm mới',
 		upload_video: '📤 Upload video',
 		reschedule: '🔄 Reschedule',
-		retitle: '🏷️ Retitle',
 		fix_database: '🔧 Fix database',
 		user_info_changed: '👤 Cập nhật thông tin',
 		view_audit: '📜 Xem lịch sử audit',

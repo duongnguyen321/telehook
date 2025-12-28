@@ -506,8 +506,8 @@ export async function rescheduleTimesOnly(chatId) {
 		slotIndex = 0;
 	}
 
-	// Update ONLY scheduled_at, keep title/hashtags
-	let count = 0;
+	// Prepare batch updates
+	const updates = [];
 	for (const post of posts) {
 		const [hour, minute] = slots[slotIndex];
 
@@ -519,11 +519,10 @@ export async function rescheduleTimesOnly(chatId) {
 		);
 		scheduleTime.setMinutes(minute);
 
-		await prisma.scheduledPost.update({
-			where: { id: post.id },
-			data: { scheduledAt: scheduleTime.toISOString() },
+		updates.push({
+			id: post.id,
+			scheduledAt: scheduleTime,
 		});
-		count++;
 
 		// Move to next slot
 		slotIndex++;
@@ -534,51 +533,18 @@ export async function rescheduleTimesOnly(chatId) {
 		}
 	}
 
-	console.log(`[Reschedule] Updated times for ${count} posts`);
-	return count;
-}
+	// Execute batch updates using Promise.all for speed
+	await Promise.all(
+		updates.map(({ id, scheduledAt }) =>
+			prisma.scheduledPost.update({
+				where: { id },
+				data: { scheduledAt },
+			})
+		)
+	);
 
-/**
- * Retitle all pending posts - ONLY update titles/hashtags, keep existing schedule
- * Used for regenerating content without changing times
- * @param {number} chatId
- * @returns {Promise<number>} Number of posts retitled
- */
-export async function retitleAllPending(chatId) {
-	// Import content generator dynamically to avoid circular deps
-
-	// Get all pending posts
-	const posts = await prisma.scheduledPost.findMany({
-		where: { chatId: BigInt(chatId), status: 'pending' },
-	});
-
-	if (posts.length === 0) {
-		return 0;
-	}
-
-	console.log(`[Retitle] Generating new content for ${posts.length} posts...`);
-
-	// Update ONLY title/hashtags, keep scheduledAt
-	let count = 0;
-	for (const post of posts) {
-		const [content] = generateContentOptions();
-
-		await prisma.scheduledPost.update({
-			where: { id: post.id },
-			data: {
-				title: content.title,
-				hashtags: content.hashtags,
-			},
-		});
-		count++;
-
-		console.log(
-			`[Retitle] ${count}/${posts.length}: "${content.title.slice(0, 25)}..."`
-		);
-	}
-
-	console.log(`[Retitle] Generated new content for ${count} posts`);
-	return count;
+	console.log(`[Reschedule] Updated times for ${updates.length} posts (batch)`);
+	return updates.length;
 }
 
 /**
@@ -889,6 +855,7 @@ export async function getAllPostsByChat(chatId) {
 
 /**
  * Delete a scheduled post, its video file, and reschedule remaining posts
+ * OPTIMIZED: Only reschedules posts that were scheduled AFTER the deleted post
  * @param {string} postId - The post ID to delete
  * @param {number} chatId - Chat ID for rescheduling
  * @returns {Promise<{success: boolean, rescheduled: number}>}
@@ -901,6 +868,9 @@ export async function deleteScheduledPost(postId, chatId) {
 		return { success: false, rescheduled: 0 };
 	}
 
+	// Store the deleted post's scheduled time for partial reschedule
+	const deletedScheduledAt = post.scheduledAt;
+
 	// Delete video file if exists
 	const fullPath = getVideoFullPath(post.videoPath);
 	if (fs.existsSync(fullPath)) {
@@ -912,12 +882,16 @@ export async function deleteScheduledPost(postId, chatId) {
 		}
 	}
 
-	// Delete from S3 if enabled (independent of local file)
+	// Delete from S3 if enabled (run in background, don't await)
 	if (isS3Enabled()) {
 		const videoKey = path.basename(post.videoPath);
-		// Note: We don't check existence first because delete is idempotent
-		await s3DeleteVideo(videoKey);
-		console.log(`[Delete] Removed S3 video: ${videoKey}`);
+		s3DeleteVideo(videoKey)
+			.then(() => {
+				console.log(`[Delete] Removed S3 video: ${videoKey}`);
+			})
+			.catch((e) => {
+				console.error(`[Delete] S3 delete error: ${e.message}`);
+			});
 	}
 
 	// Delete from downloaded_videos if exists (by video path)
@@ -929,10 +903,105 @@ export async function deleteScheduledPost(postId, chatId) {
 	await prisma.scheduledPost.delete({ where: { id: postId } });
 	console.log(`[Delete] Removed post from database: ${postId}`);
 
-	// Reschedule remaining posts to fill the gap (keep existing content)
-	const rescheduled = await rescheduleTimesOnly(chatId);
+	// OPTIMIZED: Only reschedule posts that were AFTER the deleted post
+	const rescheduled = await rescheduleFromPosition(chatId, deletedScheduledAt);
 
 	return { success: true, rescheduled };
+}
+
+/**
+ * Reschedule posts from a specific position onwards (optimized for delete)
+ * Only updates posts that were scheduled at or after the given time
+ * @param {number} chatId
+ * @param {Date} fromScheduledAt - Starting position (deleted post's time)
+ * @returns {Promise<number>} Number of posts rescheduled
+ */
+async function rescheduleFromPosition(chatId, fromScheduledAt) {
+	// Get only posts that were scheduled at or after the deleted post
+	let posts = await prisma.scheduledPost.findMany({
+		where: {
+			chatId: BigInt(chatId),
+			status: 'pending',
+			scheduledAt: { gte: fromScheduledAt },
+		},
+		orderBy: { scheduledAt: 'asc' },
+	});
+
+	if (posts.length === 0) {
+		return 0;
+	}
+
+	console.log(
+		`[Reschedule] Rescheduling ${posts.length} affected posts (from deleted position)...`
+	);
+
+	// Sort by timestamp in filename for consistent ordering
+	posts = posts.sort((a, b) => {
+		const getTimestamp = (videoPath) => {
+			const filename = path.basename(videoPath);
+			const match = filename.match(/^(\d+)_/);
+			return match ? parseInt(match[1], 10) : 0;
+		};
+		return getTimestamp(a.videoPath) - getTimestamp(b.videoPath);
+	});
+
+	// Start from the deleted post's time
+	let currentDate = new Date(fromScheduledAt);
+
+	// Find the slot that corresponds to this time
+	let slots = getSlotsForDate(currentDate);
+	let slotIndex = 0;
+
+	// Find the correct starting slot
+	const deletedHour = currentDate.getHours();
+	const deletedMinute = currentDate.getMinutes();
+	for (let i = 0; i < slots.length; i++) {
+		const [h, m] = slots[i];
+		if (h > deletedHour || (h === deletedHour && m >= deletedMinute)) {
+			slotIndex = i;
+			break;
+		}
+	}
+
+	// Prepare batch updates
+	const updates = [];
+	for (const post of posts) {
+		const [hour, minute] = slots[slotIndex];
+
+		const scheduleTime = createGMT7Time(
+			currentDate.getFullYear(),
+			currentDate.getMonth() + 1,
+			currentDate.getDate(),
+			hour
+		);
+		scheduleTime.setMinutes(minute);
+
+		updates.push({
+			id: post.id,
+			scheduledAt: scheduleTime,
+		});
+
+		// Move to next slot
+		slotIndex++;
+		if (slotIndex >= slots.length) {
+			currentDate.setDate(currentDate.getDate() + 1);
+			slots = getSlotsForDate(currentDate);
+			slotIndex = 0;
+		}
+	}
+
+	// Execute batch updates using Promise.all for speed
+	await Promise.all(
+		updates.map(({ id, scheduledAt }) =>
+			prisma.scheduledPost.update({
+				where: { id },
+				data: { scheduledAt },
+			})
+		)
+	);
+
+	console.log(`[Reschedule] Updated ${updates.length} posts in batch`);
+	return updates.length;
 }
 
 /**
