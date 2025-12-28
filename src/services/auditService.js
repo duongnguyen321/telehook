@@ -211,3 +211,145 @@ function formatTimeAgo(isoString) {
 	const month = (date.getMonth() + 1).toString().padStart(2, '0');
 	return `${day}/${month}`;
 }
+
+// ==================== ANALYTICS FUNCTIONS ====================
+
+const ANALYTICS_PAGE_SIZE = 10;
+
+/**
+ * Get all users with their video view counts for analytics
+ * @param {number} page - Page number (0-indexed)
+ * @returns {Promise<{users: Array, total: number, totalPages: number}>}
+ */
+export async function getUsersWithViewCounts(page = 0) {
+	try {
+		// Get all users
+		const [allUsers, totalUsers] = await Promise.all([
+			prisma.user.findMany({
+				orderBy: { lastActiveAt: 'desc' },
+				skip: page * ANALYTICS_PAGE_SIZE,
+				take: ANALYTICS_PAGE_SIZE,
+			}),
+			prisma.user.count(),
+		]);
+
+		// For each user, get their view count
+		const usersWithCounts = await Promise.all(
+			allUsers.map(async (user) => {
+				const viewCount = await prisma.auditLog.count({
+					where: {
+						telegramId: user.telegramId,
+						action: 'navigate_video',
+					},
+				});
+
+				const lastView = await prisma.auditLog.findFirst({
+					where: {
+						telegramId: user.telegramId,
+						action: 'navigate_video',
+					},
+					orderBy: { createdAt: 'desc' },
+				});
+
+				return {
+					telegramId: user.telegramId.toString(),
+					username: user.username,
+					firstName: user.firstName,
+					lastName: user.lastName,
+					role: user.role,
+					viewCount,
+					lastViewAt: lastView?.createdAt || null,
+				};
+			})
+		);
+
+		return {
+			users: usersWithCounts,
+			total: totalUsers,
+			totalPages: Math.ceil(totalUsers / ANALYTICS_PAGE_SIZE),
+		};
+	} catch (error) {
+		console.error('[Analytics] Failed to get users:', error.message);
+		return { users: [], total: 0, totalPages: 0 };
+	}
+}
+
+/**
+ * Get detailed view history for a specific user
+ * @param {number} telegramId - Telegram user ID
+ * @param {number} page - Page number (0-indexed)
+ * @returns {Promise<{views: Array, total: number, totalPages: number, user: Object|null}>}
+ */
+export async function getUserViewHistory(telegramId, page = 0) {
+	try {
+		// Get user info
+		const user = await prisma.user.findUnique({
+			where: { telegramId: BigInt(telegramId) },
+		});
+
+		// Get view logs with pagination
+		const [views, total] = await Promise.all([
+			prisma.auditLog.findMany({
+				where: {
+					telegramId: BigInt(telegramId),
+					action: 'navigate_video',
+				},
+				orderBy: { createdAt: 'desc' },
+				skip: page * ANALYTICS_PAGE_SIZE,
+				take: ANALYTICS_PAGE_SIZE,
+			}),
+			prisma.auditLog.count({
+				where: {
+					telegramId: BigInt(telegramId),
+					action: 'navigate_video',
+				},
+			}),
+		]);
+
+		return {
+			views: views.map((v) => ({
+				details: v.details,
+				createdAt: v.createdAt,
+			})),
+			total,
+			totalPages: Math.ceil(total / ANALYTICS_PAGE_SIZE),
+			user: user
+				? {
+						telegramId: user.telegramId.toString(),
+						username: user.username,
+						firstName: user.firstName,
+						role: user.role,
+				  }
+				: null,
+		};
+	} catch (error) {
+		console.error('[Analytics] Failed to get user history:', error.message);
+		return { views: [], total: 0, totalPages: 0, user: null };
+	}
+}
+
+/**
+ * Get total analytics summary
+ * @returns {Promise<{totalUsers: number, totalViews: number, activeToday: number}>}
+ */
+export async function getAnalyticsSummary() {
+	try {
+		const today = new Date();
+		today.setHours(0, 0, 0, 0);
+
+		const [totalUsers, totalViews, activeToday] = await Promise.all([
+			prisma.user.count(),
+			prisma.auditLog.count({ where: { action: 'navigate_video' } }),
+			prisma.auditLog.count({
+				where: {
+					createdAt: { gte: today },
+				},
+			}),
+		]);
+
+		return { totalUsers, totalViews, activeToday };
+	} catch (error) {
+		console.error('[Analytics] Failed to get summary:', error.message);
+		return { totalUsers: 0, totalViews: 0, activeToday: 0 };
+	}
+}

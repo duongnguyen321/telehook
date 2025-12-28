@@ -40,7 +40,13 @@ import {
 	getRoleDisplayName,
 	isAdmin,
 } from '../services/roleService.js';
-import { logAction, getUserActivitySummary } from '../services/auditService.js';
+import {
+	logAction,
+	getUserActivitySummary,
+	getUsersWithViewCounts,
+	getUserViewHistory,
+	getAnalyticsSummary,
+} from '../services/auditService.js';
 import {
 	isS3Enabled,
 	uploadVideo as s3UploadVideo,
@@ -718,6 +724,100 @@ export function setupVideoHandler(bot) {
 			return;
 		}
 
+		// Handle analytics user list pagination (Admin only)
+		if (data.startsWith('analytics_list_') && isAdmin(userId)) {
+			const page = parseInt(data.replace('analytics_list_', '')) || 0;
+			const summary = await getAnalyticsSummary();
+			const { users, total, totalPages } = await getUsersWithViewCounts(page);
+
+			let message = `📊 <b>ANALYTICS - TỔNG QUAN</b>\n\n`;
+			message += `👥 Tổng người dùng: ${summary.totalUsers}\n`;
+			message += `👁️ Tổng lượt xem: ${summary.totalViews}\n`;
+			message += `🟢 Hoạt động hôm nay: ${summary.activeToday}\n\n`;
+
+			message += `<b>DANH SÁCH USER (Trang ${page + 1}/${totalPages}):</b>\n`;
+			message += `────────────────────\n`;
+
+			users.forEach((u, i) => {
+				const name = u.firstName + (u.lastName ? ` ${u.lastName}` : '');
+				const username = u.username ? `@${u.username}` : '';
+				const lastView = u.lastViewAt
+					? formatTimeAgoShort(u.lastViewAt)
+					: 'Chưa xem';
+				message += `${page * 10 + i + 1}. <b>${name}</b> ${username}\n`;
+				message += `   🆔 <code>${u.telegramId}</code> | ${u.role}\n`;
+				message += `   👁️ ${u.viewCount} lượt | ⏰ ${lastView}\n\n`;
+			});
+
+			message += `\n💡 <i>Dùng /analytics [ID] để xem chi tiết</i>`;
+
+			const keyboard = new InlineKeyboard();
+			if (page > 0) {
+				keyboard.text('◀️ Trước', `analytics_list_${page - 1}`);
+			}
+			if (page < totalPages - 1) {
+				keyboard.text('Trang sau ▶️', `analytics_list_${page + 1}`);
+			}
+
+			await ctx.editMessageText(message, {
+				parse_mode: 'HTML',
+				reply_markup: keyboard,
+			});
+			await safeAnswer();
+			return;
+		}
+
+		// Handle analytics user detail pagination (Admin only)
+		if (data.startsWith('analytics_user_') && isAdmin(userId)) {
+			const parts = data.split('_');
+			const targetUserId = parts[2];
+			const page = parseInt(parts[3]) || 0;
+
+			const { views, total, totalPages, user } = await getUserViewHistory(
+				targetUserId,
+				page
+			);
+
+			if (!user) {
+				await safeAnswer('User không tồn tại');
+				return;
+			}
+
+			let message = `📊 <b>LỊCH SỬ XEM VIDEO</b>\n\n`;
+			message += `👤 <b>${user.firstName}</b> (@${user.username || 'N/A'})\n`;
+			message += `🆔 ID: <code>${user.telegramId}</code>\n`;
+			message += `🏷️ Role: ${user.role}\n`;
+			message += `📺 Tổng lượt xem: ${total}\n\n`;
+
+			if (views.length > 0) {
+				message += `<b>Chi tiết (Trang ${page + 1}/${totalPages}):</b>\n`;
+				views.forEach((v, i) => {
+					const time = formatTimeAgoShort(v.createdAt);
+					message += `${page * 10 + i + 1}. ${
+						v.details || '(không có chi tiết)'
+					} - ${time}\n`;
+				});
+			}
+
+			const keyboard = new InlineKeyboard();
+			if (page > 0) {
+				keyboard.text('◀️ Trước', `analytics_user_${targetUserId}_${page - 1}`);
+			}
+			if (page < totalPages - 1) {
+				keyboard.text(
+					'Trang sau ▶️',
+					`analytics_user_${targetUserId}_${page + 1}`
+				);
+			}
+
+			await ctx.editMessageText(message, {
+				parse_mode: 'HTML',
+				reply_markup: keyboard,
+			});
+			await safeAnswer();
+			return;
+		}
+
 		// Handle delete confirmation request (need delete permission)
 		if (data.startsWith('delask_') && canDelete) {
 			const parts = data.split('_');
@@ -1327,6 +1427,7 @@ function buildGreetingMessage(ctx, userRole, tiktokLink) {
 	// Admin commands
 	if (userRole === 'admin') {
 		greeting += `\n👑 **Admin:**\n`;
+		greeting += `• /analytics - Xem thống kê người dùng\n`;
 		greeting += `• /fix - Dọn dẹp database\n`;
 		greeting += `• /check - Kiểm tra video sắp đăng\n`;
 		greeting += `• Trong /videos: Xoá video\n`;
@@ -1788,4 +1889,123 @@ async function handleCommand(ctx, command) {
 		}
 		return;
 	}
+
+	// ========== /analytics - View user analytics (Admin only) ==========
+	if (command.startsWith('/analytics')) {
+		if (!isAdmin(userId)) {
+			await ctx.reply('❌ Chỉ Admin mới được dùng lệnh này.' + tiktokLink);
+			return;
+		}
+
+		const args = command.replace('/analytics', '').trim();
+
+		// If telegram ID provided, show user's detailed view history
+		if (args && /^\d+$/.test(args)) {
+			const targetUserId = args;
+			const { views, total, totalPages, user } = await getUserViewHistory(
+				targetUserId,
+				0
+			);
+
+			if (!user) {
+				await ctx.reply(`❌ Không tìm thấy user với ID: ${targetUserId}`);
+				return;
+			}
+
+			let message = `📊 <b>LỊCH SỬ XEM VIDEO</b>\n\n`;
+			message += `👤 <b>${user.firstName}</b> (@${user.username || 'N/A'})\n`;
+			message += `🆔 ID: <code>${user.telegramId}</code>\n`;
+			message += `🏷️ Role: ${user.role}\n`;
+			message += `📺 Tổng lượt xem: ${total}\n\n`;
+
+			if (views.length > 0) {
+				message += `<b>Chi tiết (Trang 1/${totalPages}):</b>\n`;
+				views.forEach((v, i) => {
+					const time = formatTimeAgoShort(v.createdAt);
+					message += `${i + 1}. ${
+						v.details || '(không có chi tiết)'
+					} - ${time}\n`;
+				});
+			} else {
+				message += `<i>Chưa xem video nào.</i>`;
+			}
+
+			let keyboard = null;
+			if (totalPages > 1) {
+				keyboard = new InlineKeyboard().text(
+					'Trang sau ▶️',
+					`analytics_user_${targetUserId}_1`
+				);
+			}
+
+			await ctx.reply(message, {
+				parse_mode: 'HTML',
+				reply_markup: keyboard,
+			});
+			await logAction(userId, 'view_analytics', targetUserId);
+			return;
+		}
+
+		// No ID - show user list with view counts
+		const summary = await getAnalyticsSummary();
+		const { users, total, totalPages } = await getUsersWithViewCounts(0);
+
+		let message = `📊 <b>ANALYTICS - TỔNG QUAN</b>\n\n`;
+		message += `👥 Tổng người dùng: ${summary.totalUsers}\n`;
+		message += `👁️ Tổng lượt xem: ${summary.totalViews}\n`;
+		message += `🟢 Hoạt động hôm nay: ${summary.activeToday}\n\n`;
+
+		message += `<b>DANH SÁCH USER (Trang 1/${totalPages}):</b>\n`;
+		message += `────────────────────\n`;
+
+		users.forEach((u, i) => {
+			const name = u.firstName + (u.lastName ? ` ${u.lastName}` : '');
+			const username = u.username ? `@${u.username}` : '';
+			const lastView = u.lastViewAt
+				? formatTimeAgoShort(u.lastViewAt)
+				: 'Chưa xem';
+			message += `${i + 1}. <b>${name}</b> ${username}\n`;
+			message += `   🆔 <code>${u.telegramId}</code> | ${u.role}\n`;
+			message += `   👁️ ${u.viewCount} lượt | ⏰ ${lastView}\n\n`;
+		});
+
+		if (users.length === 0) {
+			message += `<i>Chưa có user nào.</i>\n`;
+		}
+
+		message += `\n💡 <i>Dùng /analytics [ID] để xem chi tiết</i>`;
+
+		let keyboard = null;
+		if (totalPages > 1) {
+			keyboard = new InlineKeyboard().text('Trang sau ▶️', `analytics_list_1`);
+		}
+
+		await ctx.reply(message, {
+			parse_mode: 'HTML',
+			reply_markup: keyboard,
+		});
+		await logAction(userId, 'view_analytics_list');
+		return;
+	}
+}
+
+/**
+ * Format time ago (short version for analytics)
+ */
+function formatTimeAgoShort(date) {
+	const d = new Date(date);
+	const now = new Date();
+	const diffMs = now - d;
+	const diffMins = Math.floor(diffMs / 60000);
+	const diffHours = Math.floor(diffMs / 3600000);
+	const diffDays = Math.floor(diffMs / 86400000);
+
+	if (diffMins < 1) return 'vừa xong';
+	if (diffMins < 60) return `${diffMins}p`;
+	if (diffHours < 24) return `${diffHours}h`;
+	if (diffDays < 7) return `${diffDays}d`;
+
+	const day = d.getDate().toString().padStart(2, '0');
+	const month = (d.getMonth() + 1).toString().padStart(2, '0');
+	return `${day}/${month}`;
 }
