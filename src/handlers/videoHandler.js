@@ -59,6 +59,10 @@ import {
 	clipVideo,
 	cleanupTempFile,
 } from '../services/clipService.js';
+import {
+	upscaleVideo,
+	cleanupUpscaledFile,
+} from '../services/videoProcessor.js';
 
 // Temporary storage for category selections during content generation
 // Key: `${chatId}_${postId}`, Value: { POSE: 'FRONT', ACTION: 'SHOWING', ... }
@@ -447,12 +451,45 @@ async function processVideoAfterDownload(ctx, video, videoPath, chatId) {
 		const fileName = path.basename(videoPath);
 
 		// Upload to S3 if enabled
+		// Check for low quality and upscale if needed
+		let finalVideoPath = videoPath;
+		let wasUpscaled = false;
+
+		if (video.width && video.height) {
+			const maxDim = Math.max(video.width, video.height);
+			if (maxDim < 720) {
+				console.log(
+					`[Video] Low quality (${video.width}x${video.height}), upscaling...`
+				);
+				await ctx.reply(
+					'⏳ Video chất lượng thấp, đang làm nét... (vui lòng đợi)'
+				);
+
+				const result = await upscaleVideo(videoPath);
+				if (result.success && result.outputPath) {
+					// Delete original low-res file
+					try {
+						fs.unlinkSync(videoPath);
+					} catch (e) {}
+
+					finalVideoPath = result.outputPath;
+					wasUpscaled = true;
+					console.log(`[Video] Upscale success: ${finalVideoPath}`);
+				} else {
+					console.error(`[Video] Upscale failed: ${result.error}`);
+					await ctx.reply('⚠️ Không thể làm nét video, sẽ dùng bản gốc.');
+				}
+			}
+		}
+
 		if (isS3Enabled()) {
-			const uploaded = await s3UploadVideo(videoPath, fileName);
+			const fileName = path.basename(finalVideoPath);
+			const uploaded = await s3UploadVideo(finalVideoPath, fileName);
 			if (uploaded) {
 				// Delete local file after successful S3 upload
 				try {
-					fs.unlinkSync(videoPath);
+					fs.unlinkSync(finalVideoPath);
+					if (wasUpscaled) cleanupUpscaledFile(finalVideoPath); // Cleanup temp dir if upscaled
 					console.log(
 						`[Video] Deleted local file after S3 upload: ${fileName}`
 					);
@@ -468,7 +505,7 @@ async function processVideoAfterDownload(ctx, video, videoPath, chatId) {
 		await trackDownloadedVideo(
 			video.file_id,
 			chatId,
-			videoPath,
+			finalVideoPath,
 			video.file_size || 0
 		);
 
@@ -478,7 +515,7 @@ async function processVideoAfterDownload(ctx, video, videoPath, chatId) {
 		// Auto schedule with file_id for instant sends later
 		const post = await addScheduledPost({
 			chatId,
-			videoPath,
+			videoPath: finalVideoPath,
 			title: content.title,
 			hashtags: content.hashtags,
 			isRepost: false,
@@ -503,6 +540,117 @@ async function processVideoAfterDownload(ctx, video, videoPath, chatId) {
 		}
 	} catch (error) {
 		console.error('[Video] Process error:', error.message);
+	}
+}
+
+/**
+ * Handle background video upscaling
+ * @param {string} postId
+ * @param {string} originalVideoPath - Path of the original video
+ * @param {number} duration
+ * @param {number} chatId
+ * @param {import('grammy').Api} api
+ */
+async function handleBackgroundUpscale(
+	postId,
+	originalVideoPath,
+	duration,
+	chatId,
+	api
+) {
+	console.log(`[BackgroundUpscale] Starting for post: ${postId}`);
+	try {
+		const videoKey = path.basename(originalVideoPath);
+		let tempInputPath = originalVideoPath;
+		let needsDownload = !fs.existsSync(originalVideoPath);
+
+		if (isS3Enabled() && needsDownload) {
+			const tempDir = path.join(os.tmpdir(), `down_${Date.now()}`);
+			if (!fs.existsSync(tempDir)) fs.mkdirSync(tempDir);
+			tempInputPath = path.join(tempDir, videoKey);
+			console.log(`[BackgroundUpscale] Downloading from S3: ${videoKey}`);
+			const downloaded = await s3DownloadVideo(videoKey, tempDir);
+			if (!downloaded) {
+				console.error('[BackgroundUpscale] Failed to download from S3');
+				return;
+			}
+		} else if (needsDownload) {
+			console.error('[BackgroundUpscale] Local file missing');
+			return;
+		}
+
+		const result = await upscaleVideo(tempInputPath, duration);
+
+		if (isS3Enabled() && needsDownload) {
+			try {
+				fs.rmSync(path.dirname(tempInputPath), {
+					recursive: true,
+					force: true,
+				});
+			} catch (e) {}
+		}
+
+		if (!result.success || !result.outputPath) {
+			console.error(`[BackgroundUpscale] Failed: ${result.error}`);
+			await api.sendMessage(
+				chatId,
+				`⚠️ Làm nét thất bại cho video (Post ID: ${postId}). Giữ nguyên bản gốc.`
+			);
+			return;
+		}
+
+		const newVideoPath = result.outputPath;
+		console.log(`[BackgroundUpscale] Success: ${newVideoPath}`);
+
+		if (isS3Enabled()) {
+			const newFileName = path.basename(newVideoPath);
+			const uploaded = await s3UploadVideo(newVideoPath, newFileName);
+			if (!uploaded) {
+				console.error('[BackgroundUpscale] Failed to upload new video to S3');
+				return;
+			}
+
+			await prisma.scheduledPost.update({
+				where: { id: postId },
+				data: {
+					videoPath: path.join(DATA_DIR, 'videos', newFileName),
+					telegramFileId: null, // Force re-upload
+				},
+			});
+
+			await s3DeleteVideo(videoKey);
+			console.log(
+				`[BackgroundUpscale] Updated DB and deleted old S3 video: ${videoKey}`
+			);
+
+			cleanupUpscaledFile(newVideoPath);
+		} else {
+			const newFileName = path.basename(newVideoPath);
+			const destPath = path.join(DATA_DIR, 'videos', newFileName);
+
+			fs.copyFileSync(newVideoPath, destPath);
+			cleanupUpscaledFile(newVideoPath);
+
+			await prisma.scheduledPost.update({
+				where: { id: postId },
+				data: {
+					videoPath: destPath,
+					telegramFileId: null,
+				},
+			});
+
+			if (fs.existsSync(originalVideoPath)) {
+				fs.unlinkSync(originalVideoPath);
+			}
+			console.log(`[BackgroundUpscale] Updated DB and replaced local file`);
+		}
+
+		await api.sendMessage(
+			chatId,
+			`✨ Video đã được làm nét và cập nhật! (Post ID: ${postId})`
+		);
+	} catch (error) {
+		console.error('[BackgroundUpscale] Critical error:', error);
 	}
 }
 
