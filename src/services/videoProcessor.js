@@ -77,21 +77,23 @@ export async function upscaleVideo(inputPath, duration) {
 		fs.mkdirSync(tempDir, { recursive: true });
 	}
 
-	const outputPath = path.join(tempDir, `${baseName}_720p${ext}`);
+	const outputPath = path.join(tempDir, `${baseName}_1080p${ext}`);
 
 	console.log(
 		`[Upscale] Target bitrate: ${bitrate}k for duration: ${duration}s`
 	);
 
 	// Filters:
-	// scale=-2:720 : Scale height to 720
+	// scale: Smart 1080p
+	// If landscape (iw > ih): height=1080, width=-2
+	// If portrait (ih > iw): width=1080, height=-2
 	// unsharp : Sharpen
 	const args = [
 		'-y',
 		'-i',
 		inputPath,
 		'-vf',
-		'scale=-2:720:flags=lanczos,unsharp=5:5:1.0:5:5:0.0',
+		"scale='if(gt(iw,ih),-2,1080)':'if(gt(iw,ih),1080,-2)':flags=lanczos,unsharp=5:5:1.0:5:5:0.0",
 		'-c:v',
 		'libx264',
 		'-preset',

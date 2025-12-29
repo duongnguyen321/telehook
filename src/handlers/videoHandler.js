@@ -456,13 +456,13 @@ async function processVideoAfterDownload(ctx, video, videoPath, chatId) {
 		let wasUpscaled = false;
 
 		if (video.width && video.height) {
-			const maxDim = Math.max(video.width, video.height);
-			if (maxDim < 720) {
+			const minDim = Math.min(video.width, video.height);
+			if (minDim < 1080) {
 				console.log(
 					`[Video] Low quality (${video.width}x${video.height}), upscaling...`
 				);
 				await ctx.reply(
-					'⏳ Video chất lượng thấp, đang làm nét... (vui lòng đợi)'
+					'⏳ Video chưa đạt Full HD (1080p), đang làm nét... (vui lòng đợi)'
 				);
 
 				const result = await upscaleVideo(videoPath);
