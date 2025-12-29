@@ -1,7 +1,5 @@
 import cron from 'node-cron';
-import fs from 'fs';
-import path from 'path';
-import { InputFile, InlineKeyboard } from 'grammy';
+import { InlineKeyboard } from 'grammy';
 import {
 	getDuePosts,
 	updatePostStatus,
@@ -9,16 +7,8 @@ import {
 	needsRepost,
 	scheduleReposts,
 	getPendingCount,
-	getPostById,
-	updatePostFileId,
-	DATA_DIR,
 } from '../utils/storage.js';
 import { getNotificationRecipients } from './roleService.js';
-import {
-	isS3Enabled,
-	downloadVideo as s3DownloadVideo,
-	getPublicUrl,
-} from '../utils/s3.js';
 
 let bot = null;
 let defaultChatId = null;
@@ -54,17 +44,9 @@ async function processNotification(post) {
 			throw new Error('Bot not initialized');
 		}
 
-		const videoKey = path.basename(videoPath);
-
-		// Determine download URL
-		let downloadUrl;
-		if (isS3Enabled()) {
-			downloadUrl = getPublicUrl(videoKey);
-		} else {
-			// Fallback to local stream URL
-			const baseUrl = process.env.BASE_URL || 'http://localhost:8888';
-			downloadUrl = `${baseUrl}/api/videos/${postId}/stream`;
-		}
+		// Always use stream API endpoint - S3 direct URLs may be blocked
+		const baseUrl = process.env.BASE_URL || 'http://localhost:8888';
+		const downloadUrl = `${baseUrl}/api/videos/${postId}/stream`;
 
 		// Format caption for TikTok (title + hashtags)
 		const tiktokCaption = `${title}\n\n${hashtags}`;
