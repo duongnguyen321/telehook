@@ -1,0 +1,832 @@
+/* ========== Variables ========== */
+:root {
+	--bg-primary: #0f0f0f;
+	--bg-secondary: #1a1a1a;
+	--bg-card: #252525;
+	--bg-hover: #333;
+	--text-primary: #fff;
+	--text-secondary: #aaa;
+	--text-muted: #666;
+	--accent: #7c3aed;
+	--accent-hover: #6d28d9;
+	--success: #22c55e;
+	--warning: #f59e0b;
+	--danger: #ef4444;
+	--border: #333;
+	--radius: 12px;
+	--radius-sm: 8px;
+}
+
+/* ========== Reset ========== */
+* {
+	margin: 0;
+	padding: 0;
+	box-sizing: border-box;
+}
+
+body {
+	font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+	background: var(--bg-primary);
+	color: var(--text-primary);
+	min-height: 100vh;
+	line-height: 1.5;
+}
+
+/* ========== Layout ========== */
+.page {
+	min-height: 100vh;
+}
+
+.hidden {
+	display: none !important;
+}
+
+/* ========== Login Page ========== */
+.login-container {
+	max-width: 400px;
+	margin: 0 auto;
+	padding: 60px 20px;
+	text-align: center;
+}
+
+.login-container h1 {
+	font-size: 2.5rem;
+	margin-bottom: 8px;
+}
+
+.subtitle {
+	color: var(--text-secondary);
+	margin-bottom: 40px;
+}
+
+.login-step {
+	background: var(--bg-secondary);
+	padding: 30px;
+	border-radius: var(--radius);
+	text-align: left;
+}
+
+.login-step label {
+	display: block;
+	margin-bottom: 8px;
+	font-weight: 500;
+}
+
+.login-step input {
+	width: 100%;
+	padding: 14px 16px;
+	background: var(--bg-card);
+	border: 1px solid var(--border);
+	border-radius: var(--radius-sm);
+	color: var(--text-primary);
+	font-size: 16px;
+	margin-bottom: 16px;
+}
+
+.login-step input:focus {
+	outline: none;
+	border-color: var(--accent);
+}
+
+.login-step button {
+	width: 100%;
+	padding: 14px;
+	background: var(--accent);
+	color: white;
+	border: none;
+	border-radius: var(--radius-sm);
+	font-size: 16px;
+	font-weight: 600;
+	cursor: pointer;
+	transition: background 0.2s;
+	margin-bottom: 8px;
+}
+
+.login-step button:hover {
+	background: var(--accent-hover);
+}
+
+.login-step button:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+
+.btn-secondary {
+	background: transparent !important;
+	border: 1px solid var(--border) !important;
+}
+
+.btn-secondary:hover {
+	background: var(--bg-hover) !important;
+}
+
+.hint {
+	color: var(--text-muted);
+	font-size: 13px;
+	margin-top: 16px;
+	text-align: center;
+}
+
+.error-message {
+	background: rgba(239, 68, 68, 0.1);
+	border: 1px solid var(--danger);
+	color: var(--danger);
+	padding: 12px;
+	border-radius: var(--radius-sm);
+	margin-top: 16px;
+	text-align: center;
+}
+
+/* ========== Dashboard ========== */
+header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding: 20px 24px;
+	background: var(--bg-secondary);
+	border-bottom: 1px solid var(--border);
+}
+
+.header-left h1 {
+	font-size: 1.5rem;
+}
+
+.header-left span {
+	color: var(--text-secondary);
+	font-size: 14px;
+}
+
+.header-right {
+	display: flex;
+	gap: 8px;
+}
+
+.header-right button {
+	padding: 10px 16px;
+	background: var(--bg-card);
+	border: 1px solid var(--border);
+	border-radius: var(--radius-sm);
+	color: var(--text-primary);
+	cursor: pointer;
+	transition: background 0.2s;
+}
+
+.header-right button:hover {
+	background: var(--bg-hover);
+}
+
+.btn-icon {
+	padding: 10px 12px !important;
+}
+
+/* ========== Stats Bar ========== */
+.stats-bar {
+	display: flex;
+	gap: 16px;
+	padding: 16px 24px;
+	background: var(--bg-secondary);
+}
+
+.stat {
+	background: var(--bg-card);
+	padding: 16px 24px;
+	border-radius: var(--radius-sm);
+	display: flex;
+	flex-direction: column;
+}
+
+.stat-value {
+	font-size: 1.5rem;
+	font-weight: 700;
+	color: var(--accent);
+}
+
+.stat-label {
+	font-size: 13px;
+	color: var(--text-secondary);
+}
+
+/* ========== Filter Bar ========== */
+.filter-bar {
+	display: flex;
+	gap: 12px;
+	padding: 16px 24px;
+	background: var(--bg-primary);
+}
+
+.filter-bar input,
+.filter-bar select {
+	padding: 10px 14px;
+	background: var(--bg-card);
+	border: 1px solid var(--border);
+	border-radius: var(--radius-sm);
+	color: var(--text-primary);
+	font-size: 14px;
+}
+
+.filter-bar input {
+	flex: 1;
+}
+
+.filter-bar input:focus,
+.filter-bar select:focus {
+	outline: none;
+	border-color: var(--accent);
+}
+
+/* ========== Video List - Responsive Grid ========== */
+.video-list {
+	padding: 16px 24px;
+	display: grid;
+	grid-template-columns: repeat(4, 1fr); /* Desktop: 5 columns */
+	gap: 12px;
+}
+
+.video-card {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	background: var(--bg-card);
+	border: 1px solid var(--border);
+	border-radius: var(--radius);
+	padding: 12px;
+	transition: all 0.2s;
+	position: relative;
+}
+
+.video-card:hover {
+	border-color: var(--accent);
+}
+
+.video-card.sortable-ghost {
+	opacity: 0.5;
+	background: var(--accent);
+}
+
+.video-card.sortable-chosen {
+	box-shadow: 0 8px 30px rgba(124, 58, 237, 0.3);
+}
+
+.video-card.duplicate {
+	border-color: var(--danger);
+	background: rgba(239, 68, 68, 0.08);
+}
+
+.video-card.duplicate::after {
+	content: '⚠️ TRÙNG';
+	position: absolute;
+	top: 4px;
+	right: 4px;
+	background: var(--danger);
+	color: white;
+	font-size: 10px;
+	padding: 2px 6px;
+	border-radius: 4px;
+	font-weight: 600;
+}
+
+.video-card-header {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.drag-handle {
+	cursor: grab;
+	color: var(--text-muted);
+	font-size: 16px;
+	padding: 4px;
+}
+
+.drag-handle:active {
+	cursor: grabbing;
+}
+
+.video-index {
+	font-size: 12px;
+	color: var(--text-muted);
+	min-width: 24px;
+	text-align: center;
+	background: var(--bg-hover);
+	padding: 2px 6px;
+	border-radius: 4px;
+}
+
+.video-thumbnail {
+	width: 100%;
+	aspect-ratio: 9 / 16; /* TikTok vertical video ratio */
+	max-height: 200px;
+	background: var(--bg-hover);
+	border-radius: var(--radius-sm);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	cursor: pointer;
+	overflow: hidden;
+	position: relative;
+}
+
+.video-thumbnail:hover {
+	opacity: 0.9;
+}
+
+.video-thumbnail video {
+	width: 100%;
+	height: 100%;
+	object-fit: contain; /* Show full video, don't crop */
+	background: #000;
+}
+
+.video-info {
+	flex: 1;
+	min-width: 0;
+}
+
+.video-title {
+	font-weight: 500;
+	margin-bottom: 4px;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.video-title[contenteditable='true'] {
+	background: var(--bg-hover);
+	padding: 4px 8px;
+	border-radius: 4px;
+	outline: none;
+	white-space: normal;
+}
+
+.video-hashtags {
+	font-size: 13px;
+	color: var(--accent);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.video-meta {
+	display: flex;
+	gap: 12px;
+	font-size: 12px;
+	color: var(--text-muted);
+	margin-top: 4px;
+}
+
+.video-status {
+	padding: 4px 8px;
+	border-radius: 4px;
+	font-size: 12px;
+	font-weight: 500;
+}
+
+.video-status.pending {
+	background: rgba(245, 158, 11, 0.15);
+	color: var(--warning);
+}
+
+.video-status.posted {
+	background: rgba(34, 197, 94, 0.15);
+	color: var(--success);
+}
+
+.video-actions {
+	display: flex;
+	gap: 8px;
+}
+
+.video-actions button {
+	padding: 8px 12px;
+	background: var(--bg-hover);
+	border: 1px solid var(--border);
+	border-radius: var(--radius-sm);
+	color: var(--text-primary);
+	cursor: pointer;
+	transition: all 0.2s;
+}
+
+.video-actions button:hover {
+	border-color: var(--accent);
+}
+
+.btn-danger {
+	background: rgba(239, 68, 68, 0.1) !important;
+	border-color: var(--danger) !important;
+	color: var(--danger) !important;
+}
+
+.btn-danger:hover {
+	background: var(--danger) !important;
+	color: white !important;
+}
+
+/* ========== Modal ========== */
+.modal {
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background: rgba(0, 0, 0, 0.8);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	z-index: 1000;
+}
+
+.modal-content {
+	background: var(--bg-secondary);
+	border-radius: var(--radius);
+	max-width: 800px;
+	width: 90%;
+	max-height: 90vh;
+	overflow: auto;
+	position: relative;
+}
+
+.modal-small {
+	max-width: 400px;
+	padding: 24px;
+	text-align: center;
+}
+
+.modal-small h3 {
+	margin-bottom: 12px;
+}
+
+.modal-close {
+	position: absolute;
+	top: 12px;
+	right: 12px;
+	background: var(--bg-card);
+	border: none;
+	color: var(--text-primary);
+	width: 36px;
+	height: 36px;
+	border-radius: 50%;
+	font-size: 24px;
+	cursor: pointer;
+	z-index: 1;
+}
+
+.modal-close:hover {
+	background: var(--bg-hover);
+}
+
+#modal-video {
+	width: 100%;
+	max-height: 60vh;
+	background: #000;
+}
+
+#modal-info {
+	padding: 16px;
+}
+
+.modal-actions {
+	display: flex;
+	gap: 12px;
+	justify-content: center;
+	margin-top: 20px;
+}
+
+.modal-actions button {
+	padding: 12px 24px;
+	border-radius: var(--radius-sm);
+	border: none;
+	cursor: pointer;
+	font-weight: 500;
+}
+
+/* ========== Responsive ========== */
+
+/* Tablet: 3 columns */
+@media (max-width: 1024px) {
+	.video-list {
+		grid-template-columns: repeat(2, 1fr);
+	}
+}
+
+/* Mobile: 1 column, no drag */
+@media (max-width: 768px) {
+	.stats-bar {
+		flex-wrap: wrap;
+	}
+
+	.stat {
+		flex: 1;
+		min-width: 80px;
+		padding: 12px 16px;
+	}
+
+	.video-list {
+		grid-template-columns: 1fr;
+		padding: 12px 16px;
+	}
+
+	/* Hide drag handle on mobile */
+	.drag-handle {
+		display: none;
+	}
+
+	.video-thumbnail {
+		height: 120px;
+	}
+
+	.video-actions {
+		justify-content: flex-end;
+	}
+}
+
+/* Posted videos cannot be dragged - dim drag handle */
+/* Posted videos cannot be dragged - dim drag handle */
+.video-card.posted .drag-handle {
+	opacity: 0.2;
+	cursor: not-allowed;
+}
+
+/* Marked for delete */
+.video-card.marked-for-delete {
+	border-color: var(--danger);
+	position: relative;
+}
+
+.video-card.marked-for-delete::after {
+	content: '❌ To be deleted';
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background: rgba(239, 68, 68, 0.1);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	color: var(--danger);
+	font-weight: bold;
+	font-size: 1.2rem;
+	pointer-events: none;
+}
+
+/* Save actions bar */
+.save-actions-bar {
+	position: fixed;
+	bottom: 20px;
+	left: 50%;
+	transform: translateX(-50%);
+	background: var(--bg-secondary);
+	border: 1px solid var(--border);
+	padding: 12px 24px;
+	border-radius: var(--radius);
+	box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+		0 2px 4px -1px rgba(0, 0, 0, 0.06);
+	display: flex;
+	align-items: center;
+	gap: 16px;
+	z-index: 100;
+	animation: slideUp 0.3s ease-out;
+}
+
+.save-actions-bar.hidden {
+	display: none;
+}
+
+@keyframes slideUp {
+	from {
+		transform: translate(-50%, 100%);
+		opacity: 0;
+	}
+	to {
+		transform: translate(-50%, 0);
+		opacity: 1;
+	}
+}
+
+/* ========== Tabs ========== */
+.tabs {
+	display: flex;
+	gap: 4px;
+	padding: 0 24px;
+	background: var(--bg-secondary);
+	border-bottom: 1px solid var(--border);
+}
+
+.tab {
+	padding: 12px 20px;
+	background: transparent;
+	border: none;
+	color: var(--text-secondary);
+	cursor: pointer;
+	font-size: 14px;
+	font-weight: 500;
+	border-bottom: 2px solid transparent;
+	transition: all 0.2s;
+}
+
+.tab:hover {
+	color: var(--text-primary);
+}
+
+.tab.active {
+	color: var(--accent);
+	border-bottom-color: var(--accent);
+}
+
+.tab-content {
+	display: none;
+}
+
+.tab-content.active {
+	display: block;
+}
+
+/* ========== Admin Panel ========== */
+.admin-panel {
+	padding: 24px;
+}
+
+.admin-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 20px;
+}
+
+.admin-header h2 {
+	font-size: 1.25rem;
+	font-weight: 600;
+}
+
+/* ========== Users List ========== */
+.users-list {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+}
+
+.user-card {
+	display: flex;
+	align-items: center;
+	gap: 16px;
+	background: var(--bg-card);
+	border: 1px solid var(--border);
+	border-radius: var(--radius);
+	padding: 16px;
+	transition: border-color 0.2s;
+}
+
+.user-card:hover {
+	border-color: var(--accent);
+}
+
+.user-avatar {
+	width: 48px;
+	height: 48px;
+	background: var(--accent);
+	border-radius: 50%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 20px;
+	font-weight: 600;
+}
+
+.user-info {
+	flex: 1;
+}
+
+.user-name {
+	font-weight: 600;
+	margin-bottom: 2px;
+}
+
+.user-username {
+	color: var(--text-secondary);
+	font-size: 13px;
+}
+
+.user-meta {
+	display: flex;
+	gap: 16px;
+	font-size: 12px;
+	color: var(--text-muted);
+	margin-top: 4px;
+}
+
+.user-role {
+	padding: 4px 8px;
+	border-radius: 4px;
+	font-size: 12px;
+	font-weight: 500;
+}
+
+.user-role.admin {
+	background: rgba(124, 58, 237, 0.2);
+	color: var(--accent);
+}
+
+.user-role.reviewer {
+	background: rgba(34, 197, 94, 0.2);
+	color: var(--success);
+}
+
+.user-role.mod {
+	background: rgba(245, 158, 11, 0.2);
+	color: var(--warning);
+}
+
+.user-role.user {
+	background: var(--bg-hover);
+	color: var(--text-secondary);
+}
+
+.user-stats {
+	text-align: right;
+}
+
+.user-stat-value {
+	font-size: 1.25rem;
+	font-weight: 600;
+	color: var(--accent);
+}
+
+.user-stat-label {
+	font-size: 11px;
+	color: var(--text-muted);
+}
+
+/* ========== Audit List ========== */
+.audit-list {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+.audit-item {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	background: var(--bg-card);
+	border: 1px solid var(--border);
+	border-radius: var(--radius-sm);
+	padding: 12px 16px;
+	font-size: 13px;
+}
+
+.audit-time {
+	color: var(--text-muted);
+	font-size: 11px;
+	min-width: 100px;
+}
+
+.audit-user {
+	color: var(--accent);
+	font-weight: 500;
+	min-width: 120px;
+}
+
+.audit-action {
+	flex: 1;
+}
+
+.audit-details {
+	color: var(--text-secondary);
+	font-size: 12px;
+	max-width: 300px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+/* ========== Pagination ========== */
+.pagination {
+	display: flex;
+	justify-content: center;
+	gap: 8px;
+	margin-top: 20px;
+}
+
+.pagination button {
+	padding: 8px 16px;
+	background: var(--bg-card);
+	border: 1px solid var(--border);
+	border-radius: var(--radius-sm);
+	color: var(--text-primary);
+	cursor: pointer;
+	transition: all 0.2s;
+}
+
+.pagination button:hover {
+	border-color: var(--accent);
+}
+
+.pagination button:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+
+.pagination .page-info {
+	padding: 8px 16px;
+	color: var(--text-secondary);
+}

@@ -2,6 +2,7 @@ import 'dotenv/config';
 import { Bot } from 'grammy';
 import { setupVideoHandler } from './handlers/videoHandler.js';
 import { setBot, startWorker } from './services/scheduler.js';
+import { startWebServer, setBot as setWebBot } from './web/server.js';
 
 // Validate environment
 if (!process.env.TELEGRAM_BOT_TOKEN) {
@@ -18,8 +19,14 @@ setupVideoHandler(bot);
 // Set bot for scheduler notifications
 setBot(bot);
 
+// Set bot for web dashboard OTP
+setWebBot(bot);
+
 // Start worker for processing uploads
 startWorker();
+
+// Start web dashboard server
+startWebServer();
 
 // Error handling
 bot.catch((err) => {

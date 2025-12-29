@@ -209,6 +209,8 @@ export async function addScheduledPost(post) {
 			scheduledAt: new Date(scheduledAt),
 			isRepost: Boolean(post.isRepost),
 			telegramFileId: post.telegramFileId || null, // Save file_id for instant sends
+			duration: post.duration || null, // For duplicate detection
+			fileSize: post.fileSize || null, // For duplicate detection
 		},
 	});
 
@@ -456,14 +458,10 @@ export async function rescheduleTimesOnly(chatId) {
 		return 0;
 	}
 
-	// Sort by timestamp in filename (number before first underscore)
+	// Sort by CURRENT schedule order (preserve swap/manual order)
+	// NOT by filename timestamp (which would reset to upload order)
 	posts = posts.sort((a, b) => {
-		const getTimestamp = (videoPath) => {
-			const filename = path.basename(videoPath);
-			const match = filename.match(/^(\d+)_/);
-			return match ? parseInt(match[1], 10) : 0;
-		};
-		return getTimestamp(a.videoPath) - getTimestamp(b.videoPath);
+		return new Date(a.scheduledAt) - new Date(b.scheduledAt);
 	});
 
 	console.log(
@@ -856,11 +854,20 @@ export async function getAllPostsByChat(chatId) {
 /**
  * Delete a scheduled post, its video file, and reschedule remaining posts
  * OPTIMIZED: Only reschedules posts that were scheduled AFTER the deleted post
+ * Works for both pending AND posted videos
  * @param {string} postId - The post ID to delete
  * @param {number} chatId - Chat ID for rescheduling
+ * @param {string} postId
+ * @param {number} chatId - Optional, used if we can't find the post (legacy).
+ *                        Ideally use post.chatId from DB.
+ * @param {boolean} skipReschedule - If true, do not trigger reschedule (used for batch delete)
  * @returns {Promise<{success: boolean, rescheduled: number}>}
  */
-export async function deleteScheduledPost(postId, chatId) {
+export async function deleteScheduledPost(
+	postId,
+	chatId,
+	skipReschedule = false
+) {
 	// Get the post first
 	const post = await prisma.scheduledPost.findUnique({ where: { id: postId } });
 
@@ -868,8 +875,9 @@ export async function deleteScheduledPost(postId, chatId) {
 		return { success: false, rescheduled: 0 };
 	}
 
-	// Store the deleted post's scheduled time for partial reschedule
+	// Store info for later
 	const deletedScheduledAt = post.scheduledAt;
+	const wasPosted = post.status === 'posted';
 
 	// Delete video file if exists
 	const fullPath = getVideoFullPath(post.videoPath);
@@ -899,14 +907,72 @@ export async function deleteScheduledPost(postId, chatId) {
 		where: { videoPath: post.videoPath },
 	});
 
+	// Delete from video_archive if exists (for posted videos)
+	if (wasPosted) {
+		await prisma.videoArchive.deleteMany({
+			where: { videoPath: post.videoPath },
+		});
+		console.log(`[Delete] Removed from video_archive: ${post.videoPath}`);
+	}
+
 	// Delete from scheduled_posts
 	await prisma.scheduledPost.delete({ where: { id: postId } });
-	console.log(`[Delete] Removed post from database: ${postId}`);
+	console.log(
+		`[Delete] Removed post from database: ${postId} (was ${
+			wasPosted ? 'posted' : 'pending'
+		})`
+	);
 
-	// OPTIMIZED: Only reschedule posts that were AFTER the deleted post
-	const rescheduled = await rescheduleFromPosition(chatId, deletedScheduledAt);
+	// Only reschedule if requested AND we deleted a PENDING video
+	let rescheduled = 0;
+	if (!skipReschedule && !wasPosted) {
+		// Use post.chatId because the passed chatId might be 0 (from dashboard)
+		rescheduled = await rescheduleFromPosition(post.chatId, deletedScheduledAt);
+	}
 
 	return { success: true, rescheduled };
+}
+
+/**
+ * Batch delete multiple posts and reschedule efficiently
+ * @param {string[]} postIds
+ * @returns {Promise<{deleted: number, rescheduled: number}>}
+ */
+export async function deleteScheduledPostBatch(postIds) {
+	const posts = await prisma.scheduledPost.findMany({
+		where: { id: { in: postIds } },
+	});
+
+	if (posts.length === 0) return { deleted: 0, rescheduled: 0 };
+
+	// Group by chat to reschedule each chat only once
+	// Key: chatId, Value: earliest scheduledAt date of deleted posts
+	const chatRescheduleMap = new Map();
+
+	let deletedCount = 0;
+
+	for (const post of posts) {
+		await deleteScheduledPost(post.id, 0, true); // Skip reschedule
+		deletedCount++;
+
+		if (post.status === 'pending') {
+			const chatIdStr = post.chatId.toString();
+			const currentEarliest = chatRescheduleMap.get(chatIdStr);
+
+			if (!currentEarliest || post.scheduledAt < currentEarliest) {
+				chatRescheduleMap.set(chatIdStr, post.scheduledAt);
+			}
+		}
+	}
+
+	// Run reschedule for each affected chat
+	let totalRescheduled = 0;
+	for (const [chatIdStr, earliestDate] of chatRescheduleMap) {
+		const count = await rescheduleFromPosition(BigInt(chatIdStr), earliestDate);
+		totalRescheduled += count;
+	}
+
+	return { deleted: deletedCount, rescheduled: totalRescheduled };
 }
 
 /**
@@ -935,14 +1001,9 @@ async function rescheduleFromPosition(chatId, fromScheduledAt) {
 		`[Reschedule] Rescheduling ${posts.length} affected posts (from deleted position)...`
 	);
 
-	// Sort by timestamp in filename for consistent ordering
+	// Sort by CURRENT schedule order (preserve swap/manual order)
 	posts = posts.sort((a, b) => {
-		const getTimestamp = (videoPath) => {
-			const filename = path.basename(videoPath);
-			const match = filename.match(/^(\d+)_/);
-			return match ? parseInt(match[1], 10) : 0;
-		};
-		return getTimestamp(a.videoPath) - getTimestamp(b.videoPath);
+		return new Date(a.scheduledAt) - new Date(b.scheduledAt);
 	});
 
 	// Start from the deleted post's time

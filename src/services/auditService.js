@@ -185,6 +185,10 @@ function getActionDisplayName(action) {
 		random_content: '🎲 Tạo random',
 		// Posted confirmation
 		confirm_posted: '✅ Xác nhận đã đăng',
+		// Dashboard actions
+		dashboard_edit: '🖥️ Sửa từ Dashboard',
+		dashboard_delete: '🖥️ Xóa từ Dashboard',
+		dashboard_reorder: '🖥️ Sắp xếp từ Dashboard',
 	};
 	return names[action] || action;
 }

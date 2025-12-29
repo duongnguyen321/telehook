@@ -483,6 +483,8 @@ async function processVideoAfterDownload(ctx, video, videoPath, chatId) {
 			hashtags: content.hashtags,
 			isRepost: false,
 			telegramFileId: video.file_id, // Save for instant sends
+			duration: video.duration || null, // For duplicate detection
+			fileSize: video.file_size || null, // For duplicate detection
 		});
 
 		await scheduleUpload(post, new Date(post.scheduledAt));

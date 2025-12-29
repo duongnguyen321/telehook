@@ -1,0 +1,1 @@
+import { prisma } from './src/utils/storage.js'; async function main() { const posts = await prisma.scheduledPost.findMany({ take: 5, orderBy: { createdAt: 'desc' }, select: { id: true, duration: true, fileSize: true } }); console.log(posts); } main();

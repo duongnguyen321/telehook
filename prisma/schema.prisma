@@ -25,6 +25,9 @@ model ScheduledPost {
   isRepost         Boolean  @default(false) @map("is_repost")
   telegramFileId   String?  @map("telegram_file_id")
   notificationSent Boolean  @default(false) @map("notification_sent")
+  // For duplicate detection
+  duration         Float?   @map("duration")
+  fileSize         Int?     @map("file_size")
 
   @@index([status])
   @@index([scheduledAt])
