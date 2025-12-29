@@ -11,6 +11,12 @@ let pendingDeleteId = null;
 const pendingDeletes = new Set();
 let sortable = null;
 
+// Pagination State
+let currentPage = 1;
+let itemsPerPage = 100;
+let totalPages = 1;
+let totalItems = 0;
+
 // API Base URL
 const API_BASE = '/api';
 
@@ -178,12 +184,15 @@ function showDashboard() {
 	loadVideos();
 }
 
-async function loadVideos() {
+async function loadVideos(page = currentPage) {
 	try {
 		// Add timestamp to prevent caching
-		const res = await fetch(`${API_BASE}/videos?t=${Date.now()}`, {
-			headers: { Authorization: `Bearer ${token}` },
-		});
+		const res = await fetch(
+			`${API_BASE}/videos?page=${page}&limit=${itemsPerPage}&t=${Date.now()}`,
+			{
+				headers: { Authorization: `Bearer ${token}` },
+			}
+		);
 
 		if (!res.ok) {
 			throw new Error('Failed to load videos');
@@ -191,11 +200,61 @@ async function loadVideos() {
 
 		const data = await res.json();
 		videos = data.videos;
+
+		// Update pagination state
+		if (data.meta) {
+			currentPage = data.meta.page;
+			totalPages = data.meta.totalPages;
+			totalItems = data.meta.total;
+		}
+
 		filterVideos();
 		updateStats();
+		updatePaginationUI();
 		initSortable();
 	} catch (error) {
 		console.error('Error loading videos:', error);
+	}
+}
+
+function updatePaginationUI() {
+	const container = document.getElementById('pagination-controls');
+	if (totalItems === 0) {
+		container.classList.add('hidden');
+		return;
+	}
+
+	container.classList.remove('hidden');
+	document.getElementById(
+		'page-info'
+	).textContent = `Trang ${currentPage} / ${totalPages} (${totalItems} video)`;
+
+	const prevBtn = document.getElementById('btn-prev-page');
+	const nextBtn = document.getElementById('btn-next-page');
+
+	prevBtn.disabled = currentPage <= 1;
+	nextBtn.disabled = currentPage >= totalPages;
+
+	// Style disabled state
+	prevBtn.style.opacity = prevBtn.disabled ? '0.5' : '1';
+	nextBtn.style.opacity = nextBtn.disabled ? '0.5' : '1';
+	prevBtn.style.pointerEvents = prevBtn.disabled ? 'none' : 'auto';
+	nextBtn.style.pointerEvents = nextBtn.disabled ? 'none' : 'auto';
+}
+
+function prevPage() {
+	if (currentPage > 1) {
+		loadVideos(currentPage - 1);
+		// Scroll to top
+		window.scrollTo({ top: 0, behavior: 'smooth' });
+	}
+}
+
+function nextPage() {
+	if (currentPage < totalPages) {
+		loadVideos(currentPage + 1);
+		// Scroll to top
+		window.scrollTo({ top: 0, behavior: 'smooth' });
 	}
 }
 

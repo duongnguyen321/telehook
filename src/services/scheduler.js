@@ -14,7 +14,11 @@ import {
 	DATA_DIR,
 } from '../utils/storage.js';
 import { getNotificationRecipients } from './roleService.js';
-import { isS3Enabled, downloadVideo as s3DownloadVideo } from '../utils/s3.js';
+import {
+	isS3Enabled,
+	downloadVideo as s3DownloadVideo,
+	getPublicUrl,
+} from '../utils/s3.js';
 
 let bot = null;
 let defaultChatId = null;
@@ -36,19 +40,11 @@ export function setDefaultChatId(chatId) {
 }
 
 /**
- * Process a single post - sends video + metadata to ALL admin/mod/reviewers for manual posting
+ * Process a single post - sends video metadata + download link to ALL admin/mod/reviewers for manual posting
  * @param {Object} post
  */
 async function processNotification(post) {
-	const {
-		id: postId,
-		chatId,
-		videoPath,
-		title,
-		hashtags,
-		isRepost,
-		telegramFileId,
-	} = post;
+	const { id: postId, chatId, videoPath, title, hashtags, isRepost } = post;
 	const repostLabel = isRepost ? ' [REPOST]' : '';
 
 	console.log(`[Scheduler] Processing: ${postId.slice(0, 8)}`);
@@ -59,41 +55,23 @@ async function processNotification(post) {
 		}
 
 		const videoKey = path.basename(videoPath);
-		let videoInput = null;
-		let needsFileIdSave = false;
 
-		// Priority 1: Use cached Telegram file_id (instant, no upload)
-		if (telegramFileId) {
-			console.log(`[Scheduler] Using cached file_id: ${videoKey}`);
-			videoInput = telegramFileId;
+		// Determine download URL
+		let downloadUrl;
+		if (isS3Enabled()) {
+			downloadUrl = getPublicUrl(videoKey);
 		} else {
-			// Priority 2: Check local file
-			const localPath = path.join(DATA_DIR, 'videos', videoKey);
-			if (fs.existsSync(localPath)) {
-				console.log(`[Scheduler] Using local file: ${videoKey}`);
-				videoInput = new InputFile(localPath);
-				needsFileIdSave = true;
-			} else if (isS3Enabled()) {
-				// Priority 3: Download from S3 AND cache locally
-				console.log(`[Scheduler] Downloading from S3: ${videoKey}`);
-				const cacheDir = path.join(DATA_DIR, 'videos');
-				const videoBuffer = await s3DownloadVideo(videoKey, cacheDir);
-				if (videoBuffer) {
-					console.log(`[Scheduler] Loaded from S3: ${videoKey}`);
-					videoInput = new InputFile(videoBuffer, videoKey);
-					needsFileIdSave = true;
-				}
-			}
-		}
-
-		if (!videoInput) {
-			throw new Error(`Video file not found (local or S3): ${videoKey}`);
+			// Fallback to local stream URL
+			const baseUrl = process.env.BASE_URL || 'http://localhost:8888';
+			downloadUrl = `${baseUrl}/api/videos/${postId}/stream`;
 		}
 
 		// Format caption for TikTok (title + hashtags)
 		const tiktokCaption = `${title}\n\n${hashtags}`;
 
 		const keyboard = new InlineKeyboard()
+			.url('📥 Tải Video Gốc (Full HD)', downloadUrl)
+			.row()
 			.text('✅ Đã đăng TikTok', `posted_${postId}`)
 			.text('❌ Huỷ đăng', `cancelpost_${postId}`);
 
@@ -109,33 +87,30 @@ async function processNotification(post) {
 
 		console.log(`[Scheduler] Sending to ${recipients.length} recipient(s)`);
 
-		// Send to all recipients and capture file_id from first successful send
-		let savedFileId = null;
+		// Send to all recipients
 		for (const recipientId of recipients) {
 			try {
-				const sentMessage = await bot.api.sendVideo(recipientId, videoInput, {
-					caption: `${repostLabel}\n\n${tiktokCaption}`,
-					supports_streaming: true,
-					reply_markup: keyboard,
-				});
+				await bot.api.sendMessage(
+					recipientId,
+					`⏰ **STATUS${repostLabel}** - ${new Date().toLocaleTimeString(
+						'vi-VN'
+					)}\n\n` +
+						`🎥 **${title}**\n\n` +
+						`${hashtags}\n\n` +
+						`📥 **Link tải gốc (HD):** [Click để tải](${downloadUrl})`,
+					{
+						parse_mode: 'Markdown',
+						reply_markup: keyboard,
+						link_preview_options: { is_disabled: true },
+					}
+				);
 				console.log(`[Scheduler] Sent to recipient: ${recipientId}`);
-
-				// Capture file_id from first successful send
-				if (!savedFileId && sentMessage.video?.file_id) {
-					savedFileId = sentMessage.video.file_id;
-				}
 			} catch (sendError) {
 				console.error(
 					`[Scheduler] Failed to send to ${recipientId}:`,
 					sendError.message
 				);
 			}
-		}
-
-		// Save file_id for future use (skip download next time)
-		if (needsFileIdSave && savedFileId) {
-			await updatePostFileId(postId, savedFileId);
-			console.log(`[Scheduler] Cached file_id for: ${videoKey}`);
 		}
 
 		// Mark notification as sent BEFORE logging success

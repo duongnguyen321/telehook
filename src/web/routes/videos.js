@@ -76,13 +76,28 @@ router.use(authMiddleware);
  * Get all videos (pending + posted)
  */
 router.get('/', async (req, res) => {
+	const page = parseInt(req.query.page) || 1;
+	const limit = parseInt(req.query.limit) || 100;
+	const skip = (page - 1) * limit;
+
 	try {
-		const posts = await prisma.scheduledPost.findMany({
-			where: {
-				status: { in: ['pending', 'posted'] },
-			},
-			orderBy: { scheduledAt: 'asc' },
-		});
+		// Get total count for pagination info
+		// Get paginated videos
+		const [total, posts] = await Promise.all([
+			prisma.scheduledPost.count({
+				where: {
+					status: { in: ['pending', 'posted'] },
+				},
+			}),
+			prisma.scheduledPost.findMany({
+				where: {
+					status: { in: ['pending', 'posted'] },
+				},
+				orderBy: { scheduledAt: 'asc' },
+				skip,
+				take: limit,
+			}),
+		]);
 
 		const videos = posts.map((post) => ({
 			id: post.id,
@@ -101,7 +116,15 @@ router.get('/', async (req, res) => {
 		}));
 
 		res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
-		res.json({ videos, total: videos.length });
+		res.json({
+			videos,
+			meta: {
+				total,
+				page,
+				limit,
+				totalPages: Math.ceil(total / limit),
+			},
+		});
 	} catch (error) {
 		console.error('[Videos API] Error:', error);
 		res.status(500).json({ error: error.message });

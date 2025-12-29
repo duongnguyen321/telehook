@@ -32,7 +32,7 @@ const __dirname = dirname(__filename);
 const DEFAULT_MAX_SIZE_MB = 20;
 const DEFAULT_DATA_DIR = join(__dirname, 'data');
 const OUTPUT_DIR = join(__dirname, 'output');
-const SAFETY_MARGIN = 0.9; // 10% margin
+const SAFETY_MARGIN = 0.98; // 2% margin (was 10%)
 
 /**
  * Kiểm tra ffmpeg

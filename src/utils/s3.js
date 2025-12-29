@@ -76,7 +76,19 @@ export async function uploadVideo(localPath, key) {
  * @param {string} cacheDir - Optional local cache directory (default: data/videos)
  * @returns {Promise<Buffer|null>} Video buffer or null on failure
  */
-export async function downloadVideo(key, cacheDir = null) {
+export async function downloadVideo(
+	key,
+	cacheDir = path.join(process.cwd(), 'data', 'videos')
+) {
+	// Check local cache first
+	if (cacheDir) {
+		const localPath = path.join(cacheDir, key);
+		if (fs.existsSync(localPath)) {
+			console.log(`[S3] Cache hit (local): ${localPath}`);
+			return fs.readFileSync(localPath);
+		}
+	}
+
 	const client = getS3Client();
 	if (!client) {
 		console.log('[S3] Not configured');

@@ -800,6 +800,22 @@ header {
 }
 
 /* ========== Pagination ========== */
+.pagination-container {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	gap: 16px;
+	padding: 24px;
+	margin-top: 20px;
+}
+
+#page-info {
+	color: var(--text-secondary);
+	font-size: 14px;
+	font-weight: 500;
+}
+
+/* ========== Pagination ========== */
 .pagination {
 	display: flex;
 	justify-content: center;

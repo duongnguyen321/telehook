@@ -9,7 +9,9 @@ import crypto from 'crypto';
 export function signToken(payload, expiresInMs = 24 * 60 * 60 * 1000) {
 	// Get secret (lazy load)
 	const secret =
-		process.env.S3_SECRET_ACCESS_KEY || 'default-dev-secret-key-change-me';
+		process.env.SESSION_SECRET ||
+		process.env.S3_SECRET_ACCESS_KEY ||
+		'default-dev-secret-key-change-me';
 
 	const data = {
 		...payload,
@@ -37,7 +39,9 @@ export function verifyToken(token) {
 
 	// Get secret (lazy load to ensure env is ready)
 	const secret =
-		process.env.S3_SECRET_ACCESS_KEY || 'default-dev-secret-key-change-me';
+		process.env.SESSION_SECRET ||
+		process.env.S3_SECRET_ACCESS_KEY ||
+		'default-dev-secret-key-change-me';
 
 	// Verify signature
 	const expectedSignature = crypto
