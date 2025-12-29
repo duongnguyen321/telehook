@@ -589,6 +589,7 @@ export function setupVideoHandler(bot) {
 		// Check for duplicate
 		if (await isVideoDuplicate(video.file_id)) {
 			console.log(`[Video] Duplicate, skipping`);
+			await ctx.reply('ℹ️ Video này đã tồn tại trong hệ thống.');
 			return;
 		}
 

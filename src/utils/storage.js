@@ -1354,8 +1354,15 @@ export async function trackDownloadedVideo(
 	fileSize
 ) {
 	const relativePath = getVideoRelativePath(videoPath);
-	await prisma.downloadedVideo.create({
-		data: {
+	await prisma.downloadedVideo.upsert({
+		where: { fileId },
+		update: {
+			chatId: BigInt(chatId), // Update chat ownership if changed (opt)
+			videoPath: relativePath,
+			fileSize,
+			downloadedAt: new Date(), // Refresh timestamp
+		},
+		create: {
 			fileId,
 			chatId: BigInt(chatId),
 			videoPath: relativePath,
