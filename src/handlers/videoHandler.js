@@ -1421,6 +1421,7 @@ function buildGreetingMessage(ctx, userRole, tiktokLink) {
 	if (userRole === 'reviewer' || userRole === 'admin') {
 		greeting += `\n📝 **Kiểm duyệt viên:**\n`;
 		greeting += `• /reschedule - Sắp xếp lại lịch đăng\n`;
+		greeting += `• /swap [trang1] [trang2] - Đổi lịch 2 video\n`;
 		greeting += `• Trong /videos: Sửa nội dung video\n`;
 	}
 
@@ -1887,6 +1888,79 @@ async function handleCommand(ctx, command) {
 			console.error('[Clip] Error:', error);
 			await ctx.reply(`❌ Lỗi: ${error.message}` + tiktokLink);
 		}
+		return;
+	}
+
+	// ========== /swap - Swap scheduled times of two videos (Admin/Reviewer) ==========
+	if (command.startsWith('/swap')) {
+		if (!canReschedule) {
+			await ctx.reply('❌ Bạn không có quyền đổi lịch video.' + tiktokLink);
+			return;
+		}
+
+		const args = command.replace('/swap', '').trim();
+		const parts = args.split(/\s+/);
+
+		if (parts.length !== 2) {
+			await ctx.reply(
+				'❌ Sai cú pháp. Dùng: /swap [trang1] [trang2]\nVí dụ: /swap 5 10' +
+					tiktokLink
+			);
+			return;
+		}
+
+		const page1 = parseInt(parts[0], 10);
+		const page2 = parseInt(parts[1], 10);
+
+		if (isNaN(page1) || isNaN(page2) || page1 < 1 || page2 < 1) {
+			await ctx.reply('❌ Số trang không hợp lệ.' + tiktokLink);
+			return;
+		}
+
+		if (page1 === page2) {
+			await ctx.reply('❌ Hai trang phải khác nhau.' + tiktokLink);
+			return;
+		}
+
+		// Get all posts sorted by schedule time
+		const { posts } = await getAllPostsByChat(chatId);
+
+		if (page1 > posts.length || page2 > posts.length) {
+			await ctx.reply(
+				`❌ Không tìm thấy video. Tổng: ${posts.length} video.` + tiktokLink
+			);
+			return;
+		}
+
+		const post1 = posts[page1 - 1];
+		const post2 = posts[page2 - 1];
+
+		// Swap scheduled times
+		const temp = post1.scheduledAt;
+
+		await prisma.scheduledPost.update({
+			where: { id: post1.id },
+			data: { scheduledAt: new Date(post2.scheduledAt) },
+		});
+
+		await prisma.scheduledPost.update({
+			where: { id: post2.id },
+			data: { scheduledAt: new Date(temp) },
+		});
+
+		await ctx.reply(
+			`✅ Đã đổi lịch:\n` +
+				`📍 Trang ${page1}: "${post1.title.slice(0, 25)}..."\n` +
+				`📍 Trang ${page2}: "${post2.title.slice(0, 25)}..."` +
+				tiktokLink
+		);
+
+		await logAction(
+			userId,
+			'swap_videos',
+			null,
+			`Swapped page ${page1} with page ${page2}`
+		);
 		return;
 	}
 
