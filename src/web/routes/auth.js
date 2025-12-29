@@ -133,7 +133,7 @@ router.post('/verify-otp', async (req, res) => {
 /**
  * Get current user from token
  */
-router.get('/me', (req, res) => {
+router.get('/me', authMiddleware, (req, res) => {
 	// authMiddleware already verified token and set req.user
 	if (!req.user) {
 		return res.status(401).json({ error: 'Not authenticated' });

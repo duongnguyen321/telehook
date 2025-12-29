@@ -55,11 +55,120 @@ router.get('/summary', adminOnly, async (req, res) => {
  * Get all users with view counts (admin only)
  */
 router.get('/users', adminOnly, async (req, res) => {
-	const page = parseInt(req.query.page || '0', 10);
+	const page = parseInt(req.query.page || '1', 10);
+	const limit = parseInt(req.query.limit || '20', 10);
+	const skip = (page - 1) * limit;
+	const search = req.query.search?.trim() || '';
+	const role = req.query.role || 'all'; // all, admin, mod, reviewer, user
+	const sortBy = req.query.sortBy || 'viewCount'; // viewCount, lastActiveAt, createdAt
+	const sortOrder = req.query.sortOrder || 'desc'; // asc, desc
 
 	try {
-		const result = await getUsersWithViewCounts(page);
-		res.json(result);
+		// Build where clause
+		const where = {};
+
+		// Role filter
+		if (role && role !== 'all') {
+			where.role = role;
+		}
+
+		// Search filter (username, firstName, lastName, telegramId)
+		if (search) {
+			where.OR = [
+				{ username: { contains: search, mode: 'insensitive' } },
+				{ firstName: { contains: search, mode: 'insensitive' } },
+				{ lastName: { contains: search, mode: 'insensitive' } },
+			];
+			// Also try to match telegramId if search is numeric
+			if (/^\d+$/.test(search)) {
+				where.OR.push({ telegramId: BigInt(search) });
+			}
+		}
+
+		// Build orderBy
+		const orderBy = {};
+		if (sortBy === 'lastActiveAt') {
+			orderBy.lastActiveAt = sortOrder;
+		} else if (sortBy === 'createdAt') {
+			orderBy.createdAt = sortOrder;
+		}
+		// Note: viewCount sort is handled after aggregation
+
+		// Get users with view counts
+		const [users, total] = await Promise.all([
+			prisma.user.findMany({
+				where,
+				orderBy: sortBy !== 'viewCount' ? orderBy : { lastActiveAt: 'desc' },
+				skip,
+				take: limit,
+			}),
+			prisma.user.count({ where }),
+		]);
+
+		// Get view counts for each user
+		const viewCounts = await prisma.auditLog.groupBy({
+			by: ['telegramId'],
+			where: {
+				telegramId: { in: users.map((u) => u.telegramId) },
+				action: { in: ['view_video', 'navigate_video'] },
+			},
+			_count: true,
+		});
+
+		const viewCountMap = {};
+		viewCounts.forEach((vc) => {
+			viewCountMap[vc.telegramId.toString()] = vc._count;
+		});
+
+		// Get last view time for each user
+		const lastViews = await prisma.auditLog.groupBy({
+			by: ['telegramId'],
+			where: {
+				telegramId: { in: users.map((u) => u.telegramId) },
+				action: { in: ['view_video', 'navigate_video'] },
+			},
+			_max: { createdAt: true },
+		});
+
+		const lastViewMap = {};
+		lastViews.forEach((lv) => {
+			lastViewMap[lv.telegramId.toString()] = lv._max.createdAt;
+		});
+
+		let result = users.map((u) => ({
+			telegramId: u.telegramId.toString(),
+			username: u.username,
+			firstName: u.firstName,
+			lastName: u.lastName,
+			role: u.role,
+			viewCount: viewCountMap[u.telegramId.toString()] || 0,
+			lastViewAt: lastViewMap[u.telegramId.toString()] || null,
+			createdAt: u.createdAt,
+			lastActiveAt: u.lastActiveAt,
+		}));
+
+		// Sort by viewCount if requested
+		if (sortBy === 'viewCount') {
+			result.sort((a, b) => {
+				return sortOrder === 'desc'
+					? b.viewCount - a.viewCount
+					: a.viewCount - b.viewCount;
+			});
+		}
+
+		res.json({
+			users: result,
+			meta: {
+				total,
+				page,
+				limit,
+				totalPages: Math.ceil(total / limit),
+				search,
+				role,
+				sortBy,
+				sortOrder,
+			},
+		});
 	} catch (error) {
 		console.error('[Admin API] Users error:', error);
 		res.status(500).json({ error: error.message });
@@ -120,17 +229,44 @@ router.get('/users/:telegramId', adminOnly, async (req, res) => {
  * Get all audit logs (admin only)
  */
 router.get('/audit', adminOnly, async (req, res) => {
-	const page = parseInt(req.query.page || '0', 10);
-	const limit = 50;
+	const page = parseInt(req.query.page || '1', 10);
+	const limit = parseInt(req.query.limit || '50', 10);
+	const skip = (page - 1) * limit;
+	const search = req.query.search?.trim() || '';
+	const action = req.query.action || 'all'; // all, upload_video, delete_video, navigate_video, etc.
+	const userId = req.query.userId || ''; // Filter by specific user
+	const sortOrder = req.query.sortOrder || 'desc'; // asc, desc
 
 	try {
+		// Build where clause
+		const where = {};
+
+		// Action filter
+		if (action && action !== 'all') {
+			where.action = action;
+		}
+
+		// User filter
+		if (userId) {
+			where.telegramId = BigInt(userId);
+		}
+
+		// Search filter (action or details)
+		if (search) {
+			where.OR = [
+				{ action: { contains: search, mode: 'insensitive' } },
+				{ details: { contains: search, mode: 'insensitive' } },
+			];
+		}
+
 		const [logs, total] = await Promise.all([
 			prisma.auditLog.findMany({
-				orderBy: { createdAt: 'desc' },
-				skip: page * limit,
+				where,
+				orderBy: { createdAt: sortOrder },
+				skip,
 				take: limit,
 			}),
-			prisma.auditLog.count(),
+			prisma.auditLog.count({ where }),
 		]);
 
 		// Get user info for each log
@@ -147,6 +283,12 @@ router.get('/audit', adminOnly, async (req, res) => {
 			};
 		});
 
+		// Get unique actions for filter dropdown
+		const uniqueActions = await prisma.auditLog.findMany({
+			select: { action: true },
+			distinct: ['action'],
+		});
+
 		res.json({
 			logs: logs.map((l) => ({
 				id: l.id,
@@ -157,9 +299,17 @@ router.get('/audit', adminOnly, async (req, res) => {
 				details: l.details,
 				createdAt: l.createdAt,
 			})),
-			total,
-			page,
-			totalPages: Math.ceil(total / limit),
+			meta: {
+				total,
+				page,
+				limit,
+				totalPages: Math.ceil(total / limit),
+				search,
+				action,
+				userId,
+				sortOrder,
+				availableActions: uniqueActions.map((a) => a.action),
+			},
 		});
 	} catch (error) {
 		console.error('[Admin API] Audit error:', error);

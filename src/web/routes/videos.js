@@ -73,26 +73,150 @@ router.get('/:id/stream', async (req, res) => {
 router.use(authMiddleware);
 
 /**
- * Get all videos (pending + posted)
+ * Get all videos (pending + posted) with search and filter
  */
 router.get('/', async (req, res) => {
 	const page = parseInt(req.query.page) || 1;
-	const limit = parseInt(req.query.limit) || 100;
+	const limit = parseInt(req.query.limit) || 40;
 	const skip = (page - 1) * limit;
+	const search = req.query.search?.trim() || '';
+	const status = req.query.status || 'all'; // 'all', 'pending', 'posted', 'duplicates'
 
 	try {
-		// Get total count for pagination info
-		// Get paginated videos
+		// Get global stats first
+		const [pendingCount, postedCount] = await Promise.all([
+			prisma.scheduledPost.count({ where: { status: 'pending' } }),
+			prisma.scheduledPost.count({ where: { status: 'posted' } }),
+		]);
+
+		// Calculate duplicate count using JavaScript grouping (MongoDB doesn't support raw SQL)
+		// Get all videos with duration and fileSize for duplicate detection
+		const allVideosForDupes = await prisma.scheduledPost.findMany({
+			where: {
+				status: { in: ['pending', 'posted'] },
+				duration: { not: null },
+				fileSize: { not: null },
+			},
+			select: {
+				id: true,
+				duration: true,
+				fileSize: true,
+			},
+		});
+
+		// Group by duration+fileSize to find duplicates
+		const dupGroups = {};
+		allVideosForDupes.forEach((v) => {
+			const key = `${v.duration}_${v.fileSize}`;
+			if (!dupGroups[key]) dupGroups[key] = [];
+			dupGroups[key].push(v.id);
+		});
+
+		// Get IDs of duplicate videos (in groups with > 1 video)
+		const duplicateIds = [];
+		Object.values(dupGroups).forEach((ids) => {
+			if (ids.length > 1) {
+				duplicateIds.push(...ids);
+			}
+		});
+		const duplicateCount = duplicateIds.length;
+
+		// Handle duplicates filter specially
+		if (status === 'duplicates') {
+			if (duplicateIds.length === 0) {
+				return res.json({
+					videos: [],
+					meta: {
+						total: 0,
+						page: 1,
+						limit,
+						totalPages: 0,
+						search,
+						status,
+						duplicateCount: 0,
+						globalTotal: pendingCount + postedCount,
+						pendingCount,
+						postedCount,
+					},
+				});
+			}
+
+			const where = {
+				id: { in: duplicateIds },
+			};
+
+			// Apply search if provided
+			if (search) {
+				where.OR = [
+					{ title: { contains: search, mode: 'insensitive' } },
+					{ hashtags: { contains: search, mode: 'insensitive' } },
+				];
+			}
+
+			const [total, posts] = await Promise.all([
+				prisma.scheduledPost.count({ where }),
+				prisma.scheduledPost.findMany({
+					where,
+					orderBy: { scheduledAt: 'asc' },
+					skip,
+					take: limit,
+				}),
+			]);
+
+			const videos = posts.map((post) => ({
+				id: post.id,
+				title: post.title,
+				hashtags: post.hashtags,
+				videoPath: post.videoPath,
+				scheduledAt: post.scheduledAt,
+				status: post.status,
+				isRepost: post.isRepost,
+				duration: post.duration,
+				fileSize: post.fileSize,
+				telegramFileId: post.telegramFileId,
+				videoUrl: `/api/videos/${post.id}/stream`,
+			}));
+
+			return res.json({
+				videos,
+				meta: {
+					total,
+					page,
+					limit,
+					totalPages: Math.ceil(total / limit),
+					search,
+					status,
+					duplicateCount,
+					globalTotal: pendingCount + postedCount,
+					pendingCount,
+					postedCount,
+				},
+			});
+		}
+
+		// Build where clause for non-duplicate queries
+		const where = {};
+
+		// Status filter
+		if (status === 'pending' || status === 'posted') {
+			where.status = status;
+		} else {
+			where.status = { in: ['pending', 'posted'] };
+		}
+
+		// Search filter (title OR hashtags)
+		if (search) {
+			where.OR = [
+				{ title: { contains: search, mode: 'insensitive' } },
+				{ hashtags: { contains: search, mode: 'insensitive' } },
+			];
+		}
+
+		// Get total count and paginated videos
 		const [total, posts] = await Promise.all([
-			prisma.scheduledPost.count({
-				where: {
-					status: { in: ['pending', 'posted'] },
-				},
-			}),
+			prisma.scheduledPost.count({ where }),
 			prisma.scheduledPost.findMany({
-				where: {
-					status: { in: ['pending', 'posted'] },
-				},
+				where,
 				orderBy: { scheduledAt: 'asc' },
 				skip,
 				take: limit,
@@ -107,11 +231,9 @@ router.get('/', async (req, res) => {
 			scheduledAt: post.scheduledAt,
 			status: post.status,
 			isRepost: post.isRepost,
-			// For duplicate detection
 			duration: post.duration,
 			fileSize: post.fileSize,
 			telegramFileId: post.telegramFileId,
-			// Use proxy URL (served through backend with auth)
 			videoUrl: `/api/videos/${post.id}/stream`,
 		}));
 
@@ -123,6 +245,12 @@ router.get('/', async (req, res) => {
 				page,
 				limit,
 				totalPages: Math.ceil(total / limit),
+				search,
+				status,
+				duplicateCount,
+				globalTotal: pendingCount + postedCount,
+				pendingCount,
+				postedCount,
 			},
 		});
 	} catch (error) {

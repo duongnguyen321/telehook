@@ -30,11 +30,14 @@ body {
 	color: var(--text-primary);
 	min-height: 100vh;
 	line-height: 1.5;
+	overflow-x: hidden;
 }
 
 /* ========== Layout ========== */
 .page {
 	min-height: 100vh;
+	max-width: 100vw;
+	overflow-x: hidden;
 }
 
 .hidden {
@@ -112,7 +115,7 @@ body {
 }
 
 .btn-secondary {
-	background: transparent !important;
+	background: #00d3f2 !important;
 	border: 1px solid var(--border) !important;
 }
 
@@ -238,8 +241,13 @@ header {
 .video-list {
 	padding: 16px 24px;
 	display: grid;
-	grid-template-columns: repeat(4, 1fr); /* Desktop: 5 columns */
+	grid-template-columns: repeat(
+		4,
+		minmax(0, 1fr)
+	); /* Desktop: 4 columns, minmax prevents overflow */
 	gap: 12px;
+	max-width: 100%;
+	overflow: hidden;
 }
 
 .video-card {
@@ -252,6 +260,8 @@ header {
 	padding: 12px;
 	transition: all 0.2s;
 	position: relative;
+	min-width: 0; /* Allow shrinking below content size */
+	overflow: hidden; /* Prevent content overflow */
 }
 
 .video-card:hover {
@@ -802,20 +812,64 @@ header {
 /* ========== Pagination ========== */
 .pagination-container {
 	display: flex;
-	justify-content: center;
+	flex-direction: column;
 	align-items: center;
-	gap: 16px;
+	gap: 12px;
 	padding: 24px;
 	margin-top: 20px;
 }
 
-#page-info {
+.pagination-info {
 	color: var(--text-secondary);
 	font-size: 14px;
 	font-weight: 500;
 }
 
-/* ========== Pagination ========== */
+.pagination-buttons {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	align-items: center;
+	gap: 6px;
+}
+
+.page-btn {
+	min-width: 40px;
+	height: 40px;
+	padding: 0 12px;
+	background: var(--bg-card);
+	border: 1px solid var(--border);
+	border-radius: var(--radius-sm);
+	color: var(--text-primary);
+	cursor: pointer;
+	transition: all 0.2s;
+	font-size: 14px;
+	font-weight: 500;
+}
+
+.page-btn:hover:not(:disabled):not(.active) {
+	border-color: var(--accent);
+	background: var(--bg-hover);
+}
+
+.page-btn.active {
+	background: var(--accent);
+	border-color: var(--accent);
+	color: white;
+}
+
+.page-btn:disabled {
+	opacity: 0.4;
+	cursor: not-allowed;
+}
+
+.page-ellipsis {
+	padding: 0 8px;
+	color: var(--text-muted);
+	font-size: 14px;
+}
+
+/* Old pagination (for other tabs) */
 .pagination {
 	display: flex;
 	justify-content: center;

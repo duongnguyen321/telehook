@@ -122,9 +122,9 @@
 							type="text"
 							id="search-input"
 							placeholder="🔍 Tìm kiếm..."
-							oninput="filterVideos()"
+							oninput="handleSearch()"
 						/>
-						<select id="status-filter" onchange="filterVideos()">
+						<select id="status-filter" onchange="handleStatusFilter()">
 							<option value="all">Tất cả</option>
 							<option value="pending">Chờ đăng</option>
 							<option value="posted">Đã đăng</option>
@@ -137,13 +137,7 @@
 					</div>
 
 					<div id="pagination-controls" class="pagination-container hidden">
-						<button id="btn-prev-page" class="btn" onclick="prevPage()">
-							◀️ Trang trước
-						</button>
-						<span id="page-info">Trang 1 / ?</span>
-						<button id="btn-next-page" class="btn" onclick="nextPage()">
-							Trang sau ▶️
-						</button>
+						<!-- Pagination will be dynamically generated -->
 					</div>
 				</div>
 
@@ -154,10 +148,31 @@
 							<h2>👥 Quản lý Users</h2>
 							<button onclick="loadUsers()" class="btn-icon">🔄</button>
 						</div>
+						<div class="filter-bar">
+							<input
+								type="text"
+								id="users-search"
+								placeholder="🔍 Tìm user..."
+								oninput="handleUsersSearch()"
+							/>
+							<select id="users-role-filter" onchange="handleUsersFilter()">
+								<option value="all">Tất cả role</option>
+								<option value="admin">Admin</option>
+								<option value="mod">Mod</option>
+								<option value="reviewer">Reviewer</option>
+								<option value="user">User</option>
+							</select>
+							<select id="users-sort" onchange="handleUsersFilter()">
+								<option value="viewCount-desc">Lượt xem ↓</option>
+								<option value="viewCount-asc">Lượt xem ↑</option>
+								<option value="lastActiveAt-desc">Hoạt động gần đây</option>
+								<option value="createdAt-desc">Mới nhất</option>
+							</select>
+						</div>
 						<div id="users-list" class="users-list">
 							<!-- Users will be rendered here -->
 						</div>
-						<div id="users-pagination" class="pagination"></div>
+						<div id="users-pagination" class="pagination-container"></div>
 					</div>
 				</div>
 
@@ -168,10 +183,26 @@
 							<h2>📜 Audit Logs</h2>
 							<button onclick="loadAuditLogs()" class="btn-icon">🔄</button>
 						</div>
+						<div class="filter-bar">
+							<input
+								type="text"
+								id="audit-search"
+								placeholder="🔍 Tìm log..."
+								oninput="handleAuditSearch()"
+							/>
+							<select id="audit-action-filter" onchange="handleAuditFilter()">
+								<option value="all">Tất cả action</option>
+								<!-- Will be populated dynamically -->
+							</select>
+							<select id="audit-sort" onchange="handleAuditFilter()">
+								<option value="desc">Mới nhất</option>
+								<option value="asc">Cũ nhất</option>
+							</select>
+						</div>
 						<div id="audit-list" class="audit-list">
 							<!-- Audit logs will be rendered here -->
 						</div>
-						<div id="audit-pagination" class="pagination"></div>
+						<div id="audit-pagination" class="pagination-container"></div>
 					</div>
 				</div>
 
