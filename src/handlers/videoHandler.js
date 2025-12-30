@@ -1561,7 +1561,13 @@ export function setupVideoHandler(bot) {
  * @param {string} tiktokLink - TikTok follow link
  * @returns {string} Greeting message
  */
-async function buildGreetingMessage(ctx, userRole, tiktokLink) {
+async function buildGreetingMessage(
+	ctx,
+	userRole,
+	tiktokLink,
+	linkLabel,
+	fullLink
+) {
 	const firstName = ctx.from?.first_name || 'bạn';
 	const userId = ctx.from?.id;
 	const roleDisplayName = getRoleDisplayName(userRole);
@@ -1684,8 +1690,7 @@ async function handleCommand(ctx, command) {
 			console.error('[User] Failed to track user:', error.message);
 		}
 
-		const greeting = await buildGreetingMessage(ctx, userRole, tiktokLink);
-		await ctx.reply(greeting, { parse_mode: 'Markdown' });
+		await buildGreetingMessage(ctx, userRole, tiktokLink, linkLabel, fullLink);
 		await logAction(userId, 'start');
 		return;
 	}
