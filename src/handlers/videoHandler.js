@@ -2091,12 +2091,18 @@ async function handleCommand(ctx, command) {
 
 		await prisma.scheduledPost.update({
 			where: { id: post1.id },
-			data: { scheduledAt: new Date(post2.scheduledAt) },
+			data: {
+				scheduledAt: new Date(post2.scheduledAt),
+				...(post1.status === 'pending' && { notificationSent: false }),
+			},
 		});
 
 		await prisma.scheduledPost.update({
 			where: { id: post2.id },
-			data: { scheduledAt: new Date(temp) },
+			data: {
+				scheduledAt: new Date(temp),
+				...(post2.status === 'pending' && { notificationSent: false }),
+			},
 		});
 
 		await ctx.reply(

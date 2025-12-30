@@ -363,13 +363,29 @@ router.put('/reorder/batch', async (req, res) => {
 
 	try {
 		// Batch update using Promise.all
+		// Batch update with safety check for 'posted' status
+		// First fetch status of all diverse posts
+		const targetIds = order.map((o) => o.id);
+		const existingPosts = await prisma.scheduledPost.findMany({
+			where: { id: { in: targetIds } },
+			select: { id: true, status: true },
+		});
+
+		const statusMap = new Map();
+		existingPosts.forEach((p) => statusMap.set(p.id, p.status));
+
 		await Promise.all(
-			order.map(({ id, scheduledAt }) =>
-				prisma.scheduledPost.update({
+			order.map(({ id, scheduledAt }) => {
+				const currentStatus = statusMap.get(id);
+				return prisma.scheduledPost.update({
 					where: { id },
-					data: { scheduledAt: new Date(scheduledAt) },
-				})
-			)
+					data: {
+						scheduledAt: new Date(scheduledAt),
+						// Only reset notificationSent if status is pending
+						...(currentStatus === 'pending' && { notificationSent: false }),
+					},
+				});
+			})
 		);
 
 		// Log dashboard action
@@ -414,11 +430,17 @@ router.post('/swap', async (req, res) => {
 		await Promise.all([
 			prisma.scheduledPost.update({
 				where: { id: id1 },
-				data: { scheduledAt: post2.scheduledAt },
+				data: {
+					scheduledAt: post2.scheduledAt,
+					...(post1.status === 'pending' && { notificationSent: false }),
+				},
 			}),
 			prisma.scheduledPost.update({
 				where: { id: id2 },
-				data: { scheduledAt: post1.scheduledAt },
+				data: {
+					scheduledAt: post1.scheduledAt,
+					...(post2.status === 'pending' && { notificationSent: false }),
+				},
 			}),
 		]);
 

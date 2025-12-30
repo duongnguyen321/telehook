@@ -413,6 +413,7 @@ export async function rescheduleAllPending(chatId) {
 				scheduledAt: scheduleTime.toISOString(),
 				title: content.title,
 				hashtags: content.hashtags,
+				notificationSent: false, // Reset notification status
 			},
 		});
 		count++;
@@ -536,7 +537,7 @@ export async function rescheduleTimesOnly(chatId) {
 		updates.map(({ id, scheduledAt }) =>
 			prisma.scheduledPost.update({
 				where: { id },
-				data: { scheduledAt },
+				data: { scheduledAt, notificationSent: false },
 			})
 		)
 	);
@@ -1056,7 +1057,7 @@ async function rescheduleFromPosition(chatId, fromScheduledAt) {
 		updates.map(({ id, scheduledAt }) =>
 			prisma.scheduledPost.update({
 				where: { id },
-				data: { scheduledAt },
+				data: { scheduledAt, notificationSent: false },
 			})
 		)
 	);
