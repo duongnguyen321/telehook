@@ -50,9 +50,9 @@ function removeFromVideoCache(videoId, videoUrl) {
  */
 function getItemsPerPage() {
 	const width = window.innerWidth;
-	if (width <= 768) return 12; // Mobile
-	if (width <= 1024) return 24; // Tablet
-	return 40; // Desktop
+	if (width <= 768) return 8; // Mobile
+	if (width <= 1024) return 12; // Tablet
+	return 20; // Desktop
 }
 
 // Update itemsPerPage on resize (debounced)
