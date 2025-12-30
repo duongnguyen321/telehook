@@ -573,6 +573,11 @@ function renderVideos() {
 			)}')" title="Tải video">⬇️</button>
 				${
 					currentUser?.canEdit
+						? `<button onclick="openGeneratorModal('${video.id}')" title="Generate title & tags" class="btn-generate">✨</button>`
+						: ''
+				}
+				${
+					currentUser?.canEdit
 						? `<button onclick="editHashtags('${video.id}')" title="Sửa hashtags">🏷️</button>`
 						: ''
 				}
@@ -1510,3 +1515,314 @@ function renderTabPagination(
 		<div class="pagination-buttons">${buttons.join('')}</div>
 	`;
 }
+
+// ========== Content Generator Functions ==========
+
+// Generator state
+let generatorVideoId = null;
+let categories = [];
+let selectedCategories = {};
+let generatedResults = [];
+let selectedResultIndex = -1;
+
+/**
+ * Open generator modal for a specific video
+ */
+async function openGeneratorModal(videoId) {
+	generatorVideoId = videoId;
+	selectedCategories = {};
+	generatedResults = [];
+	selectedResultIndex = -1;
+
+	// Show modal
+	document.getElementById('generator-modal').classList.remove('hidden');
+	document.getElementById('generated-results').innerHTML = '';
+	document.getElementById('generator-edit').classList.add('hidden');
+
+	// Load categories if not already loaded
+	if (categories.length === 0) {
+		await loadCategories();
+	}
+
+	renderCategoryFilters();
+}
+
+/**
+ * Close generator modal
+ */
+function closeGeneratorModal() {
+	generatorVideoId = null;
+	document.getElementById('generator-modal').classList.add('hidden');
+}
+
+/**
+ * Load categories from API
+ */
+async function loadCategories() {
+	try {
+		const res = await fetch(`${API_BASE}/content/categories`, {
+			headers: { Authorization: `Bearer ${token}` },
+		});
+
+		if (!res.ok) throw new Error('Failed to load categories');
+
+		const data = await res.json();
+		categories = data.categories;
+	} catch (error) {
+		console.error('Error loading categories:', error);
+		categories = [];
+	}
+}
+
+/**
+ * Render category filter chips
+ */
+function renderCategoryFilters() {
+	const container = document.getElementById('category-filters');
+
+	if (categories.length === 0) {
+		container.innerHTML =
+			'<p style="color: var(--text-muted)">No categories available</p>';
+		return;
+	}
+
+	container.innerHTML = categories
+		.map(
+			(cat) => `
+		<div class="category-section" data-key="${cat.key}">
+			<div class="category-header" onclick="toggleCategory('${cat.key}')">
+				<span class="category-toggle">▼</span>
+				<span>${cat.emoji} ${cat.name}</span>
+				${
+					cat.singleChoice
+						? '<span style="font-size:11px;color:var(--text-muted)">(chọn 1)</span>'
+						: ''
+				}
+			</div>
+			<div class="category-options">
+				${cat.options
+					.map(
+						(opt) => `
+					<span class="category-chip" 
+						data-category="${cat.key}" 
+						data-option="${opt.key}"
+						onclick="toggleCategoryOption('${cat.key}', '${opt.key}', ${cat.singleChoice})"
+					>${opt.label}</span>
+				`
+					)
+					.join('')}
+			</div>
+		</div>
+	`
+		)
+		.join('');
+}
+
+/**
+ * Toggle category section collapse
+ */
+function toggleCategory(categoryKey) {
+	const section = document.querySelector(
+		`.category-section[data-key="${categoryKey}"]`
+	);
+	if (section) {
+		section.classList.toggle('collapsed');
+	}
+}
+
+/**
+ * Toggle category option selection
+ */
+function toggleCategoryOption(categoryKey, optionKey, singleChoice) {
+	if (!selectedCategories[categoryKey]) {
+		selectedCategories[categoryKey] = [];
+	}
+
+	const index = selectedCategories[categoryKey].indexOf(optionKey);
+
+	if (index === -1) {
+		// Add selection
+		if (singleChoice) {
+			// Replace existing selection for single-choice categories
+			selectedCategories[categoryKey] = [optionKey];
+		} else {
+			selectedCategories[categoryKey].push(optionKey);
+		}
+	} else {
+		// Remove selection
+		selectedCategories[categoryKey].splice(index, 1);
+		if (selectedCategories[categoryKey].length === 0) {
+			delete selectedCategories[categoryKey];
+		}
+	}
+
+	// Update UI
+	updateChipSelections();
+}
+
+/**
+ * Update chip visual states
+ */
+function updateChipSelections() {
+	document.querySelectorAll('.category-chip').forEach((chip) => {
+		const category = chip.dataset.category;
+		const option = chip.dataset.option;
+
+		const isSelected =
+			selectedCategories[category] &&
+			selectedCategories[category].includes(option);
+
+		chip.classList.toggle('selected', isSelected);
+	});
+}
+
+/**
+ * Clear all category selections
+ */
+function clearCategorySelections() {
+	selectedCategories = {};
+	updateChipSelections();
+	document.getElementById('generated-results').innerHTML = '';
+	document.getElementById('generator-edit').classList.add('hidden');
+}
+
+/**
+ * Generate content from API
+ */
+async function generateContent() {
+	const btn = document.getElementById('btn-generate');
+	const resultsContainer = document.getElementById('generated-results');
+
+	btn.disabled = true;
+	btn.innerHTML = '<span class="loading-spinner"></span> Generating...';
+	resultsContainer.innerHTML =
+		'<p style="color: var(--text-muted)">Generating...</p>';
+
+	try {
+		const res = await fetch(`${API_BASE}/content/generate`, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+				Authorization: `Bearer ${token}`,
+			},
+			body: JSON.stringify({
+				categories: selectedCategories,
+				count: 5,
+			}),
+		});
+
+		if (!res.ok) throw new Error('Generation failed');
+
+		const data = await res.json();
+		generatedResults = data.results || [];
+		selectedResultIndex = -1;
+
+		renderGeneratedResults();
+	} catch (error) {
+		console.error('Generation error:', error);
+		resultsContainer.innerHTML =
+			'<p style="color: var(--danger)">Error generating content. Try again.</p>';
+	} finally {
+		btn.disabled = false;
+		btn.innerHTML = '✨ Generate';
+	}
+}
+
+/**
+ * Render generated results
+ */
+function renderGeneratedResults() {
+	const container = document.getElementById('generated-results');
+
+	if (generatedResults.length === 0) {
+		container.innerHTML =
+			'<p style="color: var(--text-muted)">No results generated</p>';
+		return;
+	}
+
+	container.innerHTML = generatedResults
+		.map(
+			(item, index) => `
+		<div class="generated-item ${selectedResultIndex === index ? 'selected' : ''}" 
+			onclick="selectGeneratedResult(${index})">
+			<div class="generated-title">${escapeHtml(item.title)}</div>
+			<div class="generated-hashtags">${escapeHtml(item.hashtags)}</div>
+		</div>
+	`
+		)
+		.join('');
+}
+
+/**
+ * Select a generated result
+ */
+function selectGeneratedResult(index) {
+	selectedResultIndex = index;
+	const item = generatedResults[index];
+
+	// Update selection UI
+	document.querySelectorAll('.generated-item').forEach((el, i) => {
+		el.classList.toggle('selected', i === index);
+	});
+
+	// Show edit area with selected content
+	const editArea = document.getElementById('generator-edit');
+	editArea.classList.remove('hidden');
+
+	document.getElementById('generator-title-input').value = item.title;
+	document.getElementById('generator-hashtags-input').value = item.hashtags;
+}
+
+/**
+ * Apply generated content to video
+ */
+async function applyGeneratedContent() {
+	if (!generatorVideoId) {
+		showNotify('error', 'Lỗi', 'No video selected');
+		return;
+	}
+
+	const title = document.getElementById('generator-title-input').value.trim();
+	const hashtags = document
+		.getElementById('generator-hashtags-input')
+		.value.trim();
+
+	if (!title) {
+		showNotify('error', 'Lỗi', 'Title is required');
+		return;
+	}
+
+	try {
+		const res = await fetch(`${API_BASE}/videos/${generatorVideoId}`, {
+			method: 'PUT',
+			headers: {
+				'Content-Type': 'application/json',
+				Authorization: `Bearer ${token}`,
+			},
+			body: JSON.stringify({ title, hashtags }),
+		});
+
+		if (!res.ok) throw new Error('Update failed');
+
+		// Update local state
+		const video = videos.find((v) => v.id === generatorVideoId);
+		if (video) {
+			video.title = title;
+			video.hashtags = hashtags;
+			renderVideos();
+		}
+
+		closeGeneratorModal();
+		showNotify('success', 'Thành công', 'Đã cập nhật title và hashtags!');
+	} catch (error) {
+		console.error('Apply error:', error);
+		showNotify('error', 'Lỗi', 'Không thể cập nhật video. Thử lại sau.');
+	}
+}
+
+// Close generator modal on outside click
+document.addEventListener('click', (e) => {
+	if (e.target.id === 'generator-modal') {
+		closeGeneratorModal();
+	}
+});

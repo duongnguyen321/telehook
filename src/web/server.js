@@ -11,6 +11,7 @@ import authRoutes from './routes/auth.js';
 import videoRoutes from './routes/videos.js';
 import tagRoutes from './routes/tags.js';
 import adminRoutes from './routes/admin.js';
+import contentRoutes from './routes/content.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -50,6 +51,7 @@ export function startWebServer() {
 	app.use('/api/videos', videoRoutes);
 	app.use('/api/tags', tagRoutes);
 	app.use('/api/admin', adminRoutes);
+	app.use('/api/content', contentRoutes);
 
 	// SPA fallback - use explicit path for Express 5 compatibility
 	app.get('/{*path}', (req, res) => {

@@ -1146,6 +1146,9 @@ export const HASHTAG_SETS = [
 	'#xuhuong #fyp #turned #girlfriend #bathroom',
 	'#xuhuong #fyp #turned #yta #cosplay',
 	'#xuhuong #fyp #break #buoisang #anime',
+	'#xuhuong #fyp #dance #visual #sexy',
+	'#xuhuong #fyp #hot #girl #gauxinh',
+	'#xuhuong #fyp #hot #gauxinh #sexy',
 ];
 
 export const BASE_HASHTAGS = '#xuhuong #fyp';

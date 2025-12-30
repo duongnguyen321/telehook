@@ -261,6 +261,63 @@
 					</div>
 				</div>
 
+				<!-- Content Generator Modal -->
+				<div id="generator-modal" class="modal hidden">
+					<div class="modal-content modal-large">
+						<button class="modal-close" onclick="closeGeneratorModal()">
+							×
+						</button>
+						<div class="generator-header">
+							<h3>✨ Generate Title & Tags</h3>
+						</div>
+
+						<div id="category-filters">
+							<!-- Categories will be loaded dynamically -->
+							<p style="color: var(--text-muted)">Loading categories...</p>
+						</div>
+
+						<div class="generator-actions">
+							<button
+								onclick="generateContent()"
+								class="btn-generate"
+								id="btn-generate"
+							>
+								✨ Generate
+							</button>
+							<button onclick="clearCategorySelections()" class="btn-secondary">
+								🔄 Clear Filters
+							</button>
+						</div>
+
+						<div id="generated-results" class="generated-results">
+							<!-- Generated options will appear here -->
+						</div>
+
+						<div id="generator-edit" class="generated-edit hidden">
+							<label>Title (có thể chỉnh sửa)</label>
+							<input
+								type="text"
+								id="generator-title-input"
+								placeholder="Title..."
+							/>
+							<label>Hashtags (có thể chỉnh sửa)</label>
+							<textarea
+								id="generator-hashtags-input"
+								rows="2"
+								placeholder="Hashtags..."
+							></textarea>
+							<div class="modal-actions">
+								<button onclick="applyGeneratedContent()" class="btn-primary">
+									✅ Áp dụng
+								</button>
+								<button onclick="closeGeneratorModal()" class="btn-secondary">
+									Hủy
+								</button>
+							</div>
+						</div>
+					</div>
+				</div>
+
 				<!-- User Details Modal -->
 				<div id="user-modal" class="modal hidden">
 					<div class="modal-content modal-medium">
