@@ -131,6 +131,36 @@ export async function downloadVideo(
 }
 
 /**
+ * Stream video directly from S3 (no buffering - for real-time streaming)
+ * @param {string} key - S3 object key (filename)
+ * @returns {Promise<{stream: ReadableStream, contentLength: number}|null>}
+ */
+export async function streamVideo(key) {
+	const client = getS3Client();
+	if (!client) {
+		console.log('[S3] Not configured');
+		return null;
+	}
+
+	try {
+		const command = new GetObjectCommand({
+			Bucket: S3_BUCKET,
+			Key: key,
+		});
+
+		const response = await client.send(command);
+		return {
+			stream: response.Body,
+			contentLength: response.ContentLength,
+			contentType: response.ContentType || 'video/mp4',
+		};
+	} catch (error) {
+		console.error(`[S3] Stream failed for ${key}:`, error.message);
+		return null;
+	}
+}
+
+/**
  * Download video from S3 to a local temp file
  * @param {string} key - S3 object key (filename)
  * @param {string} tempDir - Temp directory path

@@ -13,7 +13,7 @@ import {
 	getVideoFullPath,
 } from '../../utils/storage.js';
 import { hasPermission } from '../../services/roleService.js';
-import { isS3Enabled, downloadVideo } from '../../utils/s3.js';
+import { isS3Enabled, downloadVideo, streamVideo } from '../../utils/s3.js';
 import { logAction } from '../../services/auditService.js';
 
 const router = express.Router();
@@ -67,25 +67,36 @@ router.get('/:id/stream', async (req, res) => {
 			return fs.createReadStream(localPath).pipe(res);
 		}
 
-		// Download from S3 if not local
+		// Stream from S3 if not local
 		if (isS3Enabled()) {
-			const buffer = await downloadVideo(videoKey);
-			if (buffer) {
-				const headers = {
-					'Content-Type': 'video/mp4',
-					'Content-Length': buffer.length,
-					'Cache-Control': 'public, max-age=3600',
-				};
-
-				// Add download header if requested
-				if (isDownload) {
-					headers[
-						'Content-Disposition'
-					] = `attachment; filename="${encodeURIComponent(filename)}"`;
+			// For downloads, buffer first (need Content-Length)
+			if (isDownload) {
+				const buffer = await downloadVideo(videoKey);
+				if (buffer) {
+					const headers = {
+						'Content-Type': 'video/mp4',
+						'Content-Length': buffer.length,
+						'Content-Disposition': `attachment; filename="${encodeURIComponent(
+							filename
+						)}"`,
+					};
+					res.set(headers);
+					return res.send(buffer);
 				}
-
-				res.set(headers);
-				return res.send(buffer);
+			} else {
+				// For streaming, pipe directly from S3 (no buffering)
+				const s3Stream = await streamVideo(videoKey);
+				if (s3Stream) {
+					const headers = {
+						'Content-Type': s3Stream.contentType,
+						'Content-Length': s3Stream.contentLength,
+						'Accept-Ranges': 'bytes',
+						'Cache-Control': 'public, max-age=3600',
+					};
+					res.set(headers);
+					// Pipe S3 stream directly to response - video starts playing immediately
+					return s3Stream.stream.pipe(res);
+				}
 			}
 		}
 

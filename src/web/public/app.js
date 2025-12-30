@@ -31,13 +31,17 @@ function removeFromVideoCache(videoId, videoUrl) {
 	// Remove from in-memory Map
 	videoCache.delete(videoId);
 
-	// Remove from Service Worker cache
-	if ('caches' in window && videoUrl) {
-		caches.open('video-cache-v1').then((cache) => {
-			cache.delete(videoUrl).then((deleted) => {
-				if (deleted) console.log('[Cache] Removed from SW cache:', videoId);
-			});
+	// Remove from Service Worker cache via message
+	if (
+		'serviceWorker' in navigator &&
+		navigator.serviceWorker.controller &&
+		videoUrl
+	) {
+		navigator.serviceWorker.controller.postMessage({
+			action: 'remove',
+			url: videoUrl,
 		});
+		console.log('[Cache] Requested SW to remove:', videoId);
 	}
 }
 
@@ -331,7 +335,7 @@ async function loadVideos(page = currentPage) {
 		videos = data.videos;
 		filteredVideos = videos; // Server already filtered
 
-		// Cache video URLs for faster navigation
+		// Store video URLs in memory (no pre-cache - cache on demand only)
 		videos.forEach((v) => {
 			if (v.videoUrl && !videoCache.has(v.id)) {
 				videoCache.set(v.id, v.videoUrl);
