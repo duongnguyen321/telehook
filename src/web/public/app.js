@@ -13,13 +13,57 @@ let sortable = null;
 
 // Pagination State
 let currentPage = 1;
-let itemsPerPage = 40;
+let itemsPerPage = getItemsPerPage(); // Responsive
 let totalPages = 1;
 let totalItems = 0;
 let duplicateCount = 0; // From API
 let globalPendingCount = 0;
 let globalPostedCount = 0;
 let globalTotal = 0;
+
+// Video Cache - store loaded video URLs to avoid reloading
+const videoCache = new Map();
+
+/**
+ * Remove video from cache (both Map and Service Worker)
+ */
+function removeFromVideoCache(videoId, videoUrl) {
+	// Remove from in-memory Map
+	videoCache.delete(videoId);
+
+	// Remove from Service Worker cache
+	if ('caches' in window && videoUrl) {
+		caches.open('video-cache-v1').then((cache) => {
+			cache.delete(videoUrl).then((deleted) => {
+				if (deleted) console.log('[Cache] Removed from SW cache:', videoId);
+			});
+		});
+	}
+}
+
+/**
+ * Get responsive items per page based on screen width
+ */
+function getItemsPerPage() {
+	const width = window.innerWidth;
+	if (width <= 768) return 12; // Mobile
+	if (width <= 1024) return 24; // Tablet
+	return 40; // Desktop
+}
+
+// Update itemsPerPage on resize (debounced)
+let resizeTimer = null;
+window.addEventListener('resize', () => {
+	if (resizeTimer) clearTimeout(resizeTimer);
+	resizeTimer = setTimeout(() => {
+		const newItemsPerPage = getItemsPerPage();
+		if (newItemsPerPage !== itemsPerPage) {
+			itemsPerPage = newItemsPerPage;
+			// Reload current page with new limit
+			if (currentTab === 'videos') loadVideos(1);
+		}
+	}, 300);
+});
 
 // Filter State
 let currentSearch = '';
@@ -287,6 +331,13 @@ async function loadVideos(page = currentPage) {
 		videos = data.videos;
 		filteredVideos = videos; // Server already filtered
 
+		// Cache video URLs for faster navigation
+		videos.forEach((v) => {
+			if (v.videoUrl && !videoCache.has(v.id)) {
+				videoCache.set(v.id, v.videoUrl);
+			}
+		});
+
 		// Update pagination state
 		if (data.meta) {
 			currentPage = data.meta.page;
@@ -504,7 +555,9 @@ function renderVideos() {
 			}" data-id="${video.id}" data-status="${video.status}">
 			<div class="video-card-header">
 				<div class="drag-handle">⋮⋮</div>
-				<div class="video-index">${index + 1}</div>
+				<div class="video-index">${
+					video.order || index + 1 + (currentPage - 1) * itemsPerPage
+				}</div>
 				<span class="video-status ${video.status}">${
 				video.status === 'pending' ? '⏳' : '✅'
 			}</span>
@@ -548,6 +601,12 @@ function renderVideos() {
 
 	// Setup lazy loading and visibility-based playback
 	initVideoObserver();
+
+	// Restore marked-for-delete state for videos in pendingDeletes
+	pendingDeletes.forEach((id) => {
+		const card = document.querySelector(`.video-card[data-id="${id}"]`);
+		if (card) card.classList.add('marked-for-delete');
+	});
 }
 
 // Store observer globally to avoid re-creating
@@ -695,17 +754,68 @@ async function updateTitle(videoId, newTitle) {
 	}
 }
 
+// ========== Notification Modal Functions ==========
+
+let pendingHashtagVideoId = null;
+
+/**
+ * Show notification modal (replaces alert)
+ * @param {string} type - 'success' | 'error' | 'info'
+ * @param {string} title - Modal title
+ * @param {string} message - Modal message
+ */
+function showNotify(type, title, message) {
+	const modal = document.getElementById('notify-modal');
+	const iconEl = document.getElementById('notify-icon');
+	const titleEl = document.getElementById('notify-title');
+	const messageEl = document.getElementById('notify-message');
+
+	// Set icon based on type
+	const icons = { success: '✅', error: '❌', info: 'ℹ️' };
+	iconEl.textContent = icons[type] || '📢';
+	iconEl.className = `notify-icon ${type}`;
+
+	titleEl.textContent = title;
+	messageEl.textContent = message;
+
+	modal.classList.remove('hidden');
+}
+
+function closeNotifyModal() {
+	document.getElementById('notify-modal').classList.add('hidden');
+}
+
+// ========== Hashtag Modal Functions ==========
+
 function editHashtags(videoId) {
 	const video = videos.find((v) => v.id === videoId);
 	if (!video) return;
 
-	const newHashtags = prompt('Nhập hashtags mới:', video.hashtags);
-	if (newHashtags === null || newHashtags === video.hashtags) return;
+	pendingHashtagVideoId = videoId;
+	const input = document.getElementById('hashtag-input');
+	input.value = video.hashtags || '';
 
-	updateHashtags(videoId, newHashtags);
+	document.getElementById('hashtag-modal').classList.remove('hidden');
+	input.focus();
 }
 
-async function updateHashtags(videoId, newHashtags) {
+function closeHashtagModal() {
+	pendingHashtagVideoId = null;
+	document.getElementById('hashtag-modal').classList.add('hidden');
+}
+
+async function saveHashtags() {
+	if (!pendingHashtagVideoId) return;
+
+	const videoId = pendingHashtagVideoId;
+	const newHashtags = document.getElementById('hashtag-input').value.trim();
+	const video = videos.find((v) => v.id === videoId);
+
+	if (!video || newHashtags === video.hashtags) {
+		closeHashtagModal();
+		return;
+	}
+
 	try {
 		const res = await fetch(`${API_BASE}/videos/${videoId}`, {
 			method: 'PUT',
@@ -721,12 +831,17 @@ async function updateHashtags(videoId, newHashtags) {
 		}
 
 		// Update local state
-		const video = videos.find((v) => v.id === videoId);
-		if (video) video.hashtags = newHashtags;
+		video.hashtags = newHashtags;
 		renderVideos();
+		closeHashtagModal();
+		showNotify('success', 'Thành công', 'Đã cập nhật hashtags!');
 	} catch (error) {
 		console.error('Update error:', error);
-		alert('Lỗi khi cập nhật hashtags');
+		showNotify(
+			'error',
+			'Lỗi',
+			'Không thể cập nhật hashtags. Vui lòng thử lại.'
+		);
 	}
 }
 
@@ -754,6 +869,10 @@ function closeDeleteModal() {
 async function confirmDelete() {
 	if (!pendingDeleteId) return;
 
+	// Get video URL before deleting (for cache cleanup)
+	const video = videos.find((v) => v.id === pendingDeleteId);
+	const videoUrl = video?.videoUrl;
+
 	try {
 		const res = await fetch(`${API_BASE}/videos/${pendingDeleteId}`, {
 			method: 'DELETE',
@@ -765,11 +884,14 @@ async function confirmDelete() {
 			throw new Error(data.error || 'Delete failed');
 		}
 
+		// Remove from cache
+		if (videoUrl) removeFromVideoCache(pendingDeleteId, videoUrl);
+
 		closeDeleteModal();
 		loadVideos();
 	} catch (error) {
 		console.error('Delete error:', error);
-		alert(`Lỗi khi xóa video: ${error.message}`);
+		showNotify('error', 'Lỗi xóa video', error.message);
 	}
 }
 
@@ -840,14 +962,25 @@ async function saveBatchDeletes() {
 		}
 
 		const result = await res.json();
-		alert(`✅ Đã xóa ${result.deleted} video và sắp xếp lại lịch đăng!`);
+
+		// Remove deleted videos from cache
+		ids.forEach((id) => {
+			const video = videos.find((v) => v.id === id);
+			if (video?.videoUrl) removeFromVideoCache(id, video.videoUrl);
+		});
+
+		showNotify(
+			'success',
+			'Thành công',
+			`Đã xóa ${result.deleted} video và sắp xếp lại lịch đăng!`
+		);
 
 		pendingDeletes.clear();
 		updateBatchDeleteUI();
 		loadVideos();
 	} catch (error) {
 		console.error('Batch delete error:', error);
-		alert(`Lỗi khi xóa: ${error.message}`);
+		showNotify('error', 'Lỗi xóa video', error.message);
 	} finally {
 		btn.textContent = originalText;
 		btn.disabled = false;
@@ -892,6 +1025,9 @@ document.addEventListener('click', (e) => {
 	if (e.target.classList.contains('modal')) {
 		if (e.target.id === 'video-modal') closeVideoModal();
 		if (e.target.id === 'delete-modal') closeDeleteModal();
+		if (e.target.id === 'notify-modal') closeNotifyModal();
+		if (e.target.id === 'hashtag-modal') closeHashtagModal();
+		if (e.target.id === 'user-modal') closeUserModal();
 	}
 });
 
@@ -913,6 +1049,18 @@ function formatDate(isoString) {
 }
 
 // ========== Init ==========
+
+// Register Service Worker for video caching
+if ('serviceWorker' in navigator) {
+	navigator.serviceWorker
+		.register('/sw.js')
+		.then((registration) => {
+			console.log('[App] Service Worker registered:', registration.scope);
+		})
+		.catch((error) => {
+			console.warn('[App] Service Worker registration failed:', error);
+		});
+}
 
 // Check auth on load
 checkAuth();
@@ -1089,7 +1237,12 @@ function handleUsersFilter() {
 	loadUsers(1);
 }
 
-// View user details (show in alert for now)
+// ========== User Details Modal ==========
+
+function closeUserModal() {
+	document.getElementById('user-modal').classList.add('hidden');
+}
+
 async function viewUserDetails(telegramId) {
 	try {
 		const res = await fetch(`${API_BASE}/admin/users/${telegramId}`, {
@@ -1103,19 +1256,60 @@ async function viewUserDetails(telegramId) {
 		const data = await res.json();
 		const user = data.user;
 
-		let message = `👤 ${user.firstName || ''} ${user.lastName || ''}\n`;
-		message += `@${user.username || 'no_username'}\n`;
-		message += `Role: ${user.role}\n`;
-		message += `Total actions: ${data.total}\n\n`;
-		message += `Recent actions:\n`;
+		// Build modal content
+		const actionsHtml = data.actions
+			.slice(0, 10)
+			.map(
+				(a) => `
+			<div class="user-action-item">
+				<span class="user-action-dot">•</span>
+				<span>${escapeHtml(a.action)}${
+					a.details ? ': ' + escapeHtml(a.details) : ''
+				}</span>
+			</div>
+		`
+			)
+			.join('');
 
-		data.actions.slice(0, 10).forEach((a) => {
-			message += `• ${a.action}${a.details ? ': ' + a.details : ''}\n`;
-		});
+		const content = `
+			<div class="user-detail-header">
+				<div class="user-detail-avatar">${(user.firstName ||
+					user.username ||
+					'?')[0].toUpperCase()}</div>
+				<div class="user-detail-info">
+					<h3>${escapeHtml(user.firstName || '')} ${escapeHtml(user.lastName || '')}</h3>
+					<p>@${escapeHtml(
+						user.username || 'no_username'
+					)} • Role: <strong>${user.role.toUpperCase()}</strong></p>
+				</div>
+			</div>
+			<div class="user-detail-stats">
+				<div class="user-detail-stat">
+					<div class="user-detail-stat-value">${data.total}</div>
+					<div class="user-detail-stat-label">Tổng actions</div>
+				</div>
+				<div class="user-detail-stat">
+					<div class="user-detail-stat-value">${user.viewCount || 0}</div>
+					<div class="user-detail-stat-label">Lượt xem</div>
+				</div>
+			</div>
+			<div class="user-actions-list">
+				<h4>📋 Hoạt động gần đây:</h4>
+				${
+					actionsHtml ||
+					'<div style="color: var(--text-muted)">Chưa có hoạt động</div>'
+				}
+			</div>
+		`;
 
-		alert(message);
+		document.getElementById('user-modal-content').innerHTML = content;
+		document.getElementById('user-modal').classList.remove('hidden');
 	} catch (error) {
-		alert('Error: ' + error.message);
+		showNotify(
+			'error',
+			'Lỗi',
+			'Không thể tải thông tin user: ' + error.message
+		);
 	}
 }
 

@@ -228,6 +228,47 @@
 						</div>
 					</div>
 				</div>
+				<!-- Notification Modal (replaces alert) -->
+				<div id="notify-modal" class="modal hidden">
+					<div class="modal-content modal-small">
+						<div id="notify-icon" class="notify-icon">✅</div>
+						<h3 id="notify-title">Thông báo</h3>
+						<div id="notify-message" class="notify-message"></div>
+						<div class="modal-actions">
+							<button onclick="closeNotifyModal()" class="btn-primary">
+								OK
+							</button>
+						</div>
+					</div>
+				</div>
+
+				<!-- Hashtag Edit Modal (replaces prompt) -->
+				<div id="hashtag-modal" class="modal hidden">
+					<div class="modal-content modal-small">
+						<button class="modal-close" onclick="closeHashtagModal()">×</button>
+						<h3>🏷️ Sửa Hashtags</h3>
+						<textarea
+							id="hashtag-input"
+							rows="4"
+							placeholder="Nhập hashtags..."
+						></textarea>
+						<div class="modal-actions">
+							<button onclick="saveHashtags()" class="btn-primary">Lưu</button>
+							<button onclick="closeHashtagModal()" class="btn-secondary">
+								Hủy
+							</button>
+						</div>
+					</div>
+				</div>
+
+				<!-- User Details Modal -->
+				<div id="user-modal" class="modal hidden">
+					<div class="modal-content modal-medium">
+						<button class="modal-close" onclick="closeUserModal()">×</button>
+						<div id="user-modal-content"></div>
+					</div>
+				</div>
+
 				<!-- Save Actions Bar -->
 				<div id="save-actions" class="save-actions-bar hidden">
 					<span>🗑️ Đã chọn xóa <b id="delete-count">0</b> video</span>
