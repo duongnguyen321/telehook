@@ -620,8 +620,7 @@ function initVideoObserver() {
 				if (entry.isIntersecting) {
 					// Video is visible - load and play
 					if (!video.src && video.dataset.src) {
-						video.src = video.dataset.src;
-						video.load();
+						loadVideoWithRetry(video, video.dataset.src);
 					}
 					video.muted = true;
 					video.currentTime = 0;
@@ -652,6 +651,64 @@ function initVideoObserver() {
 		// Start observing
 		videoObserver.observe(video);
 	});
+}
+
+/**
+ * Load video with retry logic - bypasses cache on failure
+ */
+function loadVideoWithRetry(video, url, retryCount = 0) {
+	const maxRetries = 2;
+
+	// Create a unique URL to bypass cache if retrying
+	const loadUrl =
+		retryCount > 0
+			? `${url}${url.includes('?') ? '&' : '?'}_nocache=${Date.now()}`
+			: url;
+
+	video.src = loadUrl;
+	video.load();
+
+	// Handle load error
+	const handleError = () => {
+		console.warn(`[Video] Failed to load (attempt ${retryCount + 1}):`, url);
+
+		if (retryCount < maxRetries) {
+			// Clear the failed src and retry with cache bypass
+			video.removeAttribute('src');
+			video.load();
+
+			setTimeout(() => {
+				loadVideoWithRetry(video, url, retryCount + 1);
+			}, 500);
+		} else {
+			// Final failure - show error state
+			console.error('[Video] Failed after all retries:', url);
+			video.parentElement.innerHTML =
+				'<span style="color: var(--danger); font-size: 12px;">⚠️ Load failed</span>';
+		}
+	};
+
+	// Handle stalled (video started but got stuck)
+	const handleStall = () => {
+		// If video has no data after 5 seconds, treat as error
+		if (video.readyState < 2) {
+			handleError();
+		}
+	};
+
+	// Remove previous listeners to avoid duplicates
+	video.removeEventListener('error', handleError);
+	video.removeEventListener('stalled', handleStall);
+
+	// Add fresh listeners
+	video.addEventListener('error', handleError, { once: true });
+
+	// Set a timeout for stall detection
+	setTimeout(() => {
+		if (video.readyState < 2 && !video.error) {
+			handleStall();
+		}
+	}, 8000);
 }
 
 function initSortable() {
@@ -1601,15 +1658,19 @@ function renderCategoryFilters() {
 			</div>
 			<div class="category-options">
 				${cat.options
-					.map(
-						(opt) => `
-					<span class="category-chip" 
+					.map((opt) => {
+						// Check if this option is currently selected
+						const isSelected =
+							selectedCategories[cat.key] &&
+							selectedCategories[cat.key].includes(opt.key);
+						return `
+					<span class="category-chip${isSelected ? ' selected' : ''}" 
 						data-category="${cat.key}" 
 						data-option="${opt.key}"
 						onclick="toggleCategoryOption('${cat.key}', '${opt.key}', ${cat.singleChoice})"
 					>${opt.label}</span>
-				`
-					)
+				`;
+					})
 					.join('')}
 			</div>
 		</div>
