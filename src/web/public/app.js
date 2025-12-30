@@ -618,13 +618,17 @@ function initVideoObserver() {
 				const video = entry.target;
 
 				if (entry.isIntersecting) {
-					// Video is visible - load and play
-					if (!video.src && video.dataset.src) {
+					// Video is visible - load (only once) and play
+					if (!video.dataset.loaded && video.dataset.src) {
+						video.dataset.loaded = 'loading';
 						loadVideoWithRetry(video, video.dataset.src);
 					}
-					video.muted = true;
-					video.currentTime = 0;
-					video.play().catch(() => {});
+					// Play if already loaded
+					if (video.dataset.loaded === 'true') {
+						video.muted = true;
+						video.currentTime = 0;
+						video.play().catch(() => {});
+					}
 				} else {
 					// Video is not visible - pause to save resources
 					video.pause();
@@ -640,13 +644,16 @@ function initVideoObserver() {
 
 	// Observe all video elements
 	document.querySelectorAll('.video-thumbnail video').forEach((video) => {
-		// Setup 3s loop
-		video.addEventListener('timeupdate', () => {
-			if (video.currentTime >= 3) {
-				video.currentTime = 0;
-				if (!video.paused) video.play().catch(() => {});
-			}
-		});
+		// Setup 3s loop (only add once)
+		if (!video.dataset.loopSetup) {
+			video.dataset.loopSetup = 'true';
+			video.addEventListener('timeupdate', () => {
+				if (video.currentTime >= 3) {
+					video.currentTime = 0;
+					if (!video.paused) video.play().catch(() => {});
+				}
+			});
+		}
 
 		// Start observing
 		videoObserver.observe(video);
@@ -668,12 +675,21 @@ function loadVideoWithRetry(video, url, retryCount = 0) {
 	video.src = loadUrl;
 	video.load();
 
+	// Handle successful load
+	const handleSuccess = () => {
+		video.dataset.loaded = 'true';
+		video.muted = true;
+		video.currentTime = 0;
+		video.play().catch(() => {});
+	};
+
 	// Handle load error
 	const handleError = () => {
 		console.warn(`[Video] Failed to load (attempt ${retryCount + 1}):`, url);
 
 		if (retryCount < maxRetries) {
 			// Clear the failed src and retry with cache bypass
+			video.dataset.loaded = '';
 			video.removeAttribute('src');
 			video.load();
 
@@ -683,6 +699,7 @@ function loadVideoWithRetry(video, url, retryCount = 0) {
 		} else {
 			// Final failure - show error state
 			console.error('[Video] Failed after all retries:', url);
+			video.dataset.loaded = 'failed';
 			video.parentElement.innerHTML =
 				'<span style="color: var(--danger); font-size: 12px;">⚠️ Load failed</span>';
 		}
@@ -690,22 +707,21 @@ function loadVideoWithRetry(video, url, retryCount = 0) {
 
 	// Handle stalled (video started but got stuck)
 	const handleStall = () => {
-		// If video has no data after 5 seconds, treat as error
-		if (video.readyState < 2) {
+		// If video has no data after timeout, treat as error
+		if (video.readyState < 2 && video.dataset.loaded !== 'true') {
 			handleError();
 		}
 	};
 
-	// Remove previous listeners to avoid duplicates
-	video.removeEventListener('error', handleError);
-	video.removeEventListener('stalled', handleStall);
+	// Add success listener
+	video.addEventListener('canplaythrough', handleSuccess, { once: true });
 
-	// Add fresh listeners
+	// Add error listener
 	video.addEventListener('error', handleError, { once: true });
 
 	// Set a timeout for stall detection
 	setTimeout(() => {
-		if (video.readyState < 2 && !video.error) {
+		if (video.readyState < 2 && video.dataset.loaded === 'loading') {
 			handleStall();
 		}
 	}, 8000);
