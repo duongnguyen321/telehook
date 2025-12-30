@@ -225,9 +225,18 @@ async function sendQueuePage(
 ) {
 	const { posts, lastPostedIndex } = await getAllPostsByChat(chatId);
 	const TIKTOK_USERNAME = process.env.TIKTOK_USERNAME || '';
-	const tiktokLink = TIKTOK_USERNAME
-		? `\n\n🔥 Follow: https://tiktok.com/@${TIKTOK_USERNAME}`
-		: '';
+	const BASE_URL = process.env.BASE_URL || 'http://localhost:8888';
+	// Determine role-based link
+	const userRole = getUserRole(chatId); // Assuming chatId is userId for private chats
+	const isPrivileged = ['admin', 'mod', 'reviewer'].includes(userRole);
+	const linkLabel = isPrivileged ? '🎬 Quản lý Video' : '📺 Xem Video';
+	const linkPath = isPrivileged ? '/admin' : '/';
+	const fullLink = `${BASE_URL}${linkPath}`;
+
+	const tiktokLink =
+		(TIKTOK_USERNAME
+			? `\n\n🔥 Follow: https://tiktok.com/@${TIKTOK_USERNAME}`
+			: '') + `\n🌐 [${linkLabel}](${fullLink})`;
 
 	if (posts.length === 0) {
 		const text = 'Không có video nào' + tiktokLink;
@@ -1613,10 +1622,7 @@ async function handleCommand(ctx, command) {
 	const chatId = ctx.chat.id;
 	const userId = ctx.from?.id;
 	const TIKTOK_USERNAME = process.env.TIKTOK_USERNAME || '';
-	const tiktokLink = TIKTOK_USERNAME
-		? `\n\n🔥 Follow TikTok: https://tiktok.com/@${TIKTOK_USERNAME}`
-		: '';
-
+	const BASE_URL = process.env.BASE_URL || 'http://localhost:8888';
 	// Get user permissions
 	const userRole = getUserRole(userId);
 	const canEdit = hasPermission(userId, 'edit');
@@ -1625,6 +1631,17 @@ async function handleCommand(ctx, command) {
 	const canFix = hasPermission(userId, 'fix');
 	const canUpload = hasPermission(userId, 'upload');
 	const permissions = { canEdit, canDelete };
+
+	// Determine role-based link
+	const isPrivileged = ['admin', 'mod', 'reviewer'].includes(userRole);
+	const linkLabel = isPrivileged ? '🎬 Quản lý Video' : '📺 Xem Video';
+	const linkPath = isPrivileged ? '/admin' : '/';
+	const fullLink = `${BASE_URL}${linkPath}`;
+
+	const tiktokLink =
+		(TIKTOK_USERNAME
+			? `\n\n🔥 Follow TikTok: https://tiktok.com/@${TIKTOK_USERNAME}`
+			: '') + `\n🌐 [${linkLabel}](${fullLink})`;
 
 	setDefaultChatId(chatId);
 
