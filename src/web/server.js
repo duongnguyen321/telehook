@@ -44,7 +44,7 @@ export function startWebServer() {
 	app.use(express.json());
 
 	// Static files
-	app.use(express.static(path.join(__dirname, 'public')));
+	app.use(express.static(path.join(__dirname, 'public'), { index: false }));
 
 	// API Routes
 	app.use('/api/auth', authRoutes);
@@ -53,9 +53,27 @@ export function startWebServer() {
 	app.use('/api/admin', adminRoutes);
 	app.use('/api/content', contentRoutes);
 
-	// SPA fallback - use explicit path for Express 5 compatibility
-	app.get('/{*path}', (req, res) => {
+	// User Feed (Main Page) - Served by express.static('public') automatically as index.html
+	// But we can keep explicit route if needed.
+	// Since we disabled index in static, we map / to index.html (Authentication Feed)
+	app.get('/', (req, res) => {
 		res.sendFile(path.join(__dirname, 'public', 'index.html'));
+	});
+
+	// Admin Dashboard
+	app.get('/admin', (req, res) => {
+		res.sendFile(path.join(__dirname, 'public', 'admin.html'));
+	});
+
+	// SPA fallback - default to Feed
+	app.get('/{*path}', (req, res) => {
+		// If path starts with /admin, fallback to admin.html (admin app)
+		if (req.path.startsWith('/admin')) {
+			res.sendFile(path.join(__dirname, 'public', 'admin.html'));
+		} else {
+			// Otherwise default to feed (index.html)
+			res.sendFile(path.join(__dirname, 'public', 'index.html'));
+		}
 	});
 
 	app.listen(PORT, () => {

@@ -154,6 +154,12 @@ async function verifyOTP() {
 		// Save token and user
 		token = data.token;
 		currentUser = data.user;
+
+		if (currentUser.role === 'user') {
+			window.location.href = '/';
+			return;
+		}
+
 		localStorage.setItem('dashboard_token', token);
 
 		// Show dashboard
@@ -217,6 +223,12 @@ async function checkAuth() {
 		}
 
 		currentUser = await res.json();
+
+		if (currentUser.role === 'user') {
+			window.location.href = '/';
+			return;
+		}
+
 		showDashboard();
 	} catch (error) {
 		token = null;

@@ -1,0 +1,267 @@
+:root {
+	--primary: #fe2c55;
+	--text: #ffffff;
+	--text-secondary: #e6e6e6;
+	--overlay-bg: rgba(0, 0, 0, 0.6);
+	--bg: #000000;
+}
+
+* {
+	box-sizing: border-box;
+	margin: 0;
+	padding: 0;
+	-webkit-tap-highlight-color: transparent;
+}
+
+body {
+	background-color: var(--bg);
+	color: var(--text);
+	font-family: 'Inter', system-ui, -apple-system, sans-serif;
+	overflow: hidden; /* Prevent body scroll */
+	height: 100vh;
+	width: 100vw;
+}
+
+/* Utils */
+.hidden {
+	display: none !important;
+}
+
+/* Login Overlay */
+.overlay {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background: #000;
+	z-index: 1000;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+
+.login-box {
+	background: #1a1a1a;
+	padding: 2rem;
+	border-radius: 16px;
+	width: 90%;
+	max-width: 360px;
+	text-align: center;
+}
+
+.login-box h1 {
+	margin-bottom: 0.5rem;
+	font-size: 1.5rem;
+}
+.login-box p {
+	color: #888;
+	margin-bottom: 2rem;
+}
+
+.login-box input {
+	width: 100%;
+	padding: 12px;
+	margin-bottom: 1rem;
+	border-radius: 8px;
+	border: 1px solid #333;
+	background: #000;
+	color: #fff;
+	font-size: 1rem;
+	outline: none;
+}
+.login-box input:focus {
+	border-color: var(--primary);
+}
+
+.login-box button {
+	width: 100%;
+	padding: 12px;
+	border-radius: 8px;
+	border: none;
+	background: var(--primary);
+	color: #fff;
+	font-weight: 600;
+	font-size: 1rem;
+	cursor: pointer;
+	margin-bottom: 10px;
+}
+
+.btn-text {
+	background: transparent !important;
+	color: #888 !important;
+	font-size: 0.9rem !important;
+}
+
+.hint {
+	font-size: 0.8rem;
+	color: #ffd700 !important;
+	margin-top: 1rem;
+}
+
+#login-message {
+	color: #ff4444;
+	margin-top: 10px;
+	font-size: 0.9rem;
+}
+
+/* Feed Container */
+#feed-container {
+	height: 100vh;
+	width: 100vw;
+	position: relative;
+	display: flex;
+	flex-direction: column;
+}
+
+/* Top Bar */
+.top-bar {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	z-index: 100;
+	padding: 10px 15px 30px; /* Extra padding bottom for gradient */
+	display: flex;
+	gap: 10px;
+	background: linear-gradient(to bottom, rgba(0, 0, 0, 0.8), transparent);
+}
+
+.search-box {
+	flex: 1;
+}
+.search-box input {
+	width: 100%;
+	background: rgba(255, 255, 255, 0.15);
+	border: none;
+	padding: 8px 12px;
+	border-radius: 20px;
+	color: #fff;
+	font-size: 0.9rem;
+	backdrop-filter: blur(5px);
+}
+.search-box input::placeholder {
+	color: rgba(255, 255, 255, 0.7);
+}
+
+.filter-dropdown select {
+	background: rgba(255, 255, 255, 0.15);
+	border: none;
+	color: #fff;
+	padding: 8px 12px;
+	border-radius: 20px;
+	font-size: 0.9rem;
+	backdrop-filter: blur(5px);
+	appearance: none; /* Remove default arrow */
+	-webkit-appearance: none;
+}
+
+/* Video Scroller (Snap) */
+.video-scroller {
+	height: 100%;
+	overflow-y: scroll;
+	scroll-snap-type: y mandatory;
+	scroll-behavior: smooth;
+	scrollbar-width: none; /* Firefox */
+}
+.video-scroller::-webkit-scrollbar {
+	display: none;
+}
+
+.video-item {
+	height: 100vh;
+	width: 100%;
+	scroll-snap-align: start;
+	position: relative;
+	background: #000;
+}
+
+.video-wrapper {
+	width: 100%;
+	height: 100%;
+	position: relative;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+
+video {
+	width: 100%;
+	height: 100%;
+	object-fit: contain; /* Request: "khung hình giống tiktok, không cắt hay phóng" -> contain ensures full video visible inside frame */
+	display: block;
+}
+
+/* Video Overlay Info */
+.video-overlay {
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	width: 100%;
+	padding: 20px 15px 80px; /* Bottom padding for mobile nav bar home indicator */
+	background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
+	pointer-events: none; /* Let clicks pass through to video */
+}
+
+.video-info {
+	text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+	pointer-events: auto;
+}
+
+.video-title {
+	font-size: 1.1rem;
+	margin-bottom: 8px;
+	line-height: 1.3;
+	display: -webkit-box;
+	-webkit-line-clamp: 2;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
+}
+
+.video-tags {
+	font-size: 0.9rem;
+	color: var(--text-secondary);
+	font-weight: 500;
+}
+
+/* Play Icon Animation */
+.play-icon {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	font-size: 4rem;
+	opacity: 0;
+	transition: opacity 0.2s, transform 0.2s;
+	pointer-events: none;
+	text-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+}
+
+.paused .play-icon {
+	opacity: 0.8;
+	transform: translate(-50%, -50%) scale(1);
+}
+
+/* Loading */
+.loading {
+	position: fixed;
+	bottom: 20px;
+	left: 50%;
+	transform: translateX(-50%);
+	z-index: 200;
+}
+
+.spinner {
+	width: 30px;
+	height: 30px;
+	border: 3px solid rgba(255, 255, 255, 0.3);
+	border-radius: 50%;
+	border-top-color: #fff;
+	animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+	to {
+		transform: rotate(360deg);
+	}
+}

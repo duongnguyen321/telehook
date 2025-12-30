@@ -33,14 +33,14 @@ router.post('/request-otp', async (req, res) => {
 		return res.status(500).json({ error: 'Bot not initialized' });
 	}
 
-	// Check if user exists and has permission
+	// Check if user exists (removed role restriction)
 	const telegramIdNum = parseInt(telegramId, 10);
-	const role = getUserRole(telegramIdNum);
-	if (role === 'user') {
-		return res
-			.status(403)
-			.json({ error: 'Không có quyền truy cập. Liên hệ Admin.' });
-	}
+	// const role = getUserRole(telegramIdNum);
+	// if (role === 'user') {
+	// 	return res
+	// 		.status(403)
+	// 		.json({ error: 'Không có quyền truy cập. Liên hệ Admin.' });
+	// }
 
 	// Generate OTP
 	const code = generateOTP();
@@ -62,6 +62,19 @@ router.post('/request-otp', async (req, res) => {
 		res.json({ success: true, message: 'OTP sent to Telegram' });
 	} catch (error) {
 		console.error('[Auth] Failed to send OTP:', error.message);
+
+		// Check for specific Telegram errors
+		if (
+			error.description?.includes('Forbidden: bot was blocked by the user') ||
+			error.error_code === 403 ||
+			error.description?.includes('chat not found')
+		) {
+			return res.status(400).json({
+				error: 'BOT_NOT_STARTED',
+				message: 'Bạn chưa start bot. Vui lòng vào bot nhấn Start trước.',
+			});
+		}
+
 		res
 			.status(500)
 			.json({ error: 'Failed to send OTP. Check your Telegram ID.' });

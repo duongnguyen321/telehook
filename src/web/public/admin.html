@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="vi">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Video Dashboard - Admin Panel</title>
+		<meta
+			name="description"
+			content="Administrative dashboard for managing video content and users."
+		/>
+		<meta name="robots" content="noindex, nofollow" />
+		<link rel="stylesheet" href="/styles.css" />
+		<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+	</head>
+	<body>
+		<div id="app">
+			<!-- Login Page -->
+			<div id="login-page" class="page">
+				<div class="login-container">
+					<h1>🎬 Video Dashboard</h1>
+					<p class="subtitle">Quản lý video TikTok</p>
+
+					<div id="login-step-1" class="login-step">
+						<label>Telegram ID của bạn:</label>
+						<input
+							type="text"
+							id="telegram-id"
+							placeholder="VD: 123456789"
+							autocomplete="off"
+						/>
+						<button onclick="requestOTP()" id="btn-request-otp">
+							Gửi mã xác thực
+						</button>
+						<p class="hint">
+							💡 Nhập ID Telegram của bạn. Mã sẽ được gửi qua bot.
+						</p>
+					</div>
+
+					<div id="login-step-2" class="login-step hidden">
+						<label>Nhập mã OTP:</label>
+						<input
+							type="text"
+							id="otp-code"
+							placeholder="000000"
+							maxlength="6"
+							autocomplete="off"
+						/>
+						<button onclick="verifyOTP()" id="btn-verify-otp">Xác nhận</button>
+						<button onclick="backToStep1()" class="btn-secondary">
+							← Quay lại
+						</button>
+						<p class="hint">📱 Kiểm tra tin nhắn từ bot Telegram</p>
+					</div>
+
+					<div id="login-error" class="error-message hidden"></div>
+				</div>
+			</div>
+
+			<!-- Dashboard Page -->
+			<div id="dashboard-page" class="page hidden">
+				<header>
+					<div class="header-left">
+						<h1>🎬 Video Dashboard</h1>
+						<span id="user-info"></span>
+					</div>
+					<div class="header-right">
+						<button onclick="refreshVideos()" class="btn-icon" title="Làm mới">
+							🔄
+						</button>
+						<button onclick="logout()" class="btn-secondary">Đăng xuất</button>
+					</div>
+				</header>
+
+				<div class="stats-bar">
+					<div class="stat">
+						<span class="stat-value" id="stat-total">0</span>
+						<span class="stat-label">Tổng video</span>
+					</div>
+					<div class="stat">
+						<span class="stat-value" id="stat-pending">0</span>
+						<span class="stat-label">Chờ đăng</span>
+					</div>
+					<div class="stat">
+						<span class="stat-value" id="stat-posted">0</span>
+						<span class="stat-label">Đã đăng</span>
+					</div>
+					<div class="stat" style="border-left: 2px solid var(--danger)">
+						<span
+							class="stat-value"
+							id="stat-duplicates"
+							style="color: var(--danger)"
+							>0</span
+						>
+						<span class="stat-label">Video trùng</span>
+					</div>
+				</div>
+
+				<!-- Tabs Navigation (Admin sees all, others see Videos only) -->
+				<div class="tabs" id="tab-nav">
+					<button
+						class="tab active"
+						data-tab="videos"
+						onclick="switchTab('videos')"
+					>
+						🎬 Videos
+					</button>
+					<button
+						class="tab admin-only hidden"
+						data-tab="users"
+						onclick="switchTab('users')"
+					>
+						👥 Users
+					</button>
+					<button
+						class="tab admin-only hidden"
+						data-tab="audit"
+						onclick="switchTab('audit')"
+					>
+						📜 Audit Logs
+					</button>
+				</div>
+
+				<!-- Videos Tab -->
+				<div id="tab-videos" class="tab-content active">
+					<div class="filter-bar">
+						<input
+							type="text"
+							id="search-input"
+							placeholder="🔍 Tìm kiếm..."
+							oninput="handleSearch()"
+						/>
+						<select id="status-filter" onchange="handleStatusFilter()">
+							<option value="all">Tất cả</option>
+							<option value="pending">Chờ đăng</option>
+							<option value="posted">Đã đăng</option>
+							<option value="duplicates">⚠️ Video trùng</option>
+						</select>
+					</div>
+
+					<div id="video-list" class="video-list">
+						<!-- Videos will be injected here -->
+					</div>
+
+					<div id="pagination-controls" class="pagination-container hidden">
+						<!-- Pagination will be dynamically generated -->
+					</div>
+				</div>
+
+				<!-- Users Tab (Admin Only) -->
+				<div id="tab-users" class="tab-content hidden">
+					<div class="admin-panel">
+						<div class="admin-header">
+							<h2>👥 Quản lý Users</h2>
+							<button onclick="loadUsers()" class="btn-icon">🔄</button>
+						</div>
+						<div class="filter-bar">
+							<input
+								type="text"
+								id="users-search"
+								placeholder="🔍 Tìm user..."
+								oninput="handleUsersSearch()"
+							/>
+							<select id="users-role-filter" onchange="handleUsersFilter()">
+								<option value="all">Tất cả role</option>
+								<option value="admin">Admin</option>
+								<option value="mod">Mod</option>
+								<option value="reviewer">Reviewer</option>
+								<option value="user">User</option>
+							</select>
+							<select id="users-sort" onchange="handleUsersFilter()">
+								<option value="viewCount-desc">Lượt xem ↓</option>
+								<option value="viewCount-asc">Lượt xem ↑</option>
+								<option value="lastActiveAt-desc">Hoạt động gần đây</option>
+								<option value="createdAt-desc">Mới nhất</option>
+							</select>
+						</div>
+						<div id="users-list" class="users-list">
+							<!-- Users will be rendered here -->
+						</div>
+						<div id="users-pagination" class="pagination-container"></div>
+					</div>
+				</div>
+
+				<!-- Audit Tab (Admin Only) -->
+				<div id="tab-audit" class="tab-content hidden">
+					<div class="admin-panel">
+						<div class="admin-header">
+							<h2>📜 Audit Logs</h2>
+							<button onclick="loadAuditLogs()" class="btn-icon">🔄</button>
+						</div>
+						<div class="filter-bar">
+							<input
+								type="text"
+								id="audit-search"
+								placeholder="🔍 Tìm log..."
+								oninput="handleAuditSearch()"
+							/>
+							<select id="audit-action-filter" onchange="handleAuditFilter()">
+								<option value="all">Tất cả action</option>
+								<!-- Will be populated dynamically -->
+							</select>
+							<select id="audit-sort" onchange="handleAuditFilter()">
+								<option value="desc">Mới nhất</option>
+								<option value="asc">Cũ nhất</option>
+							</select>
+						</div>
+						<div id="audit-list" class="audit-list">
+							<!-- Audit logs will be rendered here -->
+						</div>
+						<div id="audit-pagination" class="pagination-container"></div>
+					</div>
+				</div>
+
+				<!-- Video Preview Modal -->
+				<div id="video-modal" class="modal hidden">
+					<div class="modal-content">
+						<button class="modal-close" onclick="closeVideoModal()">×</button>
+						<video id="modal-video" controls></video>
+						<div id="modal-info"></div>
+					</div>
+				</div>
+
+				<!-- Delete Confirm Modal -->
+				<div id="delete-modal" class="modal hidden">
+					<div class="modal-content modal-small">
+						<h3>⚠️ Xác nhận xóa</h3>
+						<p id="delete-message"></p>
+						<div class="modal-actions">
+							<button onclick="confirmDelete()" class="btn-danger">Xóa</button>
+							<button onclick="closeDeleteModal()" class="btn-secondary">
+								Hủy
+							</button>
+						</div>
+					</div>
+				</div>
+				<!-- Notification Modal (replaces alert) -->
+				<div id="notify-modal" class="modal hidden">
+					<div class="modal-content modal-small">
+						<div id="notify-icon" class="notify-icon">✅</div>
+						<h3 id="notify-title">Thông báo</h3>
+						<div id="notify-message" class="notify-message"></div>
+						<div class="modal-actions">
+							<button onclick="closeNotifyModal()" class="btn-primary">
+								OK
+							</button>
+						</div>
+					</div>
+				</div>
+
+				<!-- Hashtag Edit Modal (replaces prompt) -->
+				<div id="hashtag-modal" class="modal hidden">
+					<div class="modal-content modal-small">
+						<button class="modal-close" onclick="closeHashtagModal()">×</button>
+						<h3>🏷️ Sửa Hashtags</h3>
+						<textarea
+							id="hashtag-input"
+							rows="4"
+							placeholder="Nhập hashtags..."
+						></textarea>
+						<div class="modal-actions">
+							<button onclick="saveHashtags()" class="btn-primary">Lưu</button>
+							<button onclick="closeHashtagModal()" class="btn-secondary">
+								Hủy
+							</button>
+						</div>
+					</div>
+				</div>
+
+				<!-- Content Generator Modal -->
+				<div id="generator-modal" class="modal hidden">
+					<div class="modal-content modal-large">
+						<button class="modal-close" onclick="closeGeneratorModal()">
+							×
+						</button>
+						<div class="generator-header">
+							<h3>✨ Generate Title & Tags</h3>
+						</div>
+
+						<div id="category-filters">
+							<!-- Categories will be loaded dynamically -->
+							<p style="color: var(--text-muted)">Loading categories...</p>
+						</div>
+
+						<div class="generator-actions">
+							<button
+								onclick="generateContent()"
+								class="btn-generate"
+								id="btn-generate"
+							>
+								✨ Generate
+							</button>
+							<button onclick="clearCategorySelections()" class="btn-secondary">
+								🔄 Clear Filters
+							</button>
+						</div>
+
+						<div id="generated-results" class="generated-results">
+							<!-- Generated options will appear here -->
+						</div>
+
+						<div id="generator-edit" class="generated-edit hidden">
+							<label>Title (có thể chỉnh sửa)</label>
+							<input
+								type="text"
+								id="generator-title-input"
+								placeholder="Title..."
+							/>
+							<label>Hashtags (có thể chỉnh sửa)</label>
+							<textarea
+								id="generator-hashtags-input"
+								rows="2"
+								placeholder="Hashtags..."
+							></textarea>
+							<div class="modal-actions">
+								<button onclick="applyGeneratedContent()" class="btn-primary">
+									✅ Áp dụng
+								</button>
+								<button onclick="closeGeneratorModal()" class="btn-secondary">
+									Hủy
+								</button>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- User Details Modal -->
+				<div id="user-modal" class="modal hidden">
+					<div class="modal-content modal-medium">
+						<button class="modal-close" onclick="closeUserModal()">×</button>
+						<div id="user-modal-content"></div>
+					</div>
+				</div>
+
+				<!-- Save Actions Bar -->
+				<div id="save-actions" class="save-actions-bar hidden">
+					<span>🗑️ Đã chọn xóa <b id="delete-count">0</b> video</span>
+					<button onclick="saveBatchDeletes()" class="btn-danger">
+						Lưu thay đổi
+					</button>
+					<button onclick="cancelBatchDeletes()" class="btn-secondary">
+						Hủy
+					</button>
+				</div>
+			</div>
+		</div>
+
+		<script src="/app.js"></script>
+	</body>
+</html>
