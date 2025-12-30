@@ -3,7 +3,16 @@
  */
 
 // State
-let token = localStorage.getItem('feed_token');
+let token =
+	localStorage.getItem('auth_token') ||
+	localStorage.getItem('feed_token') ||
+	localStorage.getItem('dashboard_token');
+if (token) {
+	// Migration: ensure we use standard key
+	localStorage.setItem('auth_token', token);
+	localStorage.removeItem('feed_token');
+	localStorage.removeItem('dashboard_token');
+}
 let videos = [];
 let currentPage = 1;
 let isLoading = false;
@@ -58,6 +67,24 @@ const videoObserver = new IntersectionObserver((entries) => {
 // --- Initialization ---
 
 function init() {
+	// Initialize Telegram WebApp for Auto-fill
+	if (window.Telegram && window.Telegram.WebApp) {
+		window.Telegram.WebApp.ready();
+		window.Telegram.WebApp.expand(); // Optional: expand to full height
+		const user = window.Telegram.WebApp.initDataUnsafe?.user;
+		if (user && user.id) {
+			const input = document.getElementById('telegram-id');
+			if (input) input.value = user.id;
+		}
+	}
+
+	// Load from localStorage if empty
+	const savedId = localStorage.getItem('telegram_id');
+	const input = document.getElementById('telegram-id');
+	if (savedId && input && !input.value) {
+		input.value = savedId;
+	}
+
 	if (token) {
 		checkAuth();
 	} else {
@@ -121,6 +148,9 @@ async function requestOTP() {
 		const data = await res.json();
 
 		if (data.success) {
+			// Save ID for next time
+			localStorage.setItem('telegram_id', telegramId);
+
 			document.getElementById('step-1').classList.add('hidden');
 			document.getElementById('step-2').classList.remove('hidden');
 			document.getElementById('login-message').innerText = '';
@@ -153,7 +183,7 @@ async function verifyOTP() {
 				window.location.href = '/admin';
 				return;
 			}
-			localStorage.setItem('feed_token', token);
+			localStorage.setItem('auth_token', token);
 			showFeed();
 		} else {
 			alert(data.error);
@@ -181,7 +211,7 @@ async function checkAuth() {
 			}
 			showFeed();
 		} else {
-			localStorage.removeItem('feed_token');
+			localStorage.removeItem('auth_token');
 			showLogin();
 		}
 	} catch (e) {

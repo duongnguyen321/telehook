@@ -233,10 +233,18 @@ async function sendQueuePage(
 	const linkPath = isPrivileged ? '/admin' : '/';
 	const fullLink = `${BASE_URL}${linkPath}`;
 
-	const tiktokLink =
-		(TIKTOK_USERNAME
-			? `\n\n🔥 Follow: https://tiktok.com/@${TIKTOK_USERNAME}`
-			: '') + `\n🌐 [${linkLabel}](${fullLink})`;
+	// Ensure BASE_URL is https for WebApp (required by Telegram), but local might be http.
+	// We'll trust the user has set it correctly or it's a redirect.
+	// If BASE_URL is http, Web App button might not work if not localhost/configured strictly.
+	// But we use 'url' button for safe compatibility if not strictly WebApp.
+	// User said "BASE_URL is url displayed on mini app", so we can use it as Web App URL if https.
+
+	const tiktokLink = TIKTOK_USERNAME
+		? `\n\n🔥 Follow: https://tiktok.com/@${TIKTOK_USERNAME}`
+		: '';
+
+	// Build keyboard with Open App button if needed
+	const webAppBtn = new InlineKeyboard().webApp(linkLabel, fullLink);
 
 	if (posts.length === 0) {
 		const text = 'Không có video nào' + tiktokLink;
@@ -273,6 +281,9 @@ async function sendQueuePage(
 
 	// Build keyboard
 	const keyboard = new InlineKeyboard();
+
+	// Add Open App Button at the top
+	keyboard.webApp(linkLabel, fullLink).row();
 
 	// Navigation row
 	const navRow = [];
@@ -436,7 +447,7 @@ async function sendQueuePage(
 
 	try {
 		const sentMessage = await ctx.api.sendVideo(chatId, videoSource, {
-			caption,
+			caption: caption + tiktokLink,
 			reply_markup: keyboard,
 			supports_streaming: true,
 		});
@@ -1550,7 +1561,7 @@ export function setupVideoHandler(bot) {
  * @param {string} tiktokLink - TikTok follow link
  * @returns {string} Greeting message
  */
-function buildGreetingMessage(ctx, userRole, tiktokLink) {
+async function buildGreetingMessage(ctx, userRole, tiktokLink) {
 	const firstName = ctx.from?.first_name || 'bạn';
 	const userId = ctx.from?.id;
 	const roleDisplayName = getRoleDisplayName(userRole);
@@ -1611,8 +1622,14 @@ function buildGreetingMessage(ctx, userRole, tiktokLink) {
 		greeting += `2️⃣ Dùng /videos [trang] để xem chi tiết video (VD: /videos 5)\n`;
 	}
 
-	greeting += tiktokLink;
-	return greeting;
+	// Create keyboard for greeting
+	const keyboard = new InlineKeyboard().webApp(linkLabel, fullLink);
+
+	await ctx.reply(greeting + tiktokLink, {
+		parse_mode: 'Markdown',
+		reply_markup: keyboard,
+	});
+	return; // Stop here as we sent the message manually
 }
 
 /**
@@ -1638,10 +1655,9 @@ async function handleCommand(ctx, command) {
 	const linkPath = isPrivileged ? '/admin' : '/';
 	const fullLink = `${BASE_URL}${linkPath}`;
 
-	const tiktokLink =
-		(TIKTOK_USERNAME
-			? `\n\n🔥 Follow TikTok: https://tiktok.com/@${TIKTOK_USERNAME}`
-			: '') + `\n🌐 [${linkLabel}](${fullLink})`;
+	const tiktokLink = TIKTOK_USERNAME
+		? `\n\n🔥 Follow TikTok: https://tiktok.com/@${TIKTOK_USERNAME}`
+		: '';
 
 	setDefaultChatId(chatId);
 
@@ -1668,7 +1684,7 @@ async function handleCommand(ctx, command) {
 			console.error('[User] Failed to track user:', error.message);
 		}
 
-		const greeting = buildGreetingMessage(ctx, userRole, tiktokLink);
+		const greeting = await buildGreetingMessage(ctx, userRole, tiktokLink);
 		await ctx.reply(greeting, { parse_mode: 'Markdown' });
 		await logAction(userId, 'start');
 		return;

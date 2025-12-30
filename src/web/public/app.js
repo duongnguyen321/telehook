@@ -3,7 +3,16 @@
  */
 
 // State
-let token = localStorage.getItem('dashboard_token');
+let token =
+	localStorage.getItem('auth_token') ||
+	localStorage.getItem('dashboard_token') ||
+	localStorage.getItem('feed_token');
+if (token) {
+	// Migration: ensure we use standard key
+	localStorage.setItem('auth_token', token);
+	localStorage.removeItem('dashboard_token');
+	localStorage.removeItem('feed_token');
+}
 let currentUser = null;
 let videos = [];
 let filteredVideos = [];
@@ -84,6 +93,27 @@ const API_BASE = '/api';
 
 // ========== Auth Functions ==========
 
+// Auto-init on load
+document.addEventListener('DOMContentLoaded', () => {
+	// Initialize Telegram WebApp for Auto-fill
+	if (window.Telegram && window.Telegram.WebApp) {
+		window.Telegram.WebApp.ready();
+		window.Telegram.WebApp.expand();
+		const user = window.Telegram.WebApp.initDataUnsafe?.user;
+		if (user && user.id) {
+			const input = document.getElementById('telegram-id');
+			if (input) input.value = user.id;
+		}
+	}
+
+	// Load from localStorage if empty
+	const savedId = localStorage.getItem('dashboard_telegram_id');
+	const input = document.getElementById('telegram-id');
+	if (savedId && input && !input.value) {
+		input.value = savedId;
+	}
+});
+
 async function requestOTP() {
 	const telegramId = document.getElementById('telegram-id').value.trim();
 	if (!telegramId) {
@@ -111,6 +141,8 @@ async function requestOTP() {
 
 		// Save telegram ID for next time
 		localStorage.setItem('dashboard_telegram_id', telegramId);
+		// Also save to generic 'telegram_id' for sharing with feed
+		localStorage.setItem('telegram_id', telegramId);
 
 		// Show OTP input step
 		document.getElementById('login-step-1').classList.add('hidden');
@@ -160,7 +192,7 @@ async function verifyOTP() {
 			return;
 		}
 
-		localStorage.setItem('dashboard_token', token);
+		localStorage.setItem('auth_token', token);
 
 		// Show dashboard
 		showDashboard();
@@ -191,7 +223,7 @@ async function logout() {
 
 	token = null;
 	currentUser = null;
-	localStorage.removeItem('dashboard_token');
+	localStorage.removeItem('auth_token');
 	showLogin();
 }
 
@@ -232,7 +264,7 @@ async function checkAuth() {
 		showDashboard();
 	} catch (error) {
 		token = null;
-		localStorage.removeItem('dashboard_token');
+		localStorage.removeItem('auth_token');
 		showLogin();
 	}
 }
