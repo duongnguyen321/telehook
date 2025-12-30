@@ -502,14 +502,6 @@ function goToPage(page) {
 	window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-function prevPage() {
-	goToPage(currentPage - 1);
-}
-
-function nextPage() {
-	goToPage(currentPage + 1);
-}
-
 function refreshVideos() {
 	loadVideos(currentPage);
 }
@@ -520,13 +512,6 @@ function updateStats() {
 	document.getElementById('stat-pending').textContent = globalPendingCount;
 	document.getElementById('stat-posted').textContent = globalPostedCount;
 	document.getElementById('stat-duplicates').textContent = duplicateCount;
-}
-
-function filterVideos() {
-	// Server handles all filtering including duplicates now
-	// This function just sets filteredVideos and renders
-	filteredVideos = videos;
-	renderVideos();
 }
 
 function renderVideos() {
@@ -583,6 +568,9 @@ function renderVideos() {
 				<div class="video-hashtags">${escapeHtml(video.hashtags)}</div>
 			</div>
 			<div class="video-actions">
+				<button onclick="downloadVideo('${video.id}', '${escapeHtml(
+				video.title
+			)}')" title="Tải video">⬇️</button>
 				${
 					currentUser?.canEdit
 						? `<button onclick="editHashtags('${video.id}')" title="Sửa hashtags">🏷️</button>`
@@ -723,6 +711,27 @@ function initSortable() {
 	});
 }
 
+// ========== Download Function ==========
+
+/**
+ * Download video through internal API (not direct S3/R2 URL)
+ */
+function downloadVideo(videoId, title) {
+	// Create download URL through our API
+	const downloadUrl = `${API_BASE}/videos/${videoId}/stream?download=1`;
+
+	// Create temporary link and trigger download
+	const link = document.createElement('a');
+	link.href = downloadUrl;
+	link.download = `${title || videoId}.mp4`;
+	link.style.display = 'none';
+	document.body.appendChild(link);
+	link.click();
+	document.body.removeChild(link);
+
+	showNotify('info', 'Đang tải...', 'Video đang được tải xuống. Vui lòng đợi.');
+}
+
 // ========== Edit Functions ==========
 
 async function updateTitle(videoId, newTitle) {
@@ -846,20 +855,6 @@ async function saveHashtags() {
 }
 
 // ========== Delete Functions ==========
-
-function askDelete(videoId) {
-	const video = videos.find((v) => v.id === videoId);
-	if (!video) return;
-
-	pendingDeleteId = videoId;
-	document.getElementById(
-		'delete-message'
-	).textContent = `Bạn có chắc muốn xóa video "${video.title.slice(
-		0,
-		30
-	)}..."?`;
-	document.getElementById('delete-modal').classList.remove('hidden');
-}
 
 function closeDeleteModal() {
 	pendingDeleteId = null;

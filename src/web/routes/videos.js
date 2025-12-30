@@ -22,9 +22,12 @@ const router = express.Router();
  * Stream video content (proxy from S3/local)
  * This endpoint is BEFORE authMiddleware - no auth required
  * Videos are already protected by requiring dashboard login to get video IDs
+ * Query params:
+ *   - download=1: Force download instead of streaming
  */
 router.get('/:id/stream', async (req, res) => {
 	const { id } = req.params;
+	const isDownload = req.query.download === '1';
 
 	try {
 		// Get post to find video path
@@ -37,15 +40,30 @@ router.get('/:id/stream', async (req, res) => {
 		const videoKey = path.basename(post.videoPath);
 		const localPath = getVideoFullPath(post.videoPath);
 
+		// Generate filename for download
+		const safeTitle = (post.title || id)
+			.replace(/[^a-zA-Z0-9\u00C0-\u024F\u1E00-\u1EFF_-]/g, '_')
+			.substring(0, 50);
+		const filename = `${safeTitle}.mp4`;
+
 		// Try local file first
 		if (fs.existsSync(localPath)) {
 			const stat = fs.statSync(localPath);
-			res.set({
+			const headers = {
 				'Content-Type': 'video/mp4',
 				'Content-Length': stat.size,
 				'Accept-Ranges': 'bytes',
 				'Cache-Control': 'public, max-age=3600',
-			});
+			};
+
+			// Add download header if requested
+			if (isDownload) {
+				headers[
+					'Content-Disposition'
+				] = `attachment; filename="${encodeURIComponent(filename)}"`;
+			}
+
+			res.set(headers);
 			return fs.createReadStream(localPath).pipe(res);
 		}
 
@@ -53,11 +71,20 @@ router.get('/:id/stream', async (req, res) => {
 		if (isS3Enabled()) {
 			const buffer = await downloadVideo(videoKey);
 			if (buffer) {
-				res.set({
+				const headers = {
 					'Content-Type': 'video/mp4',
 					'Content-Length': buffer.length,
 					'Cache-Control': 'public, max-age=3600',
-				});
+				};
+
+				// Add download header if requested
+				if (isDownload) {
+					headers[
+						'Content-Disposition'
+					] = `attachment; filename="${encodeURIComponent(filename)}"`;
+				}
+
+				res.set(headers);
 				return res.send(buffer);
 			}
 		}
