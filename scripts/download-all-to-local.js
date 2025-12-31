@@ -27,6 +27,31 @@ const VIDEOS_DIR = path.join(__dirname, '../data/videos');
 // Parse CLI args
 const args = process.argv.slice(2);
 const WARM_CACHE = args.includes('--warm-cache');
+const RESET_CACHE = args.includes('--reset');
+
+// Handle RESET: Clear DB and local files
+if (RESET_CACHE) {
+	console.log('⚠️ RESET MODE ENABLED: Clearing all cached data...');
+
+	// 1. Clear database file_ids
+	const prisma = new PrismaClient();
+	try {
+		await prisma.scheduledPost.updateMany({
+			data: { telegramFileId: null },
+		});
+		console.log('✅ Database: All telegramFileId cleared.');
+		await prisma.$disconnect();
+	} catch (e) {
+		console.error('❌ Failed to clear database:', e);
+		process.exit(1);
+	}
+
+	// 2. Delete local videos directory
+	if (fs.existsSync(VIDEOS_DIR)) {
+		fs.rmSync(VIDEOS_DIR, { recursive: true, force: true });
+		console.log('✅ Files: Local videos directory deleted.');
+	}
+}
 
 // Ensure videos directory exists
 if (!fs.existsSync(VIDEOS_DIR)) {
