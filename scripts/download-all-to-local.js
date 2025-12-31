@@ -117,8 +117,10 @@ const s3Client = new S3Client({
 
 const BUCKET = process.env.S3_BUCKET || 'videos';
 
-// Prisma client for database access
-const prisma = new PrismaClient();
+// Prisma client: use imported instance or create if missing (to avoid conflict)
+// Note: 'prisma' is already imported from ../utils/storage.js
+// If we need a fresh connection for the script we can use it, but let's avoid redeclaring 'prisma'.
+const db = prisma;
 
 // Bot for warm cache (lazy init)
 let bot = null;
@@ -292,22 +294,24 @@ async function main() {
 		} else {
 			failed++;
 			process.stdout.write(`x`);
-			console.error(`\nFailed: ${video.key} - ${result.error}`);
+			console.error(`x Failed: ${video.key} - ${result.error}`);
 		}
 
 		// Warm cache if enabled and file exists locally
 		if (WARM_CACHE && result.localPath) {
+			console.log(`   Attempting to warm cache for: ${video.key}`);
 			const cacheResult = await warmCacheForVideo(video.key, result.localPath);
 			if (cacheResult.status === 'cached') {
 				cached++;
-				process.stdout.write(`⚡`);
+				console.log(`   ✅ Cache warmed! ID: ${cacheResult.postId}`);
 			} else if (
 				cacheResult.status === 'no_post' ||
 				cacheResult.status === 'no_file_id'
 			) {
 				cacheSkipped++;
+				console.log(`   ⚠️ Skipped cache (no post found or failed)`);
 			} else if (cacheResult.status === 'error') {
-				console.error(`\nCache error: ${video.key} - ${cacheResult.error}`);
+				console.error(`   ❌ Cache error: ${cacheResult.error}`);
 			}
 		}
 
