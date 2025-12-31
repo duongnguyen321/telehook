@@ -156,6 +156,31 @@ body {
 	-webkit-appearance: none;
 }
 
+/* Switch Dashboard Button */
+.switch-btn {
+	background: linear-gradient(135deg, #fe2c55 0%, #ff6f61 100%);
+	border: none;
+	color: #fff;
+	padding: 8px 14px;
+	border-radius: 20px;
+	font-size: 0.85rem;
+	font-weight: 600;
+	cursor: pointer;
+	backdrop-filter: blur(5px);
+	box-shadow: 0 2px 8px rgba(254, 44, 85, 0.3);
+	transition: transform 0.2s, box-shadow 0.2s;
+	white-space: nowrap;
+}
+
+.switch-btn:hover {
+	transform: scale(1.05);
+	box-shadow: 0 4px 12px rgba(254, 44, 85, 0.5);
+}
+
+.switch-btn:active {
+	transform: scale(0.98);
+}
+
 /* Video Scroller (Snap) */
 .video-scroller {
 	height: 100%;

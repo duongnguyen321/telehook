@@ -77,6 +77,22 @@ const generatedOptions = new Map();
 const pendingClips = new Map();
 
 /**
+ * Build miniapp keyboard button based on user role
+ * @param {number} userId
+ * @returns {import('grammy').InlineKeyboard}
+ */
+function buildMiniappKeyboard(userId) {
+	const BASE_URL = process.env.BASE_URL || 'http://localhost:8888';
+	const userRole = getUserRole(userId);
+	const isPrivileged = ['admin', 'mod', 'reviewer'].includes(userRole);
+	const linkLabel = isPrivileged ? '🎬 Quản lý Video' : '📺 Xem Video';
+	const linkPath = isPrivileged ? '/admin' : '/';
+	const fullLink = `${BASE_URL}${linkPath}`;
+
+	return new InlineKeyboard().webApp(linkLabel, fullLink);
+}
+
+/**
  * Build category selection keyboard
  * @param {string} postId
  * @param {number} page
@@ -248,14 +264,17 @@ async function sendQueuePage(
 
 	if (posts.length === 0) {
 		const text = 'Không có video nào' + tiktokLink;
+		const emptyKeyboard = new InlineKeyboard().webApp(linkLabel, fullLink);
 		if (messageId) {
 			try {
-				await ctx.api.editMessageText(chatId, messageId, text);
+				await ctx.api.editMessageText(chatId, messageId, text, {
+					reply_markup: emptyKeyboard,
+				});
 			} catch (e) {
-				await ctx.reply(text);
+				await ctx.reply(text, { reply_markup: emptyKeyboard });
 			}
 		} else {
-			await ctx.reply(text);
+			await ctx.reply(text, { reply_markup: emptyKeyboard });
 		}
 		return;
 	}
@@ -1704,12 +1723,20 @@ async function handleCommand(ctx, command) {
 		);
 
 		// Build keyboard with pagination if there are more pages
-		let keyboard = null;
+		// Always include miniapp button
+		let keyboard = buildMiniappKeyboard(userId);
 		if (hasMore) {
-			keyboard = new InlineKeyboard().text(
-				'Xem thêm ▶️',
-				`audit_1_${userRole}`
-			);
+			keyboard = new InlineKeyboard()
+				.text('Xem thêm ▶️', `audit_1_${userRole}`)
+				.row()
+				.webApp(
+					['admin', 'mod', 'reviewer'].includes(userRole)
+						? '🎬 Quản lý Video'
+						: '📺 Xem Video',
+					`${process.env.BASE_URL || 'http://localhost:8888'}${
+						['admin', 'mod', 'reviewer'].includes(userRole) ? '/admin' : '/'
+					}`
+				);
 		}
 
 		await ctx.reply(summary + tiktokLink, {
@@ -1724,7 +1751,9 @@ async function handleCommand(ctx, command) {
 	if (command === '/queue') {
 		const posts = await getPendingPostsByChat(chatId);
 		if (!posts?.length) {
-			await ctx.reply('Không có video nào trong lịch' + tiktokLink);
+			await ctx.reply('Không có video nào trong lịch' + tiktokLink, {
+				reply_markup: buildMiniappKeyboard(userId),
+			});
 			return;
 		}
 
@@ -1748,7 +1777,8 @@ async function handleCommand(ctx, command) {
 			posts.length > 30 ? `\n\n... và ${posts.length - 30} video khác` : '';
 		await ctx.reply(
 			`📅 LỊCH ĐĂNG (${posts.length} video):\n\n${scheduleList}${moreText}` +
-				tiktokLink
+				tiktokLink,
+			{ reply_markup: buildMiniappKeyboard(userId) }
 		);
 		await logAction(userId, 'view_queue');
 		return;
@@ -1774,10 +1804,17 @@ async function handleCommand(ctx, command) {
 	// ========== /reschedule - Fix schedule times only (reviewer + admin) ==========
 	if (command === '/reschedule') {
 		if (!canReschedule) {
-			await ctx.reply('Bạn không có quyền reschedule video.' + tiktokLink);
+			await ctx.reply('Bạn không có quyền reschedule video.' + tiktokLink, {
+				reply_markup: buildMiniappKeyboard(userId),
+			});
 			return;
 		}
-		await ctx.reply('⏳ Đang sắp xếp lại lịch đăng... (chạy nền)' + tiktokLink);
+		await ctx.reply(
+			'⏳ Đang sắp xếp lại lịch đăng... (chạy nền)' + tiktokLink,
+			{
+				reply_markup: buildMiniappKeyboard(userId),
+			}
+		);
 
 		// Run in background to not block other users
 		setImmediate(async () => {
@@ -1785,7 +1822,8 @@ async function handleCommand(ctx, command) {
 				const count = await rescheduleTimesOnly(chatId);
 				await ctx.reply(
 					`✅ Đã sắp xếp lại lịch cho ${count} video!\n(Giữ nguyên nội dung, chỉ đổi giờ)` +
-						tiktokLink
+						tiktokLink,
+					{ reply_markup: buildMiniappKeyboard(userId) }
 				);
 				await logAction(
 					userId,
@@ -1804,11 +1842,14 @@ async function handleCommand(ctx, command) {
 	// ========== /fix - Clean database (admin only) ==========
 	if (command === '/fix') {
 		if (!canFix) {
-			await ctx.reply('Bạn không có quyền sử dụng lệnh này.' + tiktokLink);
+			await ctx.reply('Bạn không có quyền sử dụng lệnh này.' + tiktokLink, {
+				reply_markup: buildMiniappKeyboard(userId),
+			});
 			return;
 		}
 		await ctx.reply(
-			'🔧 Đang kiểm tra, dọn dẹp và cache dữ liệu... (chạy nền)' + tiktokLink
+			'🔧 Đang kiểm tra, dọn dẹp và cache dữ liệu... (chạy nền)' + tiktokLink,
+			{ reply_markup: buildMiniappKeyboard(userId) }
 		);
 
 		// Run in background to not block other users
@@ -1827,10 +1868,13 @@ async function handleCommand(ctx, command) {
 						message += `💾 Đã cache ${result.cached} video từ S3.\n`;
 					}
 					message += `📅 Đã reschedule ${result.rescheduled} video.`;
-					await ctx.reply(message + tiktokLink);
+					await ctx.reply(message + tiktokLink, {
+						reply_markup: buildMiniappKeyboard(userId),
+					});
 				} else {
 					await ctx.reply(
-						'✅ Không có thay đổi. Database và cache đã đồng bộ!' + tiktokLink
+						'✅ Không có thay đổi. Database và cache đã đồng bộ!' + tiktokLink,
+						{ reply_markup: buildMiniappKeyboard(userId) }
 					);
 				}
 				await logAction(
@@ -1934,7 +1978,8 @@ async function handleCommand(ctx, command) {
 		const isMod = getUserRole(userId) === 'mod';
 		if (!isAdmin(userId) && !isMod) {
 			await ctx.reply(
-				'❌ Chỉ Admin hoặc Mod mới được dùng lệnh này.' + tiktokLink
+				'❌ Chỉ Admin hoặc Mod mới được dùng lệnh này.' + tiktokLink,
+				{ reply_markup: buildMiniappKeyboard(userId) }
 			);
 			return;
 		}
@@ -1947,7 +1992,8 @@ async function handleCommand(ctx, command) {
 			await ctx.reply(
 				'❌ Sai cú pháp. Dùng: /clip [trang] giây1-giây2 giây3-giây4 ...\n' +
 					'Ví dụ: /clip 5 3-7 15-20 (cắt bỏ 3s-7s và 15s-20s từ video trang 5)' +
-					tiktokLink
+					tiktokLink,
+				{ reply_markup: buildMiniappKeyboard(userId) }
 			);
 			return;
 		}
@@ -1960,14 +2006,17 @@ async function handleCommand(ctx, command) {
 			await ctx.reply(
 				`❌ Không tìm thấy video trang ${page + 1}. Tổng: ${
 					posts.length
-				} video.` + tiktokLink
+				} video.` + tiktokLink,
+				{ reply_markup: buildMiniappKeyboard(userId) }
 			);
 			return;
 		}
 
 		const post = posts[page];
 		if (!post) {
-			await ctx.reply('❌ Không tìm thấy video.' + tiktokLink);
+			await ctx.reply('❌ Không tìm thấy video.' + tiktokLink, {
+				reply_markup: buildMiniappKeyboard(userId),
+			});
 			return;
 		}
 
@@ -2009,7 +2058,9 @@ async function handleCommand(ctx, command) {
 			}
 
 			if (!videoBuffer) {
-				await ctx.reply('❌ Không tìm thấy file video.' + tiktokLink);
+				await ctx.reply('❌ Không tìm thấy file video.' + tiktokLink, {
+					reply_markup: buildMiniappKeyboard(userId),
+				});
 				return;
 			}
 
@@ -2028,7 +2079,9 @@ async function handleCommand(ctx, command) {
 			}
 
 			if (!clipResult.success) {
-				await ctx.reply(`❌ Lỗi clip: ${clipResult.error}` + tiktokLink);
+				await ctx.reply(`❌ Lỗi clip: ${clipResult.error}` + tiktokLink, {
+					reply_markup: buildMiniappKeyboard(userId),
+				});
 				return;
 			}
 
@@ -2075,7 +2128,9 @@ async function handleCommand(ctx, command) {
 			);
 		} catch (error) {
 			console.error('[Clip] Error:', error);
-			await ctx.reply(`❌ Lỗi: ${error.message}` + tiktokLink);
+			await ctx.reply(`❌ Lỗi: ${error.message}` + tiktokLink, {
+				reply_markup: buildMiniappKeyboard(userId),
+			});
 		}
 		return;
 	}
@@ -2083,7 +2138,9 @@ async function handleCommand(ctx, command) {
 	// ========== /swap - Swap scheduled times of two videos (Admin/Reviewer) ==========
 	if (command.startsWith('/swap')) {
 		if (!canReschedule) {
-			await ctx.reply('❌ Bạn không có quyền đổi lịch video.' + tiktokLink);
+			await ctx.reply('❌ Bạn không có quyền đổi lịch video.' + tiktokLink, {
+				reply_markup: buildMiniappKeyboard(userId),
+			});
 			return;
 		}
 
@@ -2093,7 +2150,8 @@ async function handleCommand(ctx, command) {
 		if (parts.length !== 2) {
 			await ctx.reply(
 				'❌ Sai cú pháp. Dùng: /swap [trang1] [trang2]\nVí dụ: /swap 5 10' +
-					tiktokLink
+					tiktokLink,
+				{ reply_markup: buildMiniappKeyboard(userId) }
 			);
 			return;
 		}
@@ -2102,12 +2160,16 @@ async function handleCommand(ctx, command) {
 		const page2 = parseInt(parts[1], 10);
 
 		if (isNaN(page1) || isNaN(page2) || page1 < 1 || page2 < 1) {
-			await ctx.reply('❌ Số trang không hợp lệ.' + tiktokLink);
+			await ctx.reply('❌ Số trang không hợp lệ.' + tiktokLink, {
+				reply_markup: buildMiniappKeyboard(userId),
+			});
 			return;
 		}
 
 		if (page1 === page2) {
-			await ctx.reply('❌ Hai trang phải khác nhau.' + tiktokLink);
+			await ctx.reply('❌ Hai trang phải khác nhau.' + tiktokLink, {
+				reply_markup: buildMiniappKeyboard(userId),
+			});
 			return;
 		}
 
@@ -2116,7 +2178,8 @@ async function handleCommand(ctx, command) {
 
 		if (page1 > posts.length || page2 > posts.length) {
 			await ctx.reply(
-				`❌ Không tìm thấy video. Tổng: ${posts.length} video.` + tiktokLink
+				`❌ Không tìm thấy video. Tổng: ${posts.length} video.` + tiktokLink,
+				{ reply_markup: buildMiniappKeyboard(userId) }
 			);
 			return;
 		}
@@ -2147,7 +2210,8 @@ async function handleCommand(ctx, command) {
 			`✅ Đã đổi lịch:\n` +
 				`📍 Trang ${page1}: "${post1.title.slice(0, 25)}..."\n` +
 				`📍 Trang ${page2}: "${post2.title.slice(0, 25)}..."` +
-				tiktokLink
+				tiktokLink,
+			{ reply_markup: buildMiniappKeyboard(userId) }
 		);
 
 		await logAction(
@@ -2162,7 +2226,9 @@ async function handleCommand(ctx, command) {
 	// ========== /analytics - View user analytics (Admin only) ==========
 	if (command.startsWith('/analytics')) {
 		if (!isAdmin(userId)) {
-			await ctx.reply('❌ Chỉ Admin mới được dùng lệnh này.' + tiktokLink);
+			await ctx.reply('❌ Chỉ Admin mới được dùng lệnh này.' + tiktokLink, {
+				reply_markup: buildMiniappKeyboard(userId),
+			});
 			return;
 		}
 

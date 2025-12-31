@@ -91,6 +91,13 @@ let currentAuditPage = 1;
 // API Base URL
 const API_BASE = '/api';
 
+/**
+ * Navigate to user feed
+ */
+function goToFeed() {
+	window.location.href = '/';
+}
+
 // ========== Auth Functions ==========
 
 // Auto-init on load
@@ -187,11 +194,6 @@ async function verifyOTP() {
 		token = data.token;
 		currentUser = data.user;
 
-		if (currentUser.role === 'user') {
-			window.location.href = '/';
-			return;
-		}
-
 		localStorage.setItem('auth_token', token);
 
 		// Show dashboard
@@ -255,11 +257,6 @@ async function checkAuth() {
 		}
 
 		currentUser = await res.json();
-
-		if (currentUser.role === 'user') {
-			window.location.href = '/';
-			return;
-		}
 
 		showDashboard();
 	} catch (error) {

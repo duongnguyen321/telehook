@@ -14,6 +14,7 @@ if (token) {
 	localStorage.removeItem('dashboard_token');
 }
 let videos = [];
+let currentUser = null;
 let currentPage = 1;
 let isLoading = false;
 let hasMore = true;
@@ -129,7 +130,30 @@ function showLogin() {
 function showFeed() {
 	loginOverlay.classList.add('hidden');
 	feedContainer.classList.remove('hidden');
+	updateSwitchButton();
 	reloadFeed();
+}
+
+/**
+ * Update switch button visibility based on user role
+ */
+function updateSwitchButton() {
+	const switchBtn = document.getElementById('switch-dashboard-btn');
+	if (!switchBtn) return;
+
+	// Show switch button only for admin/mod/reviewer
+	if (currentUser && ['admin', 'mod', 'reviewer'].includes(currentUser.role)) {
+		switchBtn.classList.remove('hidden');
+	} else {
+		switchBtn.classList.add('hidden');
+	}
+}
+
+/**
+ * Navigate to admin dashboard
+ */
+function goToAdmin() {
+	window.location.href = '/admin';
 }
 
 // --- Auth ---
@@ -179,10 +203,7 @@ async function verifyOTP() {
 		if (data.success) {
 			// Save token and user
 			token = data.token;
-			if (data.user && ['admin', 'mod', 'reviewer'].includes(data.user.role)) {
-				window.location.href = '/admin';
-				return;
-			}
+			currentUser = data.user;
 			localStorage.setItem('auth_token', token);
 			showFeed();
 		} else {
@@ -204,11 +225,7 @@ async function checkAuth() {
 			headers: { Authorization: `Bearer ${token}` },
 		});
 		if (res.ok) {
-			const user = await res.json();
-			if (['admin', 'mod', 'reviewer'].includes(user.role)) {
-				window.location.href = '/admin';
-				return;
-			}
+			currentUser = await res.json();
 			showFeed();
 		} else {
 			localStorage.removeItem('auth_token');

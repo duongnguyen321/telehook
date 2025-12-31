@@ -12,7 +12,7 @@ import {
 	DATA_DIR,
 	updatePostFileId,
 } from '../utils/storage.js';
-import { getNotificationRecipients } from './roleService.js';
+import { getNotificationRecipients, getUserRole } from './roleService.js';
 import { isS3Enabled, downloadVideo as s3DownloadVideo } from '../utils/s3.js';
 
 let bot = null;
@@ -67,14 +67,24 @@ async function processNotification(post) {
 				'vi-VN'
 			)}\n\n` +
 			`🎥 **${title}**\n\n` +
-			`${hashtags}\n\n` +
-			`📥 [Click để tải gốc (HD)](${downloadUrl})`;
+			`${hashtags}\n\n`;
 
-		const keyboard = new InlineKeyboard()
-			.url('📥 Tải Video Gốc (Full HD)', downloadUrl)
-			.row()
-			.text('✅ Đã đăng TikTok', `posted_${postId}`)
-			.text('❌ Huỷ đăng', `cancelpost_${postId}`);
+		// Helper to build keyboard with role-based miniapp button
+		const buildKeyboardForRecipient = (recipientId) => {
+			const userRole = getUserRole(recipientId);
+			const isPrivileged = ['admin', 'mod', 'reviewer'].includes(userRole);
+			const linkLabel = isPrivileged ? '🎬 Quản lý Video' : '📺 Xem Video';
+			const linkPath = isPrivileged ? '/admin' : '/';
+			const fullLink = `${baseUrl}${linkPath}`;
+
+			return new InlineKeyboard()
+				.url('📥 Tải Video Gốc (Full HD)', downloadUrl)
+				.row()
+				.text('✅ Đã đăng TikTok', `posted_${postId}`)
+				.text('❌ Huỷ đăng', `cancelpost_${postId}`)
+				.row()
+				.webApp(linkLabel, fullLink);
+		};
 
 		// Get all recipients (admin, reviewers, mods)
 		const recipients = getNotificationRecipients();
@@ -119,12 +129,13 @@ async function processNotification(post) {
 			console.log(`[Scheduler] Video file not found, sending text-only`);
 			for (const recipientId of recipients) {
 				try {
+					const recipientKeyboard = buildKeyboardForRecipient(recipientId);
 					await bot.api.sendMessage(
 						recipientId,
 						caption + `\n\n⚠️ _Video file không tìm thấy_`,
 						{
 							parse_mode: 'Markdown',
-							reply_markup: keyboard,
+							reply_markup: recipientKeyboard,
 							link_preview_options: { is_disabled: true },
 						}
 					);
@@ -139,13 +150,14 @@ async function processNotification(post) {
 			// Send video to all recipients
 			for (const recipientId of recipients) {
 				try {
+					const recipientKeyboard = buildKeyboardForRecipient(recipientId);
 					const sentMessage = await bot.api.sendVideo(
 						recipientId,
 						videoSource,
 						{
 							caption,
 							parse_mode: 'Markdown',
-							reply_markup: keyboard,
+							reply_markup: recipientKeyboard,
 							supports_streaming: true,
 						}
 					);

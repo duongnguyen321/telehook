@@ -198,7 +198,3 @@ src/
 
 - **File Size Limit**: Videos >20MB are skipped (Telegram Bot API limit).
 - **Data Persistence**: Data is stored in `data/tiktok_bot.db` and videos in `data/videos/`. Do not delete the `data` folder unless you want to reset everything.
-
-```
-
-```
