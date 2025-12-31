@@ -466,7 +466,7 @@ async function sendQueuePage(
 
 	try {
 		const sentMessage = await ctx.api.sendVideo(chatId, videoSource, {
-			caption: caption + tiktokLink,
+			caption: caption,
 			reply_markup: keyboard,
 			supports_streaming: true,
 		});
