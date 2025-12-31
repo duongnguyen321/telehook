@@ -1713,7 +1713,6 @@ async function buildGreetingMessage(
 	greeting += `• /queue - Xem lịch đăng video\n`;
 	greeting += `• /videos - Xem chi tiết video\n`;
 	greeting += `• /info - Xem hoạt động của bạn\n`;
-	greeting += `• /info - Xem hoạt động của bạn\n`;
 
 	// Mod commands
 	if (userRole === 'mod' || userRole === 'admin') {
