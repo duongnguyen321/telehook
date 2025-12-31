@@ -29,18 +29,21 @@ const args = process.argv.slice(2);
 const WARM_CACHE = args.includes('--warm-cache');
 const RESET_CACHE = args.includes('--reset');
 
+// Prisma client: Global instance
+const prisma = new PrismaClient();
+
 // Handle RESET: Clear DB and local files
 if (RESET_CACHE) {
 	console.log('⚠️ RESET MODE ENABLED: Clearing all cached data...');
 
 	// 1. Clear database file_ids
-	const prisma = new PrismaClient();
+	// Use global prisma instance
 	try {
 		await prisma.scheduledPost.updateMany({
 			data: { telegramFileId: null },
 		});
 		console.log('✅ Database: All telegramFileId cleared.');
-		await prisma.$disconnect();
+		// Do not disconnect here, we need it later
 	} catch (e) {
 		console.error('❌ Failed to clear database:', e);
 		process.exit(1);
@@ -116,11 +119,6 @@ const s3Client = new S3Client({
 });
 
 const BUCKET = process.env.S3_BUCKET || 'videos';
-
-// Prisma client: use imported instance or create if missing (to avoid conflict)
-// Note: 'prisma' is already imported from ../utils/storage.js
-// If we need a fresh connection for the script we can use it, but let's avoid redeclaring 'prisma'.
-const db = prisma;
 
 // Bot for warm cache (lazy init)
 let bot = null;
