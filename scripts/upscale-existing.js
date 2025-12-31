@@ -92,6 +92,9 @@ const s3Client = process.env.S3_ENDPOINT
 				secretAccessKey: process.env.S3_SECRET_ACCESS_KEY,
 			},
 			forcePathStyle: true,
+			// Fix for R2 checksum mismatch issues
+			responseChecksumValidation: 'WHEN_REQUIRED',
+			requestChecksumCalculation: 'WHEN_REQUIRED',
 	  })
 	: null;
 
@@ -144,7 +147,8 @@ async function warmCacheToTelegram(videoPath, videoKey) {
 
 		// Delete the cache message to keep admin chat clean
 		try {
-			await bot.api.deleteMessage(adminId, sentMessage.message_id);
+			// Don't delete message immediately, as it might invalidate file_id for other chats
+			// await bot.api.deleteMessage(adminId, sentMessage.message_id);
 		} catch (e) {
 			// Ignore deletion errors
 		}
@@ -318,9 +322,22 @@ async function upscaleVideo(inputPath, outputPath, duration) {
 	console.log(`[Upscale] Bitrate: ${bitrate}k for ${duration.toFixed(1)}s`);
 
 	return new Promise((resolve) => {
-		// Detect OS for hardware acceleration
+		// Detect OS and available hardware acceleration
 		const isMac = os.platform() === 'darwin';
-		const videoCodec = isMac ? 'h264_videotoolbox' : 'libx264';
+		const isLinux = os.platform() === 'linux';
+
+		let videoCodec = 'libx264'; // Default software fallback
+
+		if (isMac) {
+			videoCodec = 'h264_videotoolbox';
+		} else if (isLinux) {
+			// Check for Nvidia NVENC
+			if (fs.existsSync('/dev/nvidia0')) {
+				videoCodec = 'h264_nvenc';
+			}
+		}
+
+		console.log(`[Upscale] Using codec: ${videoCodec}`);
 
 		const args = [
 			'-y',
@@ -329,21 +346,24 @@ async function upscaleVideo(inputPath, outputPath, duration) {
 			'-vf',
 			"scale='if(gt(iw,ih),-2,720)':'if(gt(iw,ih),720,-2)':flags=lanczos,unsharp=5:5:1.0:5:5:0.0",
 			'-c:v',
-			videoCodec, // Use hardware acceleration if available
-			// '-preset' is not used with videotoolbox, but harmless used with libx264
+			videoCodec,
 		];
 
-		if (isMac) {
-			// VideoToolbox specific params
+		if (videoCodec === 'h264_videotoolbox') {
+			args.push('-b:v', `${bitrate}k`, '-maxrate', `${bitrate}k`);
+		} else if (videoCodec === 'h264_nvenc') {
 			args.push(
 				'-b:v',
 				`${bitrate}k`,
 				'-maxrate',
-				`${bitrate}k`
-				// videotoolbox doesn't support bufsize or crf in the same way
+				`${bitrate}k`,
+				'-bufsize',
+				`${bitrate * 2}k`,
+				'-preset',
+				'p4' // Medium preset for NVENC
 			);
 		} else {
-			// Software encoding params
+			// Software encoding (libx264) - Works everywhere
 			args.push(
 				'-preset',
 				'faster',
@@ -388,7 +408,11 @@ async function upscaleVideo(inputPath, outputPath, duration) {
  */
 async function processVideo(post) {
 	const videoKey = path.basename(post.videoPath);
-	const tempDir = path.join(os.tmpdir(), `upscale_check_${Date.now()}`);
+	// Use random suffix to prevent race conditions in parallel mode (Date.now() can be same)
+	const tempDir = path.join(
+		os.tmpdir(),
+		`upscale_check_${Date.now()}_${Math.random().toString(36).slice(2)}`
+	);
 	const localPath = path.join(VIDEOS_DIR, videoKey);
 
 	try {

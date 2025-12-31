@@ -464,12 +464,44 @@ async function sendQueuePage(
 		videoSource = new InputFile(localPath);
 	}
 
+	// Retry/Failvover Logic for Send Video
 	try {
-		const sentMessage = await ctx.api.sendVideo(chatId, videoSource, {
-			caption: caption,
-			reply_markup: keyboard,
-			supports_streaming: true,
-		});
+		const sendWithSource = async (source) => {
+			return await ctx.api.sendVideo(chatId, source, {
+				caption: caption,
+				reply_markup: keyboard,
+				supports_streaming: true,
+			});
+		};
+
+		let sentMessage;
+		try {
+			sentMessage = await sendWithSource(videoSource);
+		} catch (err) {
+			// If failed and we were using a cached file_id, try fallback to file/buffer
+			if (
+				post.telegramFileId &&
+				err.description &&
+				err.description.includes('wrong file identifier')
+			) {
+				console.warn(
+					`[Queue] Invalid file_id for ${videoKey}, retrying with local file...`
+				);
+
+				// Clear invalid file_id
+				await updatePostFileId(post.id, null);
+
+				// Determine fallback source
+				const fallbackSource = videoBuffer
+					? new InputFile(videoBuffer, videoKey)
+					: new InputFile(localPath);
+
+				sentMessage = await sendWithSource(fallbackSource);
+				needsFileIdSave = true; // Flag to save new file_id
+			} else {
+				throw err; // Re-throw other errors
+			}
+		}
 
 		// Save file_id for future use if we uploaded from disk/S3
 		if (needsFileIdSave && sentMessage.video?.file_id) {
