@@ -41,7 +41,7 @@ export async function getVideoDuration(inputPath) {
 }
 
 /**
- * Upscale video to 720p height with sharpening
+ * Upscale video to 720p width (portrait) or height (landscape) with sharpening
  * @param {string} inputPath
  * @param {number} [duration] - Video duration in seconds. If not provided, will probe.
  * @returns {Promise<{success: boolean, outputPath?: string, error?: string}>}
@@ -77,7 +77,7 @@ export async function upscaleVideo(inputPath, duration) {
 		fs.mkdirSync(tempDir, { recursive: true });
 	}
 
-	const outputPath = path.join(tempDir, `${baseName}_1080p${ext}`);
+	const outputPath = path.join(tempDir, `${baseName}_720p${ext}`);
 
 	console.log(
 		`[Upscale] Target bitrate: ${bitrate}k for duration: ${duration}s`
@@ -93,7 +93,7 @@ export async function upscaleVideo(inputPath, duration) {
 		'-i',
 		inputPath,
 		'-vf',
-		"scale='if(gt(iw,ih),-2,1080)':'if(gt(iw,ih),1080,-2)':flags=lanczos,unsharp=5:5:1.0:5:5:0.0",
+		"scale='if(gt(iw,ih),-2,720)':'if(gt(iw,ih),720,-2)':flags=lanczos,unsharp=5:5:1.0:5:5:0.0",
 		'-c:v',
 		'libx264',
 		'-preset',

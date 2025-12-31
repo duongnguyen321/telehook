@@ -496,12 +496,12 @@ async function processVideoAfterDownload(ctx, video, videoPath, chatId) {
 
 		if (video.width && video.height) {
 			const minDim = Math.min(video.width, video.height);
-			if (minDim < 1080) {
+			if (minDim < 720) {
 				console.log(
 					`[Video] Low quality (${video.width}x${video.height}), upscaling...`
 				);
 				await ctx.reply(
-					'⏳ Video chưa đạt Full HD (1080p), đang làm nét... (vui lòng đợi)'
+					'⏳ Video chưa đạt HD (720p), đang làm nét... (vui lòng đợi)'
 				);
 
 				const result = await upscaleVideo(videoPath);

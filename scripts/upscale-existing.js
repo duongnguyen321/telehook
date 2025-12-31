@@ -29,6 +29,37 @@ import fs from 'fs';
 import path from 'path';
 import os from 'os';
 import { fileURLToPath } from 'url';
+// Since I can't easily install packages, I'll implement a simple semaphore queue.
+
+/**
+ * Simple concurrency limiter
+ * @param {number} concurrency
+ * @returns {Function}
+ */
+function createLimit(concurrency) {
+	const queue = [];
+	let active = 0;
+
+	const next = () => {
+		if (queue.length > 0 && active < concurrency) {
+			active++;
+			const { fn, resolve, reject } = queue.shift();
+			fn()
+				.then(resolve)
+				.catch(reject)
+				.finally(() => {
+					active--;
+					next();
+				});
+		}
+	};
+
+	return (fn) =>
+		new Promise((resolve, reject) => {
+			queue.push({ fn, resolve, reject });
+			next();
+		});
+}
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DATA_DIR = path.join(__dirname, '../data');
@@ -43,6 +74,10 @@ const LIMIT = args.includes('--limit')
 const SKIP = args.includes('--skip')
 	? parseInt(args[args.indexOf('--skip') + 1]) || 0
 	: 0;
+const FORCE = args.includes('--force');
+const CONCURRENCY = args.includes('--concurrency')
+	? parseInt(args[args.indexOf('--concurrency') + 1]) || 3
+	: 3; // Default 3 parallel processes
 
 // Prisma client
 const prisma = new PrismaClient();
@@ -61,7 +96,7 @@ const s3Client = process.env.S3_ENDPOINT
 	: null;
 
 const BUCKET = process.env.S3_BUCKET || 'videos';
-const MIN_RESOLUTION = 1080; // Minimum resolution on smallest dimension
+const MIN_RESOLUTION = 720; // Minimum resolution on smallest dimension
 const MAX_SIZE_BITS = 19 * 1024 * 1024 * 8; // 19MB in bits (Telegram limit is 20MB)
 
 // Telegram Bot for warm cache (lazy init)
@@ -262,7 +297,7 @@ async function deleteFromS3(key) {
 }
 
 /**
- * Upscale video to 1080p with size limit for Telegram
+ * Upscale video to 720p with size limit for Telegram
  * @param {string} inputPath
  * @param {string} outputPath
  * @param {number} duration - Video duration in seconds
@@ -283,29 +318,45 @@ async function upscaleVideo(inputPath, outputPath, duration) {
 	console.log(`[Upscale] Bitrate: ${bitrate}k for ${duration.toFixed(1)}s`);
 
 	return new Promise((resolve) => {
-		// Use same ffmpeg args as videoProcessor.js
+		// Detect OS for hardware acceleration
+		const isMac = os.platform() === 'darwin';
+		const videoCodec = isMac ? 'h264_videotoolbox' : 'libx264';
+
 		const args = [
 			'-y',
 			'-i',
 			inputPath,
 			'-vf',
-			"scale='if(gt(iw,ih),-2,1080)':'if(gt(iw,ih),1080,-2)':flags=lanczos,unsharp=5:5:1.0:5:5:0.0",
+			"scale='if(gt(iw,ih),-2,720)':'if(gt(iw,ih),720,-2)':flags=lanczos,unsharp=5:5:1.0:5:5:0.0",
 			'-c:v',
-			'libx264',
-			'-preset',
-			'faster',
-			'-b:v',
-			`${bitrate}k`, // Target bitrate for size control
-			'-maxrate',
-			`${bitrate}k`,
-			'-bufsize',
-			`${bitrate * 2}k`,
-			'-c:a',
-			'copy',
-			'-fs',
-			'19900000', // Fail-safe: stop writing if file exceeds ~19.9MB
-			outputPath,
+			videoCodec, // Use hardware acceleration if available
+			// '-preset' is not used with videotoolbox, but harmless used with libx264
 		];
+
+		if (isMac) {
+			// VideoToolbox specific params
+			args.push(
+				'-b:v',
+				`${bitrate}k`,
+				'-maxrate',
+				`${bitrate}k`
+				// videotoolbox doesn't support bufsize or crf in the same way
+			);
+		} else {
+			// Software encoding params
+			args.push(
+				'-preset',
+				'faster',
+				'-b:v',
+				`${bitrate}k`,
+				'-maxrate',
+				`${bitrate}k`,
+				'-bufsize',
+				`${bitrate * 2}k`
+			);
+		}
+
+		args.push('-c:a', 'copy', '-fs', '19900000', outputPath);
 
 		const proc = spawn('ffmpeg', args);
 		let stderr = '';
@@ -372,18 +423,31 @@ async function processVideo(post) {
 		}
 
 		const minDim = Math.min(resolution.width, resolution.height);
-		if (minDim >= MIN_RESOLUTION) {
+
+		// Perfect 720p check (allow small tolerance 710-730)
+		const is720p = minDim >= 710 && minDim <= 730;
+
+		if (is720p) {
+			return {
+				status: 'skip',
+				message: `Already 720p (${resolution.width}x${resolution.height}) - Skipping to protect quality`,
+			};
+		}
+
+		if (minDim >= MIN_RESOLUTION && !FORCE) {
 			return {
 				status: 'skip',
 				message: `Already ${resolution.width}x${resolution.height} (>= ${MIN_RESOLUTION}p)`,
 			};
 		}
 
-		// Need to upscale
+		// Need to upscale (or downscale/fix if forced)
+		const action = FORCE && minDim > 730 ? 'downscale-fix' : 'upscale';
+
 		if (DRY_RUN) {
 			return {
 				status: 'would_upscale',
-				message: `${resolution.width}x${resolution.height} -> 1080p`,
+				message: `${resolution.width}x${resolution.height} -> 720p (${action})`,
 			};
 		}
 
@@ -443,9 +507,7 @@ async function processVideo(post) {
 			status: 'upscaled',
 			message: `${resolution.width}x${
 				resolution.height
-			} -> 1080p (${cacheStatus}, size: ${
-				sizeDiff > 0 ? '+' : ''
-			}${sizeDiff}%)`,
+			} -> 720p (${cacheStatus}, size: ${sizeDiff > 0 ? '+' : ''}${sizeDiff}%)`,
 		};
 	} catch (error) {
 		return { status: 'error', message: error.message };
@@ -519,35 +581,63 @@ async function main() {
 		errors: 0,
 	};
 
+	// Process videos with concurrency
+	const limit = createLimit(CONCURRENCY);
+	const promises = [];
+
 	for (let i = 0; i < posts.length; i++) {
 		const post = posts[i];
-		const videoKey = path.basename(post.videoPath);
+		const index = i; // capture index
 
-		process.stdout.write(
-			`[${i + 1}/${posts.length}] ${videoKey.slice(0, 30)}... `
+		promises.push(
+			limit(async () => {
+				const videoKey = path.basename(post.videoPath);
+				// Use console.log with newline to prevent overwrite in parallel output
+				console.log(
+					`[${index + 1}/${posts.length}] Starting ${videoKey.slice(0, 30)}...`
+				);
+
+				const result = await processVideo(post);
+
+				switch (result.status) {
+					case 'skip':
+						stats.skipped++;
+						console.log(
+							`[${index + 1}/${posts.length}] ⏭️  ${
+								result.message
+							} - ${videoKey}`
+						);
+						break;
+					case 'upscaled':
+						stats.upscaled++;
+						console.log(
+							`[${index + 1}/${posts.length}] ✅ ${
+								result.message
+							} - ${videoKey}`
+						);
+						break;
+					case 'would_upscale':
+						stats.wouldUpscale++;
+						console.log(
+							`[${index + 1}/${posts.length}] 🔍 ${
+								result.message
+							} - ${videoKey}`
+						);
+						break;
+					case 'error':
+						stats.errors++;
+						console.error(
+							`[${index + 1}/${posts.length}] ❌ ${
+								result.message
+							} - ${videoKey}`
+						);
+						break;
+				}
+			})
 		);
-
-		const result = await processVideo(post);
-
-		switch (result.status) {
-			case 'skip':
-				stats.skipped++;
-				console.log(`⏭️  ${result.message}`);
-				break;
-			case 'upscaled':
-				stats.upscaled++;
-				console.log(`✅ ${result.message}`);
-				break;
-			case 'would_upscale':
-				stats.wouldUpscale++;
-				console.log(`🔍 ${result.message}`);
-				break;
-			case 'error':
-				stats.errors++;
-				console.log(`❌ ${result.message}`);
-				break;
-		}
 	}
+
+	await Promise.all(promises);
 
 	// Summary
 	console.log('\n' + '='.repeat(50));
