@@ -123,7 +123,7 @@
 		<template id="video-template">
 			<div class="video-item">
 				<div class="video-wrapper">
-					<video loop playsinline preload="metadata"></video>
+					<video loop playsinline muted preload="metadata"></video>
 					<div class="video-overlay">
 						<div class="video-info">
 							<h3 class="video-title"></h3>
@@ -132,6 +132,8 @@
 					</div>
 					<!-- Play/Pause Icon overlay -->
 					<div class="play-icon">▶</div>
+					<!-- Mute/Unmute Button -->
+					<button class="mute-btn" onclick="toggleMute(event)">🔇</button>
 				</div>
 			</div>
 		</template>

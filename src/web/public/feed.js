@@ -318,6 +318,7 @@ function appendVideo(videoData) {
 	const titleEl = clone.querySelector('.video-title');
 	const tagsEl = clone.querySelector('.video-tags');
 	const wrapper = clone.querySelector('.video-wrapper');
+	const muteBtn = clone.querySelector('.mute-btn');
 
 	// Set Data
 	videoEl.src = videoData.videoUrl;
@@ -326,8 +327,16 @@ function appendVideo(videoData) {
 	titleEl.innerText = videoData.title || 'Không có tiêu đề';
 	tagsEl.innerText = videoData.hashtags || '';
 
-	// Play/Pause Interaction
-	wrapper.addEventListener('click', () => {
+	// Apply mute preference from localStorage
+	const isMuted = localStorage.getItem('feed_muted') !== 'false';
+	videoEl.muted = isMuted;
+	updateMuteButtonState(muteBtn, isMuted);
+
+	// Play/Pause Interaction - only trigger on video area, not mute button
+	wrapper.addEventListener('click', (e) => {
+		// Don't trigger play/pause when clicking mute button
+		if (e.target.classList.contains('mute-btn')) return;
+
 		if (videoEl.paused) {
 			videoEl.play();
 			wrapper.classList.remove('paused');
@@ -341,6 +350,41 @@ function appendVideo(videoData) {
 	videoObserver.observe(videoItem);
 
 	scroller.appendChild(videoItem);
+}
+
+/**
+ * Toggle mute state for all videos
+ * @param {Event} event
+ */
+function toggleMute(event) {
+	event.stopPropagation(); // Prevent play/pause toggle
+
+	const isMuted = localStorage.getItem('feed_muted') !== 'false';
+	const newMutedState = !isMuted;
+
+	// Save preference
+	localStorage.setItem('feed_muted', newMutedState ? 'true' : 'false');
+
+	// Update all videos and mute buttons
+	document.querySelectorAll('.video-item').forEach((item) => {
+		const video = item.querySelector('video');
+		const btn = item.querySelector('.mute-btn');
+
+		if (video) video.muted = newMutedState;
+		if (btn) updateMuteButtonState(btn, newMutedState);
+	});
+}
+
+/**
+ * Update mute button visual state
+ * @param {HTMLElement} btn
+ * @param {boolean} isMuted
+ */
+function updateMuteButtonState(btn, isMuted) {
+	if (!btn) return;
+
+	btn.textContent = isMuted ? '🔇' : '🔊';
+	btn.classList.toggle('unmuted', !isMuted);
 }
 
 // Start
