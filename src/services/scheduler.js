@@ -39,7 +39,7 @@ export function setDefaultChatId(chatId) {
  * @param {Object} post
  */
 async function processNotification(post) {
-	const {
+	let {
 		id: postId,
 		chatId,
 		videoPath,
@@ -62,12 +62,7 @@ async function processNotification(post) {
 		const downloadUrl = `${baseUrl}/api/videos/${postId}/stream`;
 
 		// Caption for the video (Telegram caption limit: 1024 chars)
-		const caption =
-			`⏰ **STATUS${repostLabel}** - ${new Date().toLocaleTimeString(
-				'vi-VN'
-			)}\n\n` +
-			`🎥 **${title}**\n\n` +
-			`${hashtags}\n\n`;
+		const caption = `**${title}**\n\n` + `${hashtags}\n\n`;
 
 		// Helper to build keyboard with role-based miniapp button
 		const buildKeyboardForRecipient = (recipientId) => {
@@ -77,13 +72,18 @@ async function processNotification(post) {
 			const linkPath = isPrivileged ? '/admin' : '/';
 			const fullLink = `${baseUrl}${linkPath}`;
 
-			return new InlineKeyboard()
+			const keyboard = new InlineKeyboard()
 				.url('📥 Tải Video Gốc (Full HD)', downloadUrl)
 				.row()
 				.text('✅ Đã đăng TikTok', `posted_${postId}`)
 				.text('❌ Huỷ đăng', `cancelpost_${postId}`)
-				.row()
-				.webApp(linkLabel, fullLink);
+				.row();
+
+			if (fullLink.startsWith('https')) {
+				keyboard.webApp(linkLabel, fullLink);
+			}
+
+			return keyboard;
 		};
 
 		// Get all recipients (admin, reviewers, mods)
@@ -151,22 +151,73 @@ async function processNotification(post) {
 			for (const recipientId of recipients) {
 				try {
 					const recipientKeyboard = buildKeyboardForRecipient(recipientId);
-					const sentMessage = await bot.api.sendVideo(
-						recipientId,
-						videoSource,
-						{
-							caption,
-							parse_mode: 'Markdown',
-							reply_markup: recipientKeyboard,
-							supports_streaming: true,
+
+					// Helper to send with retry logic
+					const sendVideoWithRetry = async () => {
+						try {
+							return await bot.api.sendVideo(recipientId, videoSource, {
+								caption,
+								parse_mode: 'Markdown',
+								reply_markup: recipientKeyboard,
+								supports_streaming: true,
+							});
+						} catch (err) {
+							// If failed with wrong file identifier, retry with local file
+							if (
+								telegramFileId &&
+								err.description &&
+								err.description.includes('wrong file identifier')
+							) {
+								console.warn(
+									`[Scheduler] Invalid file_id for ${videoKey}, retrying with local file...`
+								);
+
+								// Clear invalid file_id
+								await updatePostFileId(postId, null);
+								telegramFileId = null; // Prevent using it for next recipients
+
+								// Fallback to local file
+								const cacheDir = path.join(DATA_DIR, 'videos');
+								if (fs.existsSync(localPath)) {
+									videoSource = new InputFile(localPath);
+									needsFileIdSave = true;
+								} else if (isS3Enabled()) {
+									// Download from S3 if not local
+									const videoBuffer = await s3DownloadVideo(videoKey, cacheDir);
+									if (videoBuffer) {
+										videoSource = new InputFile(videoBuffer, videoKey);
+										needsFileIdSave = true;
+									} else {
+										throw new Error(
+											'Local file missing and S3 download failed'
+										);
+									}
+								} else {
+									throw new Error('Local file missing and S3 disabled');
+								}
+
+								// Retry with new source
+								return await bot.api.sendVideo(recipientId, videoSource, {
+									caption,
+									parse_mode: 'Markdown',
+									reply_markup: recipientKeyboard,
+									supports_streaming: true,
+								});
+							}
+							throw err;
 						}
-					);
+					};
+
+					const sentMessage = await sendVideoWithRetry();
 
 					// Save file_id for future use (only from first recipient)
 					if (needsFileIdSave && sentMessage.video?.file_id) {
 						await updatePostFileId(postId, sentMessage.video.file_id);
 						console.log(`[Scheduler] Cached file_id for: ${videoKey}`);
 						needsFileIdSave = false; // Only save once
+
+						// Update local variable so next recipients use the new file_id (optimization)
+						// Actually, InputFile is fine for multiple sends
 					}
 
 					console.log(`[Scheduler] Sent video to recipient: ${recipientId}`);

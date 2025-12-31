@@ -89,7 +89,12 @@ function buildMiniappKeyboard(userId) {
 	const linkPath = isPrivileged ? '/admin' : '/';
 	const fullLink = `${BASE_URL}${linkPath}`;
 
-	return new InlineKeyboard().webApp(linkLabel, fullLink);
+	const keyboard = new InlineKeyboard();
+	if (fullLink.startsWith('https')) {
+		keyboard.webApp(linkLabel, fullLink);
+	}
+
+	return keyboard;
 }
 
 /**
@@ -264,7 +269,10 @@ async function sendQueuePage(
 
 	if (posts.length === 0) {
 		const text = 'Không có video nào' + tiktokLink;
-		const emptyKeyboard = new InlineKeyboard().webApp(linkLabel, fullLink);
+		const emptyKeyboard = new InlineKeyboard();
+		if (fullLink.startsWith('https')) {
+			emptyKeyboard.webApp(linkLabel, fullLink);
+		}
 		if (messageId) {
 			try {
 				await ctx.api.editMessageText(chatId, messageId, text, {
@@ -302,7 +310,9 @@ async function sendQueuePage(
 	const keyboard = new InlineKeyboard();
 
 	// Add Open App Button at the top
-	keyboard.webApp(linkLabel, fullLink).row();
+	if (fullLink.startsWith('https')) {
+		keyboard.webApp(linkLabel, fullLink).row();
+	}
 
 	// Navigation row
 	const navRow = [];
@@ -424,6 +434,11 @@ async function sendQueuePage(
 				videoSource = new InputFile(localPath);
 			}
 
+			// DEBUG: Log the source to debug MEDIA_EMPTY
+			if (typeof videoSource === 'string') {
+				console.log(`[Queue] Attempting edit with file_id: "${videoSource}"`);
+			}
+
 			await ctx.api.editMessageMedia(
 				chatId,
 				messageId,
@@ -440,15 +455,56 @@ async function sendQueuePage(
 			);
 			return; // Edit success
 		} catch (e) {
-			console.log(
-				'[Queue] Edit media failed, falling back to delete/send:',
-				e.message
-			);
-			// Fallback to delete and send
-			try {
-				await ctx.api.deleteMessage(chatId, messageId);
-			} catch (d) {
-				/* ignore */
+			const errDesc = e.description || '';
+
+			// Case 1: Message to edit is gone (Race condition / Duplicate request)
+			if (
+				errDesc.includes('message to edit not found') ||
+				errDesc.includes('message not found')
+			) {
+				console.warn(
+					`[Queue] Target message ${messageId} missing (race condition), switching to send mode.`
+				);
+				// Message is already gone, no need to delete. Fall through to sendVideo.
+			}
+			// Case 2: Media is invalid (Cache mismatch / Expired)
+			else if (
+				errDesc.includes('MEDIA_EMPTY') ||
+				errDesc.includes('wrong file identifier')
+			) {
+				console.warn(
+					`[Queue] Media invalid for ${videoKey}, clearing cache and refreshing.`
+				);
+
+				// Clear invalid cache
+				if (post.telegramFileId) {
+					await updatePostFileId(post.id, null);
+					post.telegramFileId = null;
+				}
+
+				// Old message exists but is broken, delete it so we can send a fresh one
+				try {
+					await ctx.api.deleteMessage(chatId, messageId);
+				} catch (d) {
+					/* ignore delete error */
+				}
+			}
+			// Case 3: Message not modified (Content is identical)
+			else if (errDesc.includes('message is not modified')) {
+				// This is expected if user clicks same button or rapid navigation leads to same state.
+				// Do nothing.
+				return;
+			}
+			// Case 4: Unknown error
+			else {
+				console.error(
+					`[Queue] Edit failed (${e.message}), falling back to delete/send.`
+				);
+				try {
+					await ctx.api.deleteMessage(chatId, messageId);
+				} catch (d) {
+					/* ignore delete error */
+				}
 			}
 		}
 	}
@@ -492,9 +548,26 @@ async function sendQueuePage(
 				await updatePostFileId(post.id, null);
 
 				// Determine fallback source
-				const fallbackSource = videoBuffer
-					? new InputFile(videoBuffer, videoKey)
-					: new InputFile(localPath);
+				// Determine fallback source
+				let fallbackSource;
+				if (videoBuffer) {
+					fallbackSource = new InputFile(videoBuffer, videoKey);
+				} else if (fs.existsSync(localPath)) {
+					fallbackSource = new InputFile(localPath);
+				} else if (isS3Enabled()) {
+					console.log(
+						`[Queue] Local file missing during fallback, downloading from S3: ${videoKey}`
+					);
+					const cacheDir = path.join(DATA_DIR, 'videos');
+					const buffer = await s3DownloadVideo(videoKey, cacheDir);
+					if (buffer) {
+						fallbackSource = new InputFile(buffer, videoKey);
+					} else {
+						throw new Error('Fallback failed: File not found locally or in S3');
+					}
+				} else {
+					throw new Error('Fallback failed: File not found locally');
+				}
 
 				sentMessage = await sendWithSource(fallbackSource);
 				needsFileIdSave = true; // Flag to save new file_id
@@ -907,6 +980,11 @@ export function setupVideoHandler(bot) {
 				'navigate_video',
 				post?.id || null,
 				`Trang ${page + 1}/${totalPosts} | ${videoStatus} | "${videoTitle}..."`
+			);
+			console.log(
+				`[Queue] User ${userId} nav to p${page} | Post: ${post?.id} | FileID: ${
+					post?.telegramFileId || 'null'
+				} | Path: ${post?.videoPath} | ${videoStatus}`
 			);
 			await safeAnswer();
 			return;
@@ -1680,7 +1758,10 @@ async function buildGreetingMessage(
 	}
 
 	// Create keyboard for greeting
-	const keyboard = new InlineKeyboard().webApp(linkLabel, fullLink);
+	const keyboard = new InlineKeyboard();
+	if (fullLink.startsWith('https')) {
+		keyboard.webApp(linkLabel, fullLink);
+	}
 
 	await ctx.reply(greeting + tiktokLink, {
 		parse_mode: 'Markdown',
