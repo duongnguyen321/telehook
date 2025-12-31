@@ -6,7 +6,7 @@
  */
 
 const CACHE_NAME = 'video-cache-v1';
-const MAX_CACHE_SIZE = 50; // Max recently-watched videos (~1GB, cache-on-demand)
+const MAX_CACHE_SIZE = 100; // Max recently-watched videos (~2GB, increased for preloading)
 
 // Video file extensions/patterns to cache
 const VIDEO_PATTERNS = [
@@ -180,6 +180,24 @@ self.addEventListener('message', (event) => {
 			cache.delete(cacheKey).then((deleted) => {
 				console.log('[SW] Removed from cache:', deleted, url.substring(0, 60));
 			});
+		});
+	}
+
+	// Batch precache multiple video URLs (for aggressive preloading)
+	if (
+		action === 'precacheMultiple' &&
+		event.data.urls &&
+		event.data.urls.length > 0
+	) {
+		const urls = event.data.urls;
+		console.log('[SW] 📦 Batch precaching', urls.length, 'videos');
+
+		// Use Promise.allSettled to not fail on single errors
+		Promise.allSettled(
+			urls.map((videoUrl) => cacheInBackground(new Request(videoUrl), videoUrl))
+		).then((results) => {
+			const cached = results.filter((r) => r.status === 'fulfilled').length;
+			console.log('[SW] ✅ Batch cached:', cached, '/', urls.length);
 		});
 	}
 });

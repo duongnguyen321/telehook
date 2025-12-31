@@ -24,6 +24,41 @@ let currentFilters = {
 	status: 'posted', // Default to posted as requested "giống tiktok" usually shows public content first
 };
 
+// Preload Configuration
+const PRELOAD_AHEAD = 8; // Preload 8 videos ahead
+const preloadedUrls = new Set(); // Track already preloaded URLs
+
+/**
+ * Preload upcoming videos ahead of current position
+ * @param {number} currentIndex - Current visible video index
+ */
+function preloadUpcomingVideos(currentIndex) {
+	const items = document.querySelectorAll('.video-item');
+	const endIndex = Math.min(currentIndex + PRELOAD_AHEAD, items.length);
+	const urlsToPreload = [];
+
+	for (let i = currentIndex; i < endIndex; i++) {
+		const video = items[i]?.querySelector('video');
+		if (video?.src && !preloadedUrls.has(video.src)) {
+			preloadedUrls.add(video.src);
+			urlsToPreload.push(video.src);
+			// Upgrade preload attribute for near videos
+			if (i < currentIndex + 3) {
+				video.preload = 'auto';
+			}
+		}
+	}
+
+	// Send to Service Worker for batch caching
+	if (urlsToPreload.length > 0 && navigator.serviceWorker?.controller) {
+		console.log('[Preload] Requesting', urlsToPreload.length, 'videos ahead');
+		navigator.serviceWorker.controller.postMessage({
+			action: 'precacheMultiple',
+			urls: urlsToPreload,
+		});
+	}
+}
+
 // DOM Elements
 const app = document.getElementById('app');
 const loginOverlay = document.getElementById('login-overlay');
@@ -46,6 +81,13 @@ const videoObserver = new IntersectionObserver((entries) => {
 		if (!video) return;
 
 		if (entry.isIntersecting) {
+			// Trigger preload for upcoming videos
+			const items = Array.from(document.querySelectorAll('.video-item'));
+			const currentIndex = items.indexOf(entry.target);
+			if (currentIndex >= 0) {
+				preloadUpcomingVideos(currentIndex);
+			}
+
 			// Play video
 			const playPromise = video.play();
 			if (playPromise !== undefined) {
@@ -350,6 +392,12 @@ function appendVideo(videoData) {
 	videoObserver.observe(videoItem);
 
 	scroller.appendChild(videoItem);
+
+	// Trigger initial preload after first few videos loaded
+	const items = document.querySelectorAll('.video-item');
+	if (items.length <= PRELOAD_AHEAD) {
+		preloadUpcomingVideos(0);
+	}
 }
 
 /**
