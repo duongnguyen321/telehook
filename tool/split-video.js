@@ -38,9 +38,9 @@ const __dirname = dirname(__filename);
 // Constants
 const DEFAULT_MAX_SIZE_MB = 20;
 const DEFAULT_DATA_DIR = join(__dirname, 'data');
-const MIN_SEGMENT_DURATION = 10; // Tối thiểu 10 giây mỗi phần
-const MAX_SEGMENT_DURATION = 10; // Tối đa 20 giây mỗi phần
-const MIN_LAST_SEGMENT_DURATION = 5; // Phần cuối tối thiểu 5 giây, nếu không sẽ merge
+const MIN_SEGMENT_DURATION = 20; // Tối thiểu 10 giây mỗi phần
+const MAX_SEGMENT_DURATION = 60; // Tối đa 20 giây mỗi phần
+const MIN_LAST_SEGMENT_DURATION = 15; // Phần cuối tối thiểu 5 giây, nếu không sẽ merge
 const SAFETY_MARGIN = 0.85; // Để lại 15% margin để đảm bảo KHÔNG BAO GIỜ vượt quá giới hạn
 
 /**

@@ -390,8 +390,8 @@ export async function rescheduleAllPending(chatId) {
 		slotIndex = 0;
 	}
 
-	// Update all posts with new schedule AND new content
-	let count = 0;
+	// Prepare all updates first (calculate schedule times and generate content)
+	const updates = [];
 	for (const post of posts) {
 		const [hour, minute] = slots[slotIndex];
 
@@ -407,25 +407,12 @@ export async function rescheduleAllPending(chatId) {
 		// Generate new random content
 		const [content] = generateContentOptions();
 
-		await prisma.scheduledPost.update({
-			where: { id: post.id },
-			data: {
-				scheduledAt: scheduleTime.toISOString(),
-				title: content.title,
-				hashtags: content.hashtags,
-				notificationSent: false, // Reset notification status
-			},
+		updates.push({
+			id: post.id,
+			scheduledAt: scheduleTime.toISOString(),
+			title: content.title,
+			hashtags: content.hashtags,
 		});
-		count++;
-
-		const timeStr = `${
-			currentDate.getMonth() + 1
-		}/${currentDate.getDate()} ${hour}:${String(minute).padStart(2, '0')}`;
-		console.log(
-			`[Reschedule] ${count}/${
-				posts.length
-			}: ${timeStr} - "${content.title.slice(0, 25)}..."`
-		);
 
 		// Move to next slot
 		slotIndex++;
@@ -437,7 +424,30 @@ export async function rescheduleAllPending(chatId) {
 		}
 	}
 
-	return count;
+	// Execute batch updates in chunks to avoid connection pool overload
+	const CHUNK_SIZE = 50;
+	for (let i = 0; i < updates.length; i += CHUNK_SIZE) {
+		const chunk = updates.slice(i, i + CHUNK_SIZE);
+		await Promise.all(
+			chunk.map(({ id, scheduledAt, title, hashtags }) =>
+				prisma.scheduledPost.update({
+					where: { id },
+					data: {
+						scheduledAt,
+						title,
+						hashtags,
+						notificationSent: false,
+					},
+				})
+			)
+		);
+	}
+
+	console.log(
+		`[Reschedule] Batch updated ${updates.length} posts (chunked, with content)`
+	);
+
+	return updates.length;
 }
 
 /**
@@ -532,17 +542,23 @@ export async function rescheduleTimesOnly(chatId) {
 		}
 	}
 
-	// Execute batch updates using Promise.all for speed
-	await Promise.all(
-		updates.map(({ id, scheduledAt }) =>
-			prisma.scheduledPost.update({
-				where: { id },
-				data: { scheduledAt, notificationSent: false },
-			})
-		)
-	);
+	// Execute batch updates in chunks to avoid connection pool overload
+	const CHUNK_SIZE = 50;
+	for (let i = 0; i < updates.length; i += CHUNK_SIZE) {
+		const chunk = updates.slice(i, i + CHUNK_SIZE);
+		await Promise.all(
+			chunk.map(({ id, scheduledAt }) =>
+				prisma.scheduledPost.update({
+					where: { id },
+					data: { scheduledAt, notificationSent: false },
+				})
+			)
+		);
+	}
 
-	console.log(`[Reschedule] Updated times for ${updates.length} posts (batch)`);
+	console.log(
+		`[Reschedule] Updated times for ${updates.length} posts (chunked)`
+	);
 	return updates.length;
 }
 
@@ -936,26 +952,84 @@ export async function deleteScheduledPost(
 
 /**
  * Batch delete multiple posts and reschedule efficiently
+ * OPTIMIZED: Uses parallel file deletion and batch database operations
  * @param {string[]} postIds
+ * @param {boolean} skipReschedule - If true, skip rescheduling for faster delete
  * @returns {Promise<{deleted: number, rescheduled: number}>}
  */
-export async function deleteScheduledPostBatch(postIds) {
+export async function deleteScheduledPostBatch(
+	postIds,
+	skipReschedule = false
+) {
 	const posts = await prisma.scheduledPost.findMany({
 		where: { id: { in: postIds } },
 	});
 
 	if (posts.length === 0) return { deleted: 0, rescheduled: 0 };
 
-	// Group by chat to reschedule each chat only once
-	// Key: chatId, Value: earliest scheduledAt date of deleted posts
+	// Collect video paths for batch operations
+	const videoPaths = posts.map((p) => p.videoPath);
+	const postedVideoPaths = posts
+		.filter((p) => p.status === 'posted')
+		.map((p) => p.videoPath);
+
+	// 1. Delete local files in parallel
+	await Promise.all(
+		posts.map(async (post) => {
+			const fullPath = getVideoFullPath(post.videoPath);
+			if (fs.existsSync(fullPath)) {
+				try {
+					fs.unlinkSync(fullPath);
+					console.log(`[BatchDelete] Removed file: ${post.videoPath}`);
+				} catch (e) {
+					console.error(`[BatchDelete] File delete error: ${e.message}`);
+				}
+			}
+		})
+	);
+
+	// 2. Delete from S3 in parallel (fire-and-forget for speed)
+	if (isS3Enabled()) {
+		const videoKeys = posts.map((p) => path.basename(p.videoPath));
+		Promise.all(
+			videoKeys.map((key) =>
+				s3DeleteVideo(key)
+					.then(() => console.log(`[BatchDelete] S3 deleted: ${key}`))
+					.catch((e) =>
+						console.error(`[BatchDelete] S3 delete error: ${e.message}`)
+					)
+			)
+		);
+	}
+
+	// 3. Batch delete from database tables using deleteMany
+	await prisma.downloadedVideo.deleteMany({
+		where: { videoPath: { in: videoPaths } },
+	});
+
+	// Only delete from archive for posted videos
+	if (postedVideoPaths.length > 0) {
+		await prisma.videoArchive.deleteMany({
+			where: { videoPath: { in: postedVideoPaths } },
+		});
+	}
+
+	// Delete all scheduled posts in one operation
+	await prisma.scheduledPost.deleteMany({
+		where: { id: { in: postIds } },
+	});
+
+	console.log(`[BatchDelete] Deleted ${posts.length} posts from database`);
+
+	// 4. Skip reschedule if requested (for faster dashboard deletes)
+	if (skipReschedule) {
+		console.log(`[BatchDelete] Skipped reschedule (skipReschedule=true)`);
+		return { deleted: posts.length, rescheduled: 0 };
+	}
+
+	// 5. Group by chat to reschedule each chat only once
 	const chatRescheduleMap = new Map();
-
-	let deletedCount = 0;
-
 	for (const post of posts) {
-		await deleteScheduledPost(post.id, 0, true); // Skip reschedule
-		deletedCount++;
-
 		if (post.status === 'pending') {
 			const chatIdStr = post.chatId.toString();
 			const currentEarliest = chatRescheduleMap.get(chatIdStr);
@@ -966,14 +1040,15 @@ export async function deleteScheduledPostBatch(postIds) {
 		}
 	}
 
-	// Run reschedule for each affected chat
-	let totalRescheduled = 0;
-	for (const [chatIdStr, earliestDate] of chatRescheduleMap) {
-		const count = await rescheduleFromPosition(BigInt(chatIdStr), earliestDate);
-		totalRescheduled += count;
-	}
+	// 6. Run reschedule for each affected chat in parallel
+	const rescheduleResults = await Promise.all(
+		Array.from(chatRescheduleMap.entries()).map(([chatIdStr, earliestDate]) =>
+			rescheduleFromPosition(BigInt(chatIdStr), earliestDate)
+		)
+	);
+	const totalRescheduled = rescheduleResults.reduce((sum, c) => sum + c, 0);
 
-	return { deleted: deletedCount, rescheduled: totalRescheduled };
+	return { deleted: posts.length, rescheduled: totalRescheduled };
 }
 
 /**
@@ -1052,17 +1127,24 @@ async function rescheduleFromPosition(chatId, fromScheduledAt) {
 		}
 	}
 
-	// Execute batch updates using Promise.all for speed
-	await Promise.all(
-		updates.map(({ id, scheduledAt }) =>
-			prisma.scheduledPost.update({
-				where: { id },
-				data: { scheduledAt, notificationSent: false },
-			})
-		)
-	);
+	// Execute batch updates in chunks to avoid connection pool overload
+	// MongoDB/Prisma handles 50 concurrent updates efficiently
+	const CHUNK_SIZE = 50;
+	for (let i = 0; i < updates.length; i += CHUNK_SIZE) {
+		const chunk = updates.slice(i, i + CHUNK_SIZE);
+		await Promise.all(
+			chunk.map(({ id, scheduledAt }) =>
+				prisma.scheduledPost.update({
+					where: { id },
+					data: { scheduledAt, notificationSent: false },
+				})
+			)
+		);
+	}
 
-	console.log(`[Reschedule] Updated ${updates.length} posts in batch`);
+	console.log(
+		`[Reschedule] Updated ${updates.length} posts in chunked batches`
+	);
 	return updates.length;
 }
 
