@@ -13,7 +13,12 @@ import {
 	updatePostFileId,
 } from '../utils/storage.js';
 import { getNotificationRecipients, getUserRole } from './roleService.js';
-import { isS3Enabled, downloadVideo as s3DownloadVideo } from '../utils/s3.js';
+import {
+	isS3Enabled,
+	downloadVideo as s3DownloadVideo,
+	isCdnEnabled,
+	getCdnUrl,
+} from '../utils/s3.js';
 
 let bot = null;
 let defaultChatId = null;
@@ -57,9 +62,13 @@ async function processNotification(post) {
 			throw new Error('Bot not initialized');
 		}
 
-		// Always use stream API endpoint - S3 direct URLs may be blocked
+		// Use CDN URL if configured (faster download via Cloudflare edge)
+		// Fallback to stream API endpoint otherwise
 		const baseUrl = process.env.BASE_URL || 'http://localhost:8888';
-		const downloadUrl = `${baseUrl}/api/videos/${postId}/stream`;
+		const videoKey = path.basename(videoPath);
+		const downloadUrl = isCdnEnabled()
+			? getCdnUrl(videoKey)
+			: `${baseUrl}/api/videos/${postId}/stream`;
 
 		// Caption for the video (Telegram caption limit: 1024 chars)
 		const caption = `**${title}**\n\n` + `${hashtags}\n\n`;
@@ -99,7 +108,6 @@ async function processNotification(post) {
 		console.log(`[Scheduler] Sending to ${recipients.length} recipient(s)`);
 
 		// Prepare video source with priority: file_id > local > S3
-		const videoKey = path.basename(videoPath);
 		const localPath = path.join(DATA_DIR, 'videos', videoKey);
 		let videoSource = null;
 		let needsFileIdSave = false;

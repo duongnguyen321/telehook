@@ -15,6 +15,7 @@ const VIDEO_PATTERNS = [
 	/\.mov/i,
 	/\/videos\/.*\/stream/i, // Internal stream endpoint
 	/r2\.cloudflarestorage/i,
+	/r2\.dev/i, // R2 public URLs (pub-xxx.r2.dev)
 	/s3\./i,
 ];
 

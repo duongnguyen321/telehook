@@ -13,7 +13,13 @@ import {
 	getVideoFullPath,
 } from '../../utils/storage.js';
 import { hasPermission } from '../../services/roleService.js';
-import { isS3Enabled, downloadVideo, streamVideo } from '../../utils/s3.js';
+import {
+	isS3Enabled,
+	downloadVideo,
+	streamVideo,
+	isCdnEnabled,
+	getCdnUrl,
+} from '../../utils/s3.js';
 import { logAction } from '../../services/auditService.js';
 
 const router = express.Router();
@@ -261,7 +267,9 @@ router.get('/', async (req, res) => {
 						duration: post.duration,
 						fileSize: post.fileSize,
 						telegramFileId: post.telegramFileId,
-						videoUrl: `/api/videos/${post.id}/stream`,
+						videoUrl: isCdnEnabled()
+							? getCdnUrl(path.basename(post.videoPath))
+							: `/api/videos/${post.id}/stream`,
 						duplicateGroup: group.key,
 					});
 				});
@@ -325,7 +333,9 @@ router.get('/', async (req, res) => {
 			duration: post.duration,
 			fileSize: post.fileSize,
 			telegramFileId: post.telegramFileId,
-			videoUrl: `/api/videos/${post.id}/stream`,
+			videoUrl: isCdnEnabled()
+				? getCdnUrl(path.basename(post.videoPath))
+				: `/api/videos/${post.id}/stream`,
 		}));
 
 		res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');

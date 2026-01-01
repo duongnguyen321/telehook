@@ -15,9 +15,30 @@ const S3_ACCESS_KEY_ID = process.env.S3_ACCESS_KEY_ID;
 const S3_SECRET_ACCESS_KEY = process.env.S3_SECRET_ACCESS_KEY;
 const S3_BUCKET = process.env.S3_BUCKET || 'videos';
 
+// R2 CDN Public URL (for faster video delivery via Cloudflare edge)
+const S3_PUBLIC_URL = process.env.S3_PUBLIC_URL;
+
 // Check if S3 is configured
 export function isS3Enabled() {
 	return !!(S3_ENDPOINT && S3_ACCESS_KEY_ID && S3_SECRET_ACCESS_KEY);
+}
+
+// Check if R2 CDN is configured
+export function isCdnEnabled() {
+	return !!S3_PUBLIC_URL;
+}
+
+/**
+ * Get CDN URL for a video (preferred for fast delivery)
+ * Falls back to computed public URL if CDN not configured
+ * @param {string} key - Video filename
+ * @returns {string} CDN URL
+ */
+export function getCdnUrl(key) {
+	if (S3_PUBLIC_URL) {
+		return `${S3_PUBLIC_URL.replace(/\/$/, '')}/${key}`;
+	}
+	return getPublicUrl(key); // Fallback to computed URL
 }
 
 // Create S3 client (lazy initialization)
