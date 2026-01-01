@@ -495,15 +495,29 @@ async function sendQueuePage(
 				// Do nothing.
 				return;
 			}
-			// Case 4: Unknown error
+			// Case 4: Unknown error - try to edit text only as fallback before delete/send
 			else {
 				console.error(
-					`[Queue] Edit failed (${e.message}), falling back to delete/send.`
+					`[Queue] Edit failed (${e.message}), trying text-only edit before delete/send.`
 				);
+				// Try editing just the caption/text without changing media
 				try {
-					await ctx.api.deleteMessage(chatId, messageId);
-				} catch (d) {
-					/* ignore delete error */
+					await ctx.api.editMessageCaption(chatId, messageId, {
+						caption: caption,
+						reply_markup: keyboard,
+						parse_mode: 'Markdown',
+					});
+					return; // Caption edit success, no need to send new message
+				} catch (captionErr) {
+					// Caption edit also failed, fall back to delete/send
+					console.warn(
+						`[Queue] Caption edit also failed, falling back to delete/send`
+					);
+					try {
+						await ctx.api.deleteMessage(chatId, messageId);
+					} catch (d) {
+						/* ignore delete error */
+					}
 				}
 			}
 		}

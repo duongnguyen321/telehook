@@ -128,29 +128,31 @@ router.get('/', async (req, res) => {
 		]);
 
 		// Calculate duplicate count using JavaScript grouping (MongoDB doesn't support raw SQL)
-		// Get all videos with duration and fileSize for duplicate detection
+		// Get all videos with duration for duplicate detection
+		// Note: Using only duration (±1 second tolerance) since fileSize can vary due to encoding
 		const allVideosForDupes = await prisma.scheduledPost.findMany({
 			where: {
 				status: { in: ['pending', 'posted'] },
 				duration: { not: null },
-				fileSize: { not: null },
 			},
 			select: {
 				id: true,
 				duration: true,
-				fileSize: true,
 			},
 		});
 
-		// Group by duration+fileSize to find duplicates
+		// Group by duration (rounded to nearest second) to find duplicates
+		// Videos with same duration (±1 second tolerance) are considered potential duplicates
 		const dupGroups = {};
 		allVideosForDupes.forEach((v) => {
-			const key = `${v.duration}_${v.fileSize}`;
+			// Round duration to nearest second for grouping
+			const roundedDuration = Math.round(v.duration);
+			const key = `${roundedDuration}`;
 			if (!dupGroups[key]) dupGroups[key] = [];
 			dupGroups[key].push(v.id);
 		});
 
-		// Get IDs of duplicate videos (in groups with > 1 video)
+		// Get IDs of duplicate videos (in groups with > 1 video of same duration)
 		const duplicateIds = [];
 		Object.values(dupGroups).forEach((ids) => {
 			if (ids.length > 1) {
