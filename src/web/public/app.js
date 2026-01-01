@@ -562,27 +562,48 @@ function updateStats() {
 function renderVideos() {
 	const list = document.getElementById('video-list');
 
-	// Detect duplicates (only for videos with data)
+	// Detect duplicates using only duration (rounded to 2 decimals, matching backend)
 	const dupCounts = {};
 	filteredVideos.forEach((v) => {
-		if (v.duration && v.fileSize) {
-			const key = `${v.duration}_${v.fileSize}`;
+		if (v.duration) {
+			const key = Math.round(v.duration * 100) / 100;
 			dupCounts[key] = (dupCounts[key] || 0) + 1;
 		}
 	});
 
+	// Track previous group for separator rendering
+	let prevGroup = null;
+
 	list.innerHTML = filteredVideos
 		.map((video, index) => {
-			// Only mark as duplicate if has data AND count > 1
+			// Determine duplicate status
 			let isDuplicate = false;
-			if (video.duration && video.fileSize) {
-				const dupKey = `${video.duration}_${video.fileSize}`;
-				isDuplicate = dupCounts[dupKey] > 1;
+			let groupKey = null;
+			if (video.duration) {
+				// Use backend-provided group or calculate with 2-decimal precision
+				groupKey =
+					video.duplicateGroup || Math.round(video.duration * 100) / 100;
+				isDuplicate = dupCounts[groupKey] > 1 || video.duplicateGroup;
 			}
-			return `
+
+			// Check if we need a group divider (when in duplicates view)
+			let groupDivider = '';
+			if (
+				currentStatus === 'duplicates' &&
+				groupKey !== null &&
+				groupKey !== prevGroup
+			) {
+				const durationFormatted = formatDuration(groupKey);
+				groupDivider = `<div class="duplicate-group-header">📎 Nhóm ${durationFormatted}</div>`;
+				prevGroup = groupKey;
+			}
+
+			return `${groupDivider}
 		<div class="video-card ${isDuplicate ? 'duplicate' : ''} ${
 				video.status
-			}" data-id="${video.id}" data-status="${video.status}">
+			}" data-id="${video.id}" data-status="${video.status}" data-dup-group="${
+				groupKey || ''
+			}">
 			<div class="video-card-header">
 				<div class="drag-handle">⋮⋮</div>
 				<div class="video-index">${
@@ -645,6 +666,16 @@ function renderVideos() {
 		const card = document.querySelector(`.video-card[data-id="${id}"]`);
 		if (card) card.classList.add('marked-for-delete');
 	});
+}
+
+/**
+ * Format duration in seconds to readable format (mm:ss)
+ */
+function formatDuration(seconds) {
+	if (!seconds) return '0:00';
+	const mins = Math.floor(seconds / 60);
+	const secs = Math.round(seconds % 60);
+	return `${mins}:${secs.toString().padStart(2, '0')}`;
 }
 
 // Store observer globally to avoid re-creating
@@ -1282,7 +1313,7 @@ async function loadUsers(page = 1) {
 	try {
 		const res = await fetch(`${API_BASE}/admin/users?${params}`, {
 			headers: {
-				Authorization: `Bearer ${localStorage.getItem('dashboard_token')}`,
+				Authorization: `Bearer ${token}`,
 			},
 		});
 
@@ -1365,7 +1396,7 @@ async function viewUserDetails(telegramId) {
 	try {
 		const res = await fetch(`${API_BASE}/admin/users/${telegramId}`, {
 			headers: {
-				Authorization: `Bearer ${localStorage.getItem('dashboard_token')}`,
+				Authorization: `Bearer ${token}`,
 			},
 		});
 
@@ -1470,7 +1501,7 @@ async function loadAuditLogs(page = 1) {
 	try {
 		const res = await fetch(`${API_BASE}/admin/audit?${params}`, {
 			headers: {
-				Authorization: `Bearer ${localStorage.getItem('dashboard_token')}`,
+				Authorization: `Bearer ${token}`,
 			},
 		});
 

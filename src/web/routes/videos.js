@@ -129,7 +129,7 @@ router.get('/', async (req, res) => {
 
 		// Calculate duplicate count using JavaScript grouping (MongoDB doesn't support raw SQL)
 		// Get all videos with duration for duplicate detection
-		// Note: Using only duration (±1 second tolerance) since fileSize can vary due to encoding
+		// Duration is now precise (from ffprobe) so we can match on duration alone
 		const allVideosForDupes = await prisma.scheduledPost.findMany({
 			where: {
 				status: { in: ['pending', 'posted'] },
@@ -141,12 +141,12 @@ router.get('/', async (req, res) => {
 			},
 		});
 
-		// Group by duration (rounded to nearest second) to find duplicates
-		// Videos with same duration (±1 second tolerance) are considered potential duplicates
+		// Group by duration (rounded to 2 decimal places for precision)
+		// Videos with same precise duration (±0.01s) are duplicates
 		const dupGroups = {};
 		allVideosForDupes.forEach((v) => {
-			// Round duration to nearest second for grouping
-			const roundedDuration = Math.round(v.duration);
+			// Round to 2 decimal places for matching
+			const roundedDuration = Math.round(v.duration * 100) / 100;
 			const key = `${roundedDuration}`;
 			if (!dupGroups[key]) dupGroups[key] = [];
 			dupGroups[key].push(v.id);
@@ -193,37 +193,88 @@ router.get('/', async (req, res) => {
 				];
 			}
 
-			const [total, posts] = await Promise.all([
-				prisma.scheduledPost.count({ where }),
-				prisma.scheduledPost.findMany({
-					where,
-					orderBy: { scheduledAt: 'asc' },
-					skip,
-					take: limit,
-				}),
-			]);
+			// Fetch ALL duplicates for proper grouping
+			const allDupes = await prisma.scheduledPost.findMany({
+				where,
+				orderBy: { scheduledAt: 'asc' },
+			});
 
-			const videos = posts.map((post) => ({
-				id: post.id,
-				title: post.title,
-				hashtags: post.hashtags,
-				videoPath: post.videoPath,
-				scheduledAt: post.scheduledAt,
-				status: post.status,
-				isRepost: post.isRepost,
-				duration: post.duration,
-				fileSize: post.fileSize,
-				telegramFileId: post.telegramFileId,
-				videoUrl: `/api/videos/${post.id}/stream`,
-			}));
+			// Build reverse lookup: videoId -> groupKey (duration rounded to 2 decimals)
+			const videoToGroup = {};
+			allVideosForDupes.forEach((v) => {
+				const roundedDuration = Math.round(v.duration * 100) / 100;
+				videoToGroup[v.id] = roundedDuration;
+			});
+
+			// Sort by group key (duration) so duplicates are together, then by scheduledAt within group
+			allDupes.sort((a, b) => {
+				const groupA = videoToGroup[a.id] || 0;
+				const groupB = videoToGroup[b.id] || 0;
+				if (groupA !== groupB) return groupA - groupB; // Numeric comparison
+				return new Date(a.scheduledAt) - new Date(b.scheduledAt);
+			});
+
+			// Group videos by duration for group-aware pagination
+			const groupedVideos = [];
+			let currentGroupKey = null;
+			let currentGroup = [];
+
+			allDupes.forEach((video) => {
+				const groupKey = videoToGroup[video.id] || 0;
+				if (groupKey !== currentGroupKey) {
+					if (currentGroup.length > 0) {
+						groupedVideos.push({ key: currentGroupKey, videos: currentGroup });
+					}
+					currentGroupKey = groupKey;
+					currentGroup = [video];
+				} else {
+					currentGroup.push(video);
+				}
+			});
+			if (currentGroup.length > 0) {
+				groupedVideos.push({ key: currentGroupKey, videos: currentGroup });
+			}
+
+			// Paginate by groups (not by individual videos)
+			// Each page shows N groups, where N = limit/avgGroupSize, min 1 group per page
+			const totalGroups = groupedVideos.length;
+			const avgGroupSize = allDupes.length / totalGroups || 1;
+			const groupsPerPage = Math.max(1, Math.floor(limit / avgGroupSize));
+			const totalPages = Math.ceil(totalGroups / groupsPerPage);
+
+			const startGroupIdx = (page - 1) * groupsPerPage;
+			const endGroupIdx = Math.min(startGroupIdx + groupsPerPage, totalGroups);
+			const pageGroups = groupedVideos.slice(startGroupIdx, endGroupIdx);
+
+			// Flatten groups back to videos with group info
+			const videos = [];
+			pageGroups.forEach((group) => {
+				group.videos.forEach((post) => {
+					videos.push({
+						id: post.id,
+						title: post.title,
+						hashtags: post.hashtags,
+						videoPath: post.videoPath,
+						scheduledAt: post.scheduledAt,
+						status: post.status,
+						isRepost: post.isRepost,
+						duration: post.duration,
+						fileSize: post.fileSize,
+						telegramFileId: post.telegramFileId,
+						videoUrl: `/api/videos/${post.id}/stream`,
+						duplicateGroup: group.key,
+					});
+				});
+			});
 
 			return res.json({
 				videos,
 				meta: {
-					total,
+					total: allDupes.length,
+					totalGroups,
 					page,
 					limit,
-					totalPages: Math.ceil(total / limit),
+					totalPages,
 					search,
 					status,
 					duplicateCount,

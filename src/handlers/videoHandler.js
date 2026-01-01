@@ -62,6 +62,7 @@ import {
 import {
 	upscaleVideo,
 	cleanupUpscaledFile,
+	getVideoDuration,
 } from '../services/videoProcessor.js';
 
 // Temporary storage for category selections during content generation
@@ -640,20 +641,44 @@ async function processVideoAfterDownload(ctx, video, videoPath, chatId) {
 			}
 		}
 
+		// Get precise duration BEFORE uploading to S3 (while file exists locally)
+		// This enables accurate duplicate detection (videos match to 0.01s precision)
+		let preciseDuration = null;
+		try {
+			if (fs.existsSync(finalVideoPath)) {
+				preciseDuration = await getVideoDuration(finalVideoPath);
+				console.log(`[Video] Precise duration: ${preciseDuration}s (ffprobe)`);
+			}
+		} catch (e) {
+			console.error('[Video] Failed to get precise duration:', e.message);
+			preciseDuration = video.duration || null; // Fallback to Telegram duration
+		}
+
 		if (isS3Enabled()) {
 			const fileName = path.basename(finalVideoPath);
 			const uploaded = await s3UploadVideo(finalVideoPath, fileName);
 			if (uploaded) {
-				// Delete local file after successful S3 upload
-				try {
-					fs.unlinkSync(finalVideoPath);
-					if (wasUpscaled) cleanupUpscaledFile(finalVideoPath); // Cleanup temp dir if upscaled
-					console.log(
-						`[Video] Deleted local file after S3 upload: ${fileName}`
-					);
-				} catch (e) {
-					console.error(`[Video] Failed to delete local file: ${e.message}`);
+				// Keep local file as cache for faster access
+				// Priority: telegramFileId → local file → R2
+				if (wasUpscaled) {
+					// Only move upscaled file from temp dir to videos dir
+					const videosDir = path.join(DATA_DIR, 'videos');
+					const destPath = path.join(videosDir, fileName);
+					if (finalVideoPath !== destPath) {
+						try {
+							fs.renameSync(finalVideoPath, destPath);
+							finalVideoPath = destPath;
+							console.log(
+								`[Video] Moved upscaled file to videos dir: ${fileName}`
+							);
+						} catch (e) {
+							console.log(
+								`[Video] Upscaled file already in place: ${fileName}`
+							);
+						}
+					}
 				}
+				console.log(`[Video] Uploaded to S3, keeping local cache: ${fileName}`);
 			} else {
 				console.log('[Video] S3 upload failed, keeping local file');
 			}
@@ -678,8 +703,8 @@ async function processVideoAfterDownload(ctx, video, videoPath, chatId) {
 			hashtags: content.hashtags,
 			isRepost: false,
 			telegramFileId: video.file_id, // Save for instant sends
-			duration: video.duration || null, // For duplicate detection
-			fileSize: video.file_size || null, // For duplicate detection
+			duration: preciseDuration, // Precise duration from ffprobe
+			fileSize: video.file_size || null, // For reference
 		});
 
 		await scheduleUpload(post, new Date(post.scheduledAt));

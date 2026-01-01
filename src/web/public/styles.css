@@ -318,6 +318,40 @@ header {
 	font-weight: 600;
 }
 
+/* Duplicate Group Headers - shown when viewing duplicates */
+.duplicate-group-header {
+	grid-column: 1 / -1; /* Span all columns */
+	background: linear-gradient(
+		135deg,
+		rgba(124, 58, 237, 0.15),
+		rgba(239, 68, 68, 0.1)
+	);
+	border: 1px solid var(--accent);
+	border-radius: var(--radius-sm);
+	padding: 12px 16px;
+	margin: 8px 0;
+	font-weight: 600;
+	font-size: 14px;
+	color: var(--accent);
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.duplicate-group-header::before {
+	content: '';
+	flex: 1;
+	height: 1px;
+	background: linear-gradient(to right, transparent, var(--accent));
+}
+
+.duplicate-group-header::after {
+	content: '';
+	flex: 1;
+	height: 1px;
+	background: linear-gradient(to left, transparent, var(--accent));
+}
+
 .video-card-header {
 	display: flex;
 	align-items: center;
