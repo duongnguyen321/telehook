@@ -1181,21 +1181,42 @@ export function setupVideoHandler(bot) {
 		}
 
 		// Handle delete confirmed (need delete permission)
+		// Now marks as cancelled instead of truly deleting
 		if (data.startsWith('delyes_') && canDelete) {
 			const parts = data.split('_');
 			const postId = parts[1];
 			const currentPage = parseInt(parts[2]) || 0;
 
-			const result = await deleteScheduledPost(postId, chatId);
-			if (result.success) {
-				await safeAnswer(`Đã xóa! Đã reschedule ${result.rescheduled} video`);
-				await logAction(userId, 'delete_video', postId);
-				// Reuse message bubble -> pass messageId
-				const newPage = Math.max(0, currentPage - 1);
-				await sendQueuePage(ctx, chatId, newPage, messageId, permissions);
-			} else {
+			// Get the post first
+			const post = await prisma.scheduledPost.findUnique({
+				where: { id: postId },
+			});
+			if (!post) {
 				await safeAnswer('Lỗi: Không tìm thấy video');
+				return;
 			}
+
+			// If already cancelled, truly delete; otherwise just cancel
+			if (post.status === 'cancelled') {
+				const result = await deleteScheduledPost(postId, chatId);
+				await safeAnswer(
+					`Đã xóa vĩnh viễn! Reschedule ${result.rescheduled} video`
+				);
+				await logAction(userId, 'delete_video_permanent', postId);
+			} else {
+				// Mark as cancelled (soft delete) and reschedule
+				await updatePostStatus(postId, 'cancelled');
+				await safeAnswer('Đã huỷ đăng video! Reschedule xong.');
+				await logAction(userId, 'cancel_video', postId);
+
+				// Reschedule if was pending
+				if (post.status === 'pending') {
+					await rescheduleTimesOnly(post.chatId);
+				}
+			}
+
+			const newPage = Math.max(0, currentPage - 1);
+			await sendQueuePage(ctx, chatId, newPage, messageId, permissions);
 			return;
 		}
 

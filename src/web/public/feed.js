@@ -19,14 +19,11 @@ let currentPage = 1;
 let isLoading = false;
 let hasMore = true;
 let totalPages = 1;
-let currentFilters = {
-	search: '',
-	status: 'pending', // Default to pending (chưa đăng)
-};
 
 // Watched Videos Tracking
-// A video is considered "watched" if user has viewed >30% of its duration
-const WATCHED_THRESHOLD = 0.3; // 30%
+// A video is considered "watched" if user has viewed >10% of its duration
+// Videos are also marked as watched immediately when they become visible
+const WATCHED_THRESHOLD = 0.1; // 10%
 const WATCHED_STORAGE_KEY = 'feed_watched_videos';
 
 /**
@@ -105,8 +102,6 @@ const feedContainer = document.getElementById('feed-container');
 const scroller = document.getElementById('video-scroller');
 const videoTemplate = document.getElementById('video-template');
 const loadingIndicator = document.getElementById('loading-indicator');
-const searchInput = document.getElementById('search-input');
-const statusFilter = document.getElementById('status-filter');
 
 // Intersection Observer for Auto-Play
 const observerOptions = {
@@ -117,9 +112,16 @@ const observerOptions = {
 const videoObserver = new IntersectionObserver((entries) => {
 	entries.forEach((entry) => {
 		const video = entry.target.querySelector('video');
+		const videoId = entry.target.dataset.videoId;
 		if (!video) return;
 
 		if (entry.isIntersecting) {
+			// Mark video as watched immediately when visible
+			// This ensures users don't see the same videos repeatedly
+			if (videoId) {
+				markVideoAsWatched(videoId);
+			}
+
 			// Trigger preload for upcoming videos
 			const items = Array.from(document.querySelectorAll('.video-item'));
 			const currentIndex = items.indexOf(entry.target);
@@ -132,18 +134,13 @@ const videoObserver = new IntersectionObserver((entries) => {
 			if (playPromise !== undefined) {
 				playPromise.catch((error) => {
 					console.log('Autoplay prevented:', error);
-					// Show play button or mute if needed
 				});
 			}
 		} else {
-			// Pause video and reset time if needed (optional)
+			// Pause video when not visible
 			video.pause();
-			// video.currentTime = 0; // Reset to start when scrolled away? standard tiktok keeps position
 		}
 	});
-
-	// Check for infinite scroll trigger (monitor last few elements)
-	// Actually better to simplify: just check scroll position
 }, observerOptions);
 
 // --- Initialization ---
@@ -172,16 +169,6 @@ function init() {
 	} else {
 		showLogin();
 	}
-
-	// Debounce search
-	let searchTimeout;
-	searchInput.addEventListener('input', (e) => {
-		clearTimeout(searchTimeout);
-		searchTimeout = setTimeout(() => {
-			currentFilters.search = e.target.value;
-			reloadFeed();
-		}, 500);
-	});
 
 	// Scroller infinite load
 	scroller.addEventListener('scroll', () => {
@@ -319,11 +306,6 @@ async function checkAuth() {
 
 // --- Video Feed ---
 
-function applyFilter() {
-	currentFilters.status = statusFilter.value;
-	reloadFeed();
-}
-
 function reloadFeed() {
 	scroller.innerHTML = ''; // Clear current videos
 	videos = [];
@@ -334,7 +316,7 @@ function reloadFeed() {
 
 async function loadMoreVideos() {
 	if (isLoading) return;
-	// Shuffle mode: exclude watched videos, shuffle results
+	// Mix all video statuses (pending, posted, cancelled) with shuffle and exclude watched
 	// When all videos are watched, server returns allWatched=true, we clear the list and retry
 
 	isLoading = true;
@@ -345,17 +327,13 @@ async function loadMoreVideos() {
 		const params = new URLSearchParams({
 			page: currentPage,
 			limit: 10, // Load 10 at a time for smooth streaming
-			status: currentFilters.status,
+			status: 'all', // Fetch all statuses mixed together
 			shuffle: '1', // Enable shuffle mode
 		});
 
 		// Send watched video IDs to exclude
 		if (watchedVideos.length > 0) {
 			params.append('excludeWatched', watchedVideos.join(','));
-		}
-
-		if (currentFilters.search) {
-			params.append('search', currentFilters.search);
 		}
 
 		const res = await fetch(`/api/videos?${params}`, {

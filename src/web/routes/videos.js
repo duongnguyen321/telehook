@@ -319,7 +319,8 @@ router.get('/', async (req, res) => {
 		if (status === 'pending' || status === 'posted' || status === 'cancelled') {
 			where.status = status;
 		} else {
-			where.status = { in: ['pending', 'posted'] };
+			// 'all' includes pending, posted, and cancelled
+			where.status = { in: ['pending', 'posted', 'cancelled'] };
 		}
 
 		// Search filter (title OR hashtags)
@@ -600,6 +601,8 @@ router.post('/swap', async (req, res) => {
 
 /**
  * Delete video
+ * - If video status is 'cancelled': truly delete (remove files, DB record)
+ * - Otherwise: just set status to 'cancelled' (soft delete) and reschedule
  */
 router.delete('/:id', async (req, res) => {
 	const { id } = req.params;
@@ -611,22 +614,49 @@ router.delete('/:id', async (req, res) => {
 	}
 
 	try {
-		// Use existing delete function which handles S3, local files, reschedule
-		const result = await deleteScheduledPost(id, 0); // chatId not used
+		// Get post to check current status
+		const post = await prisma.scheduledPost.findUnique({ where: { id } });
+		if (!post) {
+			return res.status(404).json({ error: 'Video not found' });
+		}
 
-		if (result.success) {
-			// Log dashboard action
-			const telegramId = parseInt(req.user.telegramId, 10);
+		if (post.status === 'cancelled') {
+			// Already cancelled - truly delete the video
+			const result = await deleteScheduledPost(id, 0);
 			await logAction(
-				telegramId,
-				'dashboard_delete',
+				telegramIdAsNum,
+				'dashboard_delete_permanent',
 				id,
-				'Deleted from dashboard'
+				'Permanently deleted from dashboard'
 			);
-
-			res.json({ success: true, rescheduled: result.rescheduled });
+			res.json({
+				success: true,
+				rescheduled: result.rescheduled,
+				permanent: true,
+			});
 		} else {
-			res.status(404).json({ error: 'Video not found' });
+			// Not cancelled yet - just mark as cancelled and reschedule
+			const wasPosted = post.status === 'posted';
+			await prisma.scheduledPost.update({
+				where: { id },
+				data: { status: 'cancelled' },
+			});
+
+			// Reschedule remaining pending posts if this was pending
+			let rescheduled = 0;
+			if (!wasPosted) {
+				// Import dynamically to avoid top-level await issues
+				const { rescheduleTimesOnly } = await import('../../utils/storage.js');
+				rescheduled = await rescheduleTimesOnly(post.chatId);
+			}
+
+			await logAction(
+				telegramIdAsNum,
+				'dashboard_cancel',
+				id,
+				'Cancelled video from dashboard'
+			);
+			res.json({ success: true, rescheduled, permanent: false });
 		}
 	} catch (error) {
 		console.error('[Videos API] Delete error:', error);
@@ -636,6 +666,8 @@ router.delete('/:id', async (req, res) => {
 
 /**
  * Batch delete videos
+ * - Videos with status='cancelled': truly delete (remove files, DB record)
+ * - Videos with other status: just set status to 'cancelled' (soft delete)
  */
 router.post('/batch-delete', async (req, res) => {
 	const { ids } = req.body;
@@ -651,20 +683,66 @@ router.post('/batch-delete', async (req, res) => {
 	}
 
 	try {
-		const result = await deleteScheduledPostBatch(ids);
+		// Get all posts to check their status
+		const posts = await prisma.scheduledPost.findMany({
+			where: { id: { in: ids } },
+		});
+
+		// Split into cancelled (truly delete) and others (soft delete)
+		const cancelledIds = posts
+			.filter((p) => p.status === 'cancelled')
+			.map((p) => p.id);
+		const otherIds = posts
+			.filter((p) => p.status !== 'cancelled')
+			.map((p) => p.id);
+
+		let permanentlyDeleted = 0;
+		let cancelled = 0;
+		let rescheduled = 0;
+
+		// Truly delete already-cancelled videos
+		if (cancelledIds.length > 0) {
+			const result = await deleteScheduledPostBatch(cancelledIds);
+			permanentlyDeleted = result.deleted;
+			rescheduled += result.rescheduled;
+		}
+
+		// Soft delete others (mark as cancelled)
+		if (otherIds.length > 0) {
+			await prisma.scheduledPost.updateMany({
+				where: { id: { in: otherIds } },
+				data: { status: 'cancelled' },
+			});
+			cancelled = otherIds.length;
+
+			// Reschedule remaining pending posts
+			const { rescheduleTimesOnly } = await import('../../utils/storage.js');
+			// Get unique chatIds for rescheduling
+			const chatIds = [
+				...new Set(
+					posts
+						.filter((p) => p.status === 'pending')
+						.map((p) => p.chatId.toString())
+				),
+			];
+			for (const chatId of chatIds) {
+				rescheduled += await rescheduleTimesOnly(BigInt(chatId));
+			}
+		}
 
 		// Log dashboard action
 		await logAction(
 			telegramIdAsNum,
 			'dashboard_batch_delete',
 			null,
-			`Deleted ${result.deleted} videos`
+			`Cancelled ${cancelled}, permanently deleted ${permanentlyDeleted} videos`
 		);
 
 		res.json({
 			success: true,
-			deleted: result.deleted,
-			rescheduled: result.rescheduled,
+			cancelled,
+			deleted: permanentlyDeleted,
+			rescheduled,
 		});
 	} catch (error) {
 		console.error('[Videos API] Batch delete error:', error);
