@@ -610,7 +610,11 @@ function renderVideos() {
 					video.order || index + 1 + (currentPage - 1) * itemsPerPage
 				}</div>
 				<span class="video-status ${video.status}">${
-				video.status === 'pending' ? '⏳' : '✅'
+				video.status === 'pending'
+					? '⏳'
+					: video.status === 'cancelled'
+					? '❌'
+					: '✅'
 			}</span>
 				<span style="font-size: 11px; color: var(--text-muted)">📅 ${formatDate(
 					video.scheduledAt

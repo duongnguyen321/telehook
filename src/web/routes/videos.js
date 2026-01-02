@@ -140,7 +140,7 @@ router.get('/', async (req, res) => {
 	const page = parseInt(req.query.page) || 1;
 	const limit = parseInt(req.query.limit) || 40;
 	const search = req.query.search?.trim() || '';
-	const status = req.query.status || 'all'; // 'all', 'pending', 'posted', 'duplicates'
+	const status = req.query.status || 'all'; // 'all', 'pending', 'posted', 'cancelled', 'duplicates'
 	const shouldShuffle = req.query.shuffle === '1';
 	const excludeWatched =
 		req.query.excludeWatched?.split(',').filter(Boolean) || [];
@@ -316,7 +316,7 @@ router.get('/', async (req, res) => {
 		const where = {};
 
 		// Status filter
-		if (status === 'pending' || status === 'posted') {
+		if (status === 'pending' || status === 'posted' || status === 'cancelled') {
 			where.status = status;
 		} else {
 			where.status = { in: ['pending', 'posted'] };
