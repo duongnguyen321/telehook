@@ -117,14 +117,33 @@ router.get('/:id/stream', async (req, res) => {
 router.use(authMiddleware);
 
 /**
+ * Fisher-Yates shuffle algorithm
+ * @param {Array} array - Array to shuffle
+ * @returns {Array} - Shuffled array
+ */
+function shuffleArray(array) {
+	const result = [...array];
+	for (let i = result.length - 1; i > 0; i--) {
+		const j = Math.floor(Math.random() * (i + 1));
+		[result[i], result[j]] = [result[j], result[i]];
+	}
+	return result;
+}
+
+/**
  * Get all videos (pending + posted) with search and filter
+ * Query params:
+ *   - shuffle=1: Shuffle videos randomly
+ *   - excludeWatched: Comma-separated video IDs to exclude (already watched)
  */
 router.get('/', async (req, res) => {
 	const page = parseInt(req.query.page) || 1;
 	const limit = parseInt(req.query.limit) || 40;
-	const skip = (page - 1) * limit;
 	const search = req.query.search?.trim() || '';
 	const status = req.query.status || 'all'; // 'all', 'pending', 'posted', 'duplicates'
+	const shouldShuffle = req.query.shuffle === '1';
+	const excludeWatched =
+		req.query.excludeWatched?.split(',').filter(Boolean) || [];
 
 	try {
 		// Get global stats first
@@ -311,7 +330,72 @@ router.get('/', async (req, res) => {
 			];
 		}
 
-		// Get total count and paginated videos
+		// Exclude watched videos if provided (only when shuffle mode)
+		if (excludeWatched.length > 0 && shouldShuffle) {
+			where.id = { notIn: excludeWatched };
+		}
+
+		// For shuffle mode: fetch all, shuffle, then paginate
+		// For normal mode: use DB pagination
+		if (shouldShuffle) {
+			// Fetch all matching videos (no skip/take - we'll shuffle then slice)
+			const allPosts = await prisma.scheduledPost.findMany({
+				where,
+				orderBy: { scheduledAt: 'asc' },
+			});
+
+			// Shuffle the videos
+			const shuffledPosts = shuffleArray(allPosts);
+
+			// Get total for pagination info
+			const total = shuffledPosts.length;
+			const totalPages = Math.ceil(total / limit);
+
+			// Check if we're past all pages - if so, user has seen all
+			// This info is sent to frontend so it can clear watched list
+			const allWatched = total === 0 && excludeWatched.length > 0;
+
+			// Paginate the shuffled results
+			const skip = (page - 1) * limit;
+			const paginatedPosts = shuffledPosts.slice(skip, skip + limit);
+
+			const videos = paginatedPosts.map((post) => ({
+				id: post.id,
+				title: post.title,
+				hashtags: post.hashtags,
+				videoPath: post.videoPath,
+				scheduledAt: post.scheduledAt,
+				status: post.status,
+				isRepost: post.isRepost,
+				duration: post.duration,
+				fileSize: post.fileSize,
+				telegramFileId: post.telegramFileId,
+				videoUrl: isCdnEnabled()
+					? getCdnUrl(path.basename(post.videoPath))
+					: `/api/videos/${post.id}/stream`,
+			}));
+
+			res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+			return res.json({
+				videos,
+				meta: {
+					total,
+					page,
+					limit,
+					totalPages,
+					search,
+					status,
+					duplicateCount,
+					globalTotal: pendingCount + postedCount,
+					pendingCount,
+					postedCount,
+					allWatched, // Flag to indicate all videos have been watched
+				},
+			});
+		}
+
+		// Normal mode: DB pagination
+		const skip = (page - 1) * limit;
 		const [total, posts] = await Promise.all([
 			prisma.scheduledPost.count({ where }),
 			prisma.scheduledPost.findMany({

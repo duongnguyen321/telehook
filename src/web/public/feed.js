@@ -21,8 +21,47 @@ let hasMore = true;
 let totalPages = 1;
 let currentFilters = {
 	search: '',
-	status: 'posted', // Default to posted as requested "giống tiktok" usually shows public content first
+	status: 'pending', // Default to pending (chưa đăng)
 };
+
+// Watched Videos Tracking
+// A video is considered "watched" if user has viewed >30% of its duration
+const WATCHED_THRESHOLD = 0.3; // 30%
+const WATCHED_STORAGE_KEY = 'feed_watched_videos';
+
+/**
+ * Get list of watched video IDs from localStorage
+ * @returns {string[]}
+ */
+function getWatchedVideos() {
+	try {
+		const data = localStorage.getItem(WATCHED_STORAGE_KEY);
+		return data ? JSON.parse(data) : [];
+	} catch {
+		return [];
+	}
+}
+
+/**
+ * Mark a video as watched
+ * @param {string} videoId
+ */
+function markVideoAsWatched(videoId) {
+	const watched = getWatchedVideos();
+	if (!watched.includes(videoId)) {
+		watched.push(videoId);
+		localStorage.setItem(WATCHED_STORAGE_KEY, JSON.stringify(watched));
+		console.log('[Feed] Marked video as watched:', videoId);
+	}
+}
+
+/**
+ * Clear all watched videos (when all videos have been seen)
+ */
+function clearWatchedVideos() {
+	localStorage.removeItem(WATCHED_STORAGE_KEY);
+	console.log('[Feed] Cleared watched videos list - starting fresh');
+}
 
 // Preload Configuration
 const PRELOAD_AHEAD = 8; // Preload 8 videos ahead
@@ -295,21 +334,25 @@ function reloadFeed() {
 
 async function loadMoreVideos() {
 	if (isLoading) return;
-	// Loop logic: if no more pages in API but we want infinite scroll
-	// The requirement says: "Nếu scroll hết các video thì lộn lại từ video đầu tiên."
-
-	// So if (currentPage > totalPages), we should reset currentPage to 1 and fetching again?
-	// Let's handle this in the fetch response logic.
+	// Shuffle mode: exclude watched videos, shuffle results
+	// When all videos are watched, server returns allWatched=true, we clear the list and retry
 
 	isLoading = true;
 	loadingIndicator.classList.remove('hidden');
 
 	try {
+		const watchedVideos = getWatchedVideos();
 		const params = new URLSearchParams({
 			page: currentPage,
 			limit: 10, // Load 10 at a time for smooth streaming
 			status: currentFilters.status,
+			shuffle: '1', // Enable shuffle mode
 		});
+
+		// Send watched video IDs to exclude
+		if (watchedVideos.length > 0) {
+			params.append('excludeWatched', watchedVideos.join(','));
+		}
 
 		if (currentFilters.search) {
 			params.append('search', currentFilters.search);
@@ -321,6 +364,20 @@ async function loadMoreVideos() {
 
 		const data = await res.json();
 
+		// Check if all videos have been watched
+		if (data.meta?.allWatched) {
+			console.log(
+				'[Feed] All videos watched, clearing watched list and reloading'
+			);
+			clearWatchedVideos();
+			currentPage = 1;
+			setTimeout(() => {
+				isLoading = false;
+				loadMoreVideos();
+			}, 100);
+			return;
+		}
+
 		if (data.videos && data.videos.length > 0) {
 			data.videos.forEach(appendVideo);
 			totalPages = data.meta.totalPages;
@@ -328,21 +385,19 @@ async function loadMoreVideos() {
 		} else {
 			// No videos returned
 			if (currentPage === 1) {
-				// Really empty
+				// Really empty (no videos in DB)
 				hasMore = false;
 				scroller.innerHTML =
 					'<div style="color:white;text-align:center;padding-top:50vh">Không có video nào</div>';
 			} else {
-				// End of list, implement LOOPING
+				// End of shuffled list, loop back
 				console.log('End of list, looping back to page 1');
-				currentPage = 1; // Reset to page 1
-				// Don't set isLoading false yet, immediately fetch page 1
-				// To avoid recursion depth issues, use setTimeout
+				currentPage = 1;
 				setTimeout(() => {
 					isLoading = false;
 					loadMoreVideos();
 				}, 100);
-				return; // Return early so we don't clear loading indicator below immediately
+				return;
 			}
 		}
 	} catch (e) {
@@ -362,6 +417,9 @@ function appendVideo(videoData) {
 	const wrapper = clone.querySelector('.video-wrapper');
 	const muteBtn = clone.querySelector('.mute-btn');
 
+	// Store video ID for watched tracking
+	videoItem.dataset.videoId = videoData.id;
+
 	// Set Data
 	videoEl.src = videoData.videoUrl;
 	videoEl.poster = ''; // Could implement thumbnails later
@@ -373,6 +431,19 @@ function appendVideo(videoData) {
 	const isMuted = localStorage.getItem('feed_muted') !== 'false';
 	videoEl.muted = isMuted;
 	updateMuteButtonState(muteBtn, isMuted);
+
+	// Track watched progress - mark as watched when >30% is viewed
+	let hasMarkedWatched = false;
+	videoEl.addEventListener('timeupdate', () => {
+		if (hasMarkedWatched) return; // Already marked
+		if (
+			videoEl.duration &&
+			videoEl.currentTime / videoEl.duration > WATCHED_THRESHOLD
+		) {
+			markVideoAsWatched(videoData.id);
+			hasMarkedWatched = true;
+		}
+	});
 
 	// Play/Pause Interaction - only trigger on video area, not mute button
 	wrapper.addEventListener('click', (e) => {
