@@ -1023,6 +1023,9 @@ header {
 	gap: 12px;
 	padding: 24px;
 	margin-top: 20px;
+	margin-bottom: 80px; /* Space for save-actions-bar popup */
+	position: relative;
+	z-index: 50; /* Below save-actions-bar (z-index: 100) but accessible */
 }
 
 .pagination-info {
