@@ -49,7 +49,7 @@ export const SATURDAY_SLOTS = [
 	[23, 45],
 ];
 
-// Sunday: Add 01:00 (Sat Post-Party), 09:00, 10:00. Remove 23:45.
+// Sunday: Add 01:00 (Sat Post-Party), 09:00, 10:00.
 // 01:00, 09:00, 10:00, 11:30, 12:15, 17:30, 19:45, 20:30, 21:15, 22:00, 22:45
 export const SUNDAY_SLOTS = [
 	[1, 0], // Post-Party (technically Sun morning)
@@ -615,6 +615,124 @@ export async function markNotificationSent(postId) {
 	console.log(
 		`[Storage] Marked notification sent for post ${postId.slice(0, 8)}`
 	);
+}
+
+/**
+ * Save notification message IDs for a post (to delete later if rescheduled)
+ * @param {string} postId
+ * @param {string[]} messageIds - Array of message IDs (one per recipient)
+ */
+export async function saveNotificationMessageIds(postId, messageIds) {
+	await prisma.scheduledPost.update({
+		where: { id: postId },
+		data: { notificationMessageIds: messageIds },
+	});
+	console.log(
+		`[Storage] Saved ${messageIds.length} message IDs for post ${postId.slice(
+			0,
+			8
+		)}`
+	);
+}
+
+/**
+ * Clear notification message IDs for a post
+ * @param {string} postId
+ */
+export async function clearNotificationMessageIds(postId) {
+	await prisma.scheduledPost.update({
+		where: { id: postId },
+		data: { notificationMessageIds: [], notificationSent: false },
+	});
+	console.log(`[Storage] Cleared message IDs for post ${postId.slice(0, 8)}`);
+}
+
+/**
+ * Get raw post data with notificationMessageIds (not mapped)
+ * @param {string} postId
+ * @returns {Promise<Object | null>}
+ */
+export async function getRawPostById(postId) {
+	return prisma.scheduledPost.findUnique({ where: { id: postId } });
+}
+
+/**
+ * Reschedule a single post to the end of the queue
+ * @param {string} postId
+ * @returns {Promise<Date>} New scheduled time
+ */
+export async function rescheduleToEnd(postId) {
+	const post = await prisma.scheduledPost.findUnique({ where: { id: postId } });
+	if (!post) throw new Error('Post not found');
+
+	// Get the last scheduled slot
+	const lastPost = await prisma.scheduledPost.findFirst({
+		where: { status: 'pending' },
+		orderBy: { scheduledAt: 'desc' },
+	});
+
+	let newScheduledAt;
+
+	if (lastPost) {
+		// Find the next slot after the last scheduled post
+		const lastDate = toGMT7(lastPost.scheduledAt);
+		let slots = getSlotsForDate(lastDate);
+		const lastHour = lastDate.getHours();
+		const lastMinute = lastDate.getMinutes();
+
+		// Find current slot index
+		let slotIndex = -1;
+		for (let i = 0; i < slots.length; i++) {
+			const [h, m] = slots[i];
+			if (h === lastHour && m === lastMinute) {
+				slotIndex = i;
+				break;
+			}
+		}
+
+		// Move to next slot
+		let currentDate = new Date(lastDate);
+		slotIndex = slotIndex + 1;
+
+		if (slotIndex >= slots.length) {
+			// Move to next day
+			currentDate.setDate(currentDate.getDate() + 1);
+			slots = getSlotsForDate(currentDate);
+			slotIndex = 0;
+		}
+
+		const [hour, minute] = slots[slotIndex];
+		newScheduledAt = createGMT7Time(
+			currentDate.getFullYear(),
+			currentDate.getMonth() + 1,
+			currentDate.getDate(),
+			hour
+		);
+		newScheduledAt.setMinutes(minute);
+	} else {
+		// No other posts, use next available slot
+		const slotStr = await getSmartScheduleSlot();
+		newScheduledAt = new Date(slotStr);
+	}
+
+	// Update the post
+	await prisma.scheduledPost.update({
+		where: { id: postId },
+		data: {
+			scheduledAt: newScheduledAt,
+			notificationSent: false,
+			notificationMessageIds: [],
+		},
+	});
+
+	console.log(
+		`[Storage] Rescheduled post ${postId.slice(
+			0,
+			8
+		)} to ${newScheduledAt.toISOString()}`
+	);
+
+	return newScheduledAt;
 }
 
 /**

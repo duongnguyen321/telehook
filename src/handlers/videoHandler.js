@@ -17,6 +17,7 @@ import {
 	updatePostVideo,
 	cleanOrphanedPosts,
 	getNextScheduledPost,
+	rescheduleToEnd,
 	DATA_DIR,
 	prisma,
 } from '../utils/storage.js';
@@ -1631,6 +1632,51 @@ export function setupVideoHandler(bot) {
 			}
 
 			await safeAnswer('❌ Đã huỷ đăng video này!');
+			return;
+		}
+
+		// Handle push to end (from scheduler notification) - ADMIN ONLY
+		if (data.startsWith('pushtoend_')) {
+			// Only admin can push to end
+			if (!isAdmin(userId)) {
+				await safeAnswer('❌ Chỉ Admin mới được đẩy video!');
+				await logAction(
+					userId,
+					'push_to_end_denied',
+					data.replace('pushtoend_', '')
+				);
+				return;
+			}
+
+			const postId = data.replace('pushtoend_', '');
+
+			try {
+				const newTime = await rescheduleToEnd(postId);
+				await logAction(
+					userId,
+					'push_to_end',
+					postId,
+					`New time: ${newTime.toISOString()}`
+				);
+
+				// Delete the message after pushing
+				try {
+					await ctx.api.deleteMessage(chatId, messageId);
+				} catch (e) {
+					// Ignore if can't delete
+				}
+
+				// Format new time for display
+				const gmt7 = new Date(newTime.getTime() + 7 * 60 * 60 * 1000);
+				const day = gmt7.getUTCDate().toString().padStart(2, '0');
+				const month = (gmt7.getUTCMonth() + 1).toString().padStart(2, '0');
+				const hours = gmt7.getUTCHours().toString().padStart(2, '0');
+				const mins = gmt7.getUTCMinutes().toString().padStart(2, '0');
+
+				await safeAnswer(`⏭️ Đã đẩy xuống: ${day}/${month} ${hours}:${mins}`);
+			} catch (err) {
+				await safeAnswer(`❌ Lỗi: ${err.message.slice(0, 50)}`);
+			}
 			return;
 		}
 

@@ -13,21 +13,22 @@ datasource db {
 // ==================== TELEGRAM BOT COLLECTIONS ====================
 
 model ScheduledPost {
-  id               String   @id @default(auto()) @map("_id") @db.ObjectId
-  chatId           BigInt   @map("chat_id")
-  videoPath        String   @map("video_path")
-  title            String
-  hashtags         String
-  scheduledAt      DateTime @map("scheduled_at")
-  status           String   @default("pending")
-  error            String?
-  createdAt        DateTime @default(now()) @map("created_at")
-  isRepost         Boolean  @default(false) @map("is_repost")
-  telegramFileId   String?  @map("telegram_file_id")
-  notificationSent Boolean  @default(false) @map("notification_sent")
+  id                     String   @id @default(auto()) @map("_id") @db.ObjectId
+  chatId                 BigInt   @map("chat_id")
+  videoPath              String   @map("video_path")
+  title                  String
+  hashtags               String
+  scheduledAt            DateTime @map("scheduled_at")
+  status                 String   @default("pending")
+  error                  String?
+  createdAt              DateTime @default(now()) @map("created_at")
+  isRepost               Boolean  @default(false) @map("is_repost")
+  telegramFileId         String?  @map("telegram_file_id")
+  notificationSent       Boolean  @default(false) @map("notification_sent")
+  notificationMessageIds String[] @default([]) @map("notification_message_ids")
   // For duplicate detection
-  duration         Float?   @map("duration")
-  fileSize         Int?     @map("file_size")
+  duration               Float?   @map("duration")
+  fileSize               Int?     @map("file_size")
 
   @@index([status])
   @@index([scheduledAt])

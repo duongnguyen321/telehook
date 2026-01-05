@@ -11,6 +11,10 @@ import {
 	getPendingCount,
 	DATA_DIR,
 	updatePostFileId,
+	saveNotificationMessageIds,
+	clearNotificationMessageIds,
+	getRawPostById,
+	rescheduleToEnd,
 } from '../utils/storage.js';
 import { getNotificationRecipients, getUserRole } from './roleService.js';
 import {
@@ -86,6 +90,8 @@ async function processNotification(post) {
 				.row()
 				.text('✅ Đã đăng TikTok', `posted_${postId}`)
 				.text('❌ Huỷ đăng', `cancelpost_${postId}`)
+				.row()
+				.text('⏭️ Đẩy xuống cuối', `pushtoend_${postId}`)
 				.row();
 
 			if (fullLink.startsWith('https')) {
@@ -155,7 +161,9 @@ async function processNotification(post) {
 				}
 			}
 		} else {
-			// Send video to all recipients
+			// Send video to all recipients and collect message IDs
+			const sentMessageIds = [];
+
 			for (const recipientId of recipients) {
 				try {
 					const recipientKeyboard = buildKeyboardForRecipient(recipientId);
@@ -218,6 +226,9 @@ async function processNotification(post) {
 
 					const sentMessage = await sendVideoWithRetry();
 
+					// Collect message ID for potential future deletion
+					sentMessageIds.push(sentMessage.message_id.toString());
+
 					// Save file_id for future use (only from first recipient)
 					if (needsFileIdSave && sentMessage.video?.file_id) {
 						await updatePostFileId(postId, sentMessage.video.file_id);
@@ -234,7 +245,14 @@ async function processNotification(post) {
 						`[Scheduler] Failed to send to ${recipientId}:`,
 						sendError.message
 					);
+					// Push empty string for failed sends to keep index alignment
+					sentMessageIds.push('');
 				}
+			}
+
+			// Save message IDs for potential deletion if post gets rescheduled
+			if (sentMessageIds.some((id) => id !== '')) {
+				await saveNotificationMessageIds(postId, sentMessageIds);
 			}
 		}
 
@@ -272,7 +290,43 @@ async function processNotification(post) {
 }
 
 /**
+ * Delete notification messages for a post that will be rescheduled
+ * @param {string} postId
+ */
+async function deleteNotificationMessages(postId) {
+	if (!bot) return;
+
+	const rawPost = await getRawPostById(postId);
+	if (!rawPost || !rawPost.notificationMessageIds?.length) return;
+
+	const recipients = getNotificationRecipients();
+	const messageIds = rawPost.notificationMessageIds;
+
+	for (let i = 0; i < recipients.length; i++) {
+		const recipientId = recipients[i];
+		const messageId = messageIds[i];
+
+		if (messageId && messageId !== '') {
+			try {
+				await bot.api.deleteMessage(recipientId, parseInt(messageId));
+				console.log(
+					`[Scheduler] Deleted message ${messageId} for ${recipientId}`
+				);
+			} catch (err) {
+				// Message may have been deleted manually or expired, ignore
+				console.warn(`[Scheduler] Failed to delete message: ${err.message}`);
+			}
+		}
+	}
+
+	// Clear stored message IDs
+	await clearNotificationMessageIds(postId);
+}
+
+/**
  * Check for due posts and process them
+ * SMART LOGIC: When multiple posts are overdue, only process the NEWEST one
+ * and reschedule older posts to the end of the queue
  * This runs every minute via cron
  */
 async function checkAndProcessDuePosts() {
@@ -283,15 +337,60 @@ async function checkAndProcessDuePosts() {
 			return;
 		}
 
-		console.log(`[Scheduler] Found ${duePosts.length} due post(s) to process`);
+		console.log(`[Scheduler] Found ${duePosts.length} due post(s)`);
 
-		for (const post of duePosts) {
+		// If only one post, process it normally
+		if (duePosts.length === 1) {
 			try {
-				await processNotification(post);
+				await processNotification(duePosts[0]);
 			} catch (error) {
 				// Error already logged in processNotification
-				// Continue with next post
 			}
+			return;
+		}
+
+		// Multiple overdue posts - smart reschedule logic
+		// Sort by scheduledAt DESC: newest (closest to now) first
+		duePosts.sort((a, b) => new Date(b.scheduledAt) - new Date(a.scheduledAt));
+
+		const newestPost = duePosts[0];
+		const olderPosts = duePosts.slice(1);
+
+		console.log(
+			`[Scheduler] Smart reschedule: Processing newest post ${newestPost.id.slice(
+				0,
+				8
+			)}, rescheduling ${olderPosts.length} older post(s)`
+		);
+
+		// Reschedule older posts to end of queue
+		for (const oldPost of olderPosts) {
+			try {
+				// Delete old notification messages if they were sent
+				await deleteNotificationMessages(oldPost.id);
+
+				// Reschedule to end of queue
+				const newTime = await rescheduleToEnd(oldPost.id);
+
+				console.log(
+					`[Scheduler] Rescheduled overdue post ${oldPost.id.slice(
+						0,
+						8
+					)} to ${newTime.toISOString()}`
+				);
+			} catch (err) {
+				console.error(
+					`[Scheduler] Failed to reschedule ${oldPost.id.slice(0, 8)}:`,
+					err.message
+				);
+			}
+		}
+
+		// Process only the newest post
+		try {
+			await processNotification(newestPost);
+		} catch (error) {
+			// Error already logged in processNotification
 		}
 	} catch (error) {
 		console.error('[Scheduler] Error checking due posts:', error.message);
