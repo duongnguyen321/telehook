@@ -2170,7 +2170,9 @@ async function handleCommand(ctx, command) {
 			// Send with confirm button
 			const keyboard = new InlineKeyboard()
 				.text('✅ Duyệt đăng ngay', `posted_${post.id}`)
-				.text('❌ Huỷ đăng', `cancelpost_${post.id}`);
+				.text('❌ Huỷ đăng', `cancelpost_${post.id}`)
+				.row()
+				.text('⏭️ Đẩy xuống cuối', `pushtoend_${post.id}`);
 
 			const sentMessage = await ctx.replyWithVideo(videoInput, {
 				caption: finalCaption,
