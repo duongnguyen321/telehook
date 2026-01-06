@@ -1270,6 +1270,14 @@ function switchTab(tabName, resetPage = true) {
 	} else if (tabName === 'audit' && currentUser?.role === 'admin') {
 		if (resetPage) currentAuditPage = 1;
 		loadAuditLogs(currentAuditPage);
+	} else if (tabName === 'broadcast' && currentUser?.role === 'admin') {
+		// Load broadcast data - functions from broadcast.js
+		if (typeof loadVariables === 'function') loadVariables();
+		if (typeof loadTemplates === 'function') loadTemplates();
+		if (typeof loadBroadcastMessages === 'function') loadBroadcastMessages();
+	} else if (tabName === 'chat' && currentUser?.role === 'admin') {
+		// Load chat users - function from broadcast.js
+		if (typeof loadChatUsers === 'function') loadChatUsers();
 	}
 }
 

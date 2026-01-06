@@ -88,6 +88,7 @@ model User {
   firstName    String   @map("first_name")
   lastName     String?  @map("last_name")
   role         String   @default("user")
+  isBlocked    Boolean  @default(false) @map("is_blocked")
   createdAt    DateTime @default(now()) @map("created_at")
   lastActiveAt DateTime @default(now()) @map("last_active_at")
 
@@ -106,4 +107,70 @@ model AuditLog {
   @@index([action])
   @@index([createdAt])
   @@map("audit_logs")
+}
+
+// ==================== BROADCAST SYSTEM ====================
+
+// Variable lưu trữ các biến động có thể dùng trong broadcast
+model BroadcastVariable {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  key         String   @unique // e.g., "tiktok_link", "admin_contact"
+  value       String
+  description String?
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("broadcast_variables")
+}
+
+// Template cho broadcast message
+model BroadcastTemplate {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  name      String   // Tên template
+  title     String   // Tiêu đề (hỗ trợ variable)
+  content   String   // Nội dung (hỗ trợ variable, markdown)
+  mediaUrl  String?  @map("media_url") // URL ảnh/video trên S3
+  mediaType String?  @map("media_type") // 'image' | 'video'
+  buttons   Json?    // Array of { text, type: 'link'|'copy'|'callback', value }
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  messages BroadcastMessage[]
+
+  @@map("broadcast_templates")
+}
+
+// Message đã gửi (để edit sau này)
+model BroadcastMessage {
+  id             String   @id @default(auto()) @map("_id") @db.ObjectId
+  templateId     String   @map("template_id") @db.ObjectId
+  targetRole     String   @map("target_role") // 'user'|'mod'|'reviewer'|'all'
+  sentAt         DateTime @default(now()) @map("sent_at")
+  sentBy         BigInt   @map("sent_by") // Admin telegram ID
+  messageRecords Json     // Array of { chatId, messageId } for edit
+  status         String   @default("sent") // 'sent'|'edited'|'failed'
+
+  template BroadcastTemplate @relation(fields: [templateId], references: [id])
+
+  @@index([templateId])
+  @@map("broadcast_messages")
+}
+
+// Lưu tin nhắn từ user để admin reply
+model UserChat {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  telegramId  BigInt   @map("telegram_id")
+  username    String?
+  firstName   String   @map("first_name")
+  messageText String?  @map("message_text")
+  mediaUrl    String?  @map("media_url")
+  mediaType   String?  @map("media_type")
+  replyTo     String?  @map("reply_to") @db.ObjectId // ID của message admin reply
+  replyText   String?  @map("reply_text")
+  isRead      Boolean  @default(false) @map("is_read")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@index([telegramId])
+  @@index([isRead])
+  @@map("user_chats")
 }

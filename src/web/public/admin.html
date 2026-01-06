@@ -12,6 +12,7 @@
 		<link rel="stylesheet" href="/styles.css" />
 		<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 		<script src="https://telegram.org/js/telegram-web-app.js"></script>
+		<script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
 	</head>
 	<body>
 		<div id="app">
@@ -99,7 +100,6 @@
 					</div>
 				</div>
 
-				<!-- Tabs Navigation (Admin sees all, others see Videos only) -->
 				<div class="tabs" id="tab-nav">
 					<button
 						class="tab active"
@@ -120,7 +120,21 @@
 						data-tab="audit"
 						onclick="switchTab('audit')"
 					>
-						📜 Audit Logs
+						📜 Audit
+					</button>
+					<button
+						class="tab admin-only hidden"
+						data-tab="broadcast"
+						onclick="switchTab('broadcast')"
+					>
+						📢 Broadcast
+					</button>
+					<button
+						class="tab admin-only hidden"
+						data-tab="chat"
+						onclick="switchTab('chat')"
+					>
+						💬 Chat <span id="chat-badge" class="badge hidden">0</span>
 					</button>
 				</div>
 
@@ -213,6 +227,78 @@
 							<!-- Audit logs will be rendered here -->
 						</div>
 						<div id="audit-pagination" class="pagination-container"></div>
+					</div>
+				</div>
+
+				<!-- Broadcast Tab (Admin Only) -->
+				<div id="tab-broadcast" class="tab-content hidden">
+					<div class="admin-panel">
+						<div class="broadcast-section">
+							<div class="admin-header">
+								<h2>📝 Variables</h2>
+								<button onclick="openVariableModal()" class="btn-primary">
+									+ Thêm
+								</button>
+							</div>
+							<div id="variables-list" class="variables-list">
+								<!-- Variables will be rendered here -->
+							</div>
+						</div>
+
+						<div class="broadcast-section">
+							<div class="admin-header">
+								<h2>📋 Templates</h2>
+								<button onclick="openTemplateModal()" class="btn-primary">
+									+ Tạo mới
+								</button>
+							</div>
+							<div id="templates-list" class="templates-list">
+								<!-- Templates will be rendered here -->
+							</div>
+						</div>
+
+						<div class="broadcast-section">
+							<div class="admin-header">
+								<h2>📤 Tin nhắn đã gửi</h2>
+								<button onclick="loadBroadcastMessages()" class="btn-icon">
+									🔄
+								</button>
+							</div>
+							<div id="messages-list" class="messages-list">
+								<!-- Sent messages will be rendered here -->
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- Chat Tab (Admin Only) -->
+				<div id="tab-chat" class="tab-content hidden">
+					<div class="admin-panel chat-panel">
+						<div class="chat-sidebar">
+							<div class="admin-header">
+								<h3>Users</h3>
+							</div>
+							<div id="chat-users-list" class="chat-users-list">
+								<!-- User list will be rendered here -->
+							</div>
+						</div>
+						<div class="chat-main">
+							<div id="chat-header" class="chat-header">
+								<span id="chat-user-name">Chọn user để xem tin nhắn</span>
+							</div>
+							<div id="chat-messages" class="chat-messages">
+								<!-- Messages will be rendered here -->
+							</div>
+							<div class="chat-input-area hidden" id="chat-input-area">
+								<textarea
+									id="chat-reply-input"
+									placeholder="Nhập tin nhắn... (hỗ trợ {{variable}})"
+								></textarea>
+								<button onclick="sendChatReply()" class="btn-primary">
+									Gửi
+								</button>
+							</div>
+						</div>
 					</div>
 				</div>
 
@@ -336,6 +422,132 @@
 					</div>
 				</div>
 
+				<!-- Variable Edit Modal -->
+				<div id="variable-modal" class="modal hidden">
+					<div class="modal-content modal-small">
+						<button class="modal-close" onclick="closeVariableModal()">
+							×
+						</button>
+						<h3 id="variable-modal-title">📝 Thêm Variable</h3>
+						<input type="hidden" id="variable-edit-id" />
+						<label>Key (tên biến):</label>
+						<input
+							type="text"
+							id="variable-key"
+							placeholder="vd: tiktok_link"
+						/>
+						<label>Value (giá trị):</label>
+						<input
+							type="text"
+							id="variable-value"
+							placeholder="vd: https://tiktok.com/@channel"
+						/>
+						<label>Mô tả (tùy chọn):</label>
+						<input
+							type="text"
+							id="variable-description"
+							placeholder="Mô tả ngắn..."
+						/>
+						<div class="modal-actions">
+							<button onclick="saveVariable()" class="btn-primary">Lưu</button>
+							<button onclick="closeVariableModal()" class="btn-secondary">
+								Hủy
+							</button>
+						</div>
+					</div>
+				</div>
+
+				<!-- Template Edit Modal -->
+				<div id="template-modal" class="modal hidden">
+					<div class="modal-content modal-large">
+						<button class="modal-close" onclick="closeTemplateModal()">
+							×
+						</button>
+						<h3 id="template-modal-title">📋 Tạo Template</h3>
+						<input type="hidden" id="template-edit-id" />
+						<div class="form-row">
+							<div class="form-col">
+								<label>Tên template:</label>
+								<input
+									type="text"
+									id="template-name"
+									placeholder="vd: Chào mừng user mới"
+								/>
+							</div>
+						</div>
+						<label>Tiêu đề (hỗ trợ {{variable}}):</label>
+						<input
+							type="text"
+							id="template-title"
+							placeholder="vd: Chào mừng {{user_name}}!"
+						/>
+						<label>Nội dung (hỗ trợ {{variable}}, Markdown):</label>
+						<textarea
+							id="template-content"
+							rows="6"
+							placeholder="Nội dung tin nhắn..."
+						></textarea>
+						<div class="form-row">
+							<div class="form-col">
+								<label>Media (ảnh/video):</label>
+								<input
+									type="file"
+									id="template-media"
+									accept="image/*,video/*"
+									onchange="handleMediaUpload()"
+								/>
+								<input type="hidden" id="template-media-url" />
+								<input type="hidden" id="template-media-type" />
+								<div id="template-media-preview" class="media-preview"></div>
+							</div>
+						</div>
+						<label>Buttons (JSON array):</label>
+						<textarea
+							id="template-buttons"
+							rows="3"
+							placeholder='[{"text": "👉 Xem ngay", "type": "link", "value": "https://..."}]'
+						></textarea>
+						<p class="hint">
+							Types: link (mở URL), copy (copy text), callback (telegram
+							callback)
+						</p>
+						<div class="modal-actions">
+							<button onclick="saveTemplate()" class="btn-primary">Lưu</button>
+							<button onclick="previewTemplate()" class="btn-secondary">
+								👁️ Preview
+							</button>
+							<button onclick="closeTemplateModal()" class="btn-secondary">
+								Hủy
+							</button>
+						</div>
+					</div>
+				</div>
+
+				<!-- Publish Modal -->
+				<div id="publish-modal" class="modal hidden">
+					<div class="modal-content modal-small">
+						<button class="modal-close" onclick="closePublishModal()">×</button>
+						<h3>📢 Đăng tin</h3>
+						<input type="hidden" id="publish-template-id" />
+						<p id="publish-template-name"></p>
+						<label>Gửi đến:</label>
+						<select id="publish-target">
+							<option value="all">🌍 Tất cả users</option>
+							<option value="user">👤 User thường</option>
+							<option value="mod">📤 Mod</option>
+							<option value="reviewer">📝 Reviewer</option>
+						</select>
+						<div class="modal-actions">
+							<button onclick="publishBroadcast()" class="btn-primary">
+								📢 Gửi ngay
+							</button>
+							<button onclick="closePublishModal()" class="btn-secondary">
+								Hủy
+							</button>
+						</div>
+					</div>
+				</div>
+
 				<!-- Save Actions Bar -->
 				<div id="save-actions" class="save-actions-bar hidden">
 					<span>🗑️ Đã chọn xóa <b id="delete-count">0</b> video</span>
@@ -350,5 +562,6 @@
 		</div>
 
 		<script src="/app.js"></script>
+		<script src="/broadcast.js"></script>
 	</body>
 </html>

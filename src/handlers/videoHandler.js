@@ -65,6 +65,26 @@ import {
 	cleanupUpscaledFile,
 	getVideoDuration,
 } from '../services/videoProcessor.js';
+import { addUserChat } from '../utils/broadcastStorage.js';
+import { emitEvent } from '../web/server.js';
+
+/**
+ * Check if user is blocked - blocked users cannot interact with bot at all
+ * @param {number} telegramId
+ * @returns {Promise<boolean>}
+ */
+async function isUserBlocked(telegramId) {
+	if (!telegramId) return false;
+	try {
+		const user = await prisma.user.findUnique({
+			where: { telegramId: BigInt(telegramId) },
+			select: { isBlocked: true },
+		});
+		return user?.isBlocked === true;
+	} catch (e) {
+		return false;
+	}
+}
 
 // Temporary storage for category selections during content generation
 // Key: `${chatId}_${postId}`, Value: { POSE: 'FRONT', ACTION: 'SHOWING', ... }
@@ -851,6 +871,9 @@ export function setupVideoHandler(bot) {
 		const isForwarded =
 			!!ctx.message.forward_origin || !!ctx.message.forward_date;
 
+		// Silently ignore blocked users
+		if (await isUserBlocked(userId)) return;
+
 		// Check authorization - need upload permission (mod or admin)
 		if (!hasPermission(userId, 'upload')) {
 			await ctx.reply('Bạn không có quyền upload video.');
@@ -992,6 +1015,9 @@ export function setupVideoHandler(bot) {
 		const chatId = ctx.chat.id;
 		const userId = ctx.from?.id;
 		const messageId = ctx.callbackQuery.message.message_id;
+
+		// Silently ignore blocked users
+		if (await isUserBlocked(userId)) return;
 
 		// Get user permissions
 		const canEdit = hasPermission(userId, 'edit');
@@ -1780,11 +1806,74 @@ export function setupVideoHandler(bot) {
 		await safeAnswer();
 	});
 
-	// Handle commands
+	// Handle commands and user messages
 	bot.on('message:text', async (ctx) => {
 		const text = ctx.message.text.trim();
+		const userId = ctx.from?.id;
+		const userRole = getUserRole(userId);
+
+		// Silently ignore blocked users
+		if (await isUserBlocked(userId)) return;
+
+		// Handle commands
 		if (text.startsWith('/')) {
 			await handleCommand(ctx, text);
+			return;
+		}
+
+		// Handle regular text messages from users (not admin/mod/reviewer)
+		// These are support/chat messages
+		if (userRole === 'user') {
+			try {
+				const username = ctx.from?.username || null;
+				const firstName = ctx.from?.first_name || 'User';
+
+				// Save message to database
+				const chatMessage = await addUserChat({
+					telegramId: userId,
+					username,
+					firstName,
+					messageText: text,
+				});
+
+				// Emit socket event for real-time update in admin panel
+				emitEvent('new_user_message', {
+					id: chatMessage.id,
+					telegramId: userId.toString(),
+					username,
+					firstName,
+					messageText: text,
+					createdAt: chatMessage.createdAt,
+				});
+
+				// Notify admin via Telegram
+				const ADMIN_USER_ID = parseInt(process.env.ADMIN_USER_ID || '0', 10);
+				if (ADMIN_USER_ID > 0 && ADMIN_USER_ID !== userId) {
+					const notifyText =
+						`💬 *Tin nhắn mới từ user*\n\n` +
+						`👤 ${firstName} ${username ? `(@${username})` : ''}\n` +
+						`🆔 \`${userId}\`\n\n` +
+						`📝 ${text.length > 200 ? text.slice(0, 200) + '...' : text}`;
+
+					try {
+						await ctx.api.sendMessage(ADMIN_USER_ID, notifyText, {
+							parse_mode: 'Markdown',
+						});
+					} catch (notifyErr) {
+						console.error('[Chat] Failed to notify admin:', notifyErr.message);
+					}
+				}
+
+				// Reply to user
+				await ctx.reply(
+					'✅ Tin nhắn đã được gửi đến admin. Chúng tôi sẽ phản hồi sớm nhất!'
+				);
+				console.log(
+					`[Chat] User ${userId} sent message: ${text.slice(0, 50)}...`
+				);
+			} catch (error) {
+				console.error('[Chat] Error handling user message:', error.message);
+			}
 		}
 	});
 }
