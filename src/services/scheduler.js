@@ -63,8 +63,9 @@ export async function sendChannelNotification(post) {
 	}`;
 
 	const keyboard = new InlineKeyboard();
-	if (fullLink.startsWith('https')) {
-		keyboard.webApp('📱 Mở App', fullLink);
+	if (fullLink.startsWith('https') || fullLink.startsWith('http')) {
+		// Use url button instead of webApp to avoid BUTTON_TYPE_INVALID
+		keyboard.url('📱 Mở App', fullLink);
 	}
 
 	// Prepare video source
