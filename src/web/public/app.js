@@ -648,7 +648,7 @@ function renderVideos() {
 
 	// Setup lazy loading and visibility-based playback
 	initVideoObserver();
-// ...
+	// ...
 }
 
 // ... existing code ...
@@ -657,23 +657,27 @@ function renderVideos() {
 
 async function notifyChannel(videoId) {
 	if (!currentUser?.canEdit) return;
-	
-	const confirmed = await UI.confirm('Bạn có chắc muốn gửi video này vào Channel không?');
+
+	const confirmed = await UI.confirm(
+		'Bạn có chắc muốn gửi video này vào Channel không?'
+	);
 	if (!confirmed) return;
 
 	showNotify('info', 'Đang gửi...', 'Đang gửi video vào channel...');
 
 	try {
-		const { ok, data } = await API.post(`/api/videos/${videoId}/notify-channel`);
-		
+		const { ok, data } = await API.post(
+			`/api/videos/${videoId}/notify-channel`
+		);
+
 		if (!ok) {
 			throw new Error(data?.error || 'Failed to send notification');
 		}
 
 		showNotify('success', 'Thành công', 'Đã gửi video vào channel!');
-		
+
 		// Update UI immediately
-		const video = videos.find(v => v.id === videoId);
+		const video = videos.find((v) => v.id === videoId);
 		if (video) video.channelNotified = true;
 		renderVideos();
 	} catch (error) {
@@ -685,22 +689,26 @@ async function notifyChannel(videoId) {
 async function deleteChannelNotify(videoId) {
 	if (!currentUser?.canEdit) return;
 
-	const confirmed = await UI.confirm('Bạn có chắc muốn xóa tin nhắn video này khỏi Channel không?');
+	const confirmed = await UI.confirm(
+		'Bạn có chắc muốn xóa tin nhắn video này khỏi Channel không?'
+	);
 	if (!confirmed) return;
 
 	showNotify('info', 'Đang xóa...', 'Đang xóa tin nhắn khỏi channel...');
 
 	try {
-		const { ok, data } = await API.delete(`/api/videos/${videoId}/notify-channel`);
-		
+		const { ok, data } = await API.delete(
+			`/api/videos/${videoId}/notify-channel`
+		);
+
 		if (!ok) {
 			throw new Error(data?.error || 'Failed to delete notification');
 		}
 
 		showNotify('success', 'Thành công', 'Đã xóa tin nhắn khỏi channel!');
-		
+
 		// Update UI immediately
-		const video = videos.find(v => v.id === videoId);
+		const video = videos.find((v) => v.id === videoId);
 		if (video) video.channelNotified = false;
 		renderVideos();
 	} catch (error) {
@@ -713,12 +721,11 @@ async function deleteChannelNotify(videoId) {
 window.notifyChannel = notifyChannel;
 window.deleteChannelNotify = deleteChannelNotify;
 
-	// Restore marked-for-delete state for videos in pendingDeletes
-	pendingDeletes.forEach((id) => {
-		const card = document.querySelector(`.video-card[data-id="${id}"]`);
-		if (card) card.classList.add('marked-for-delete');
-	});
-}
+// Restore marked-for-delete state for videos in pendingDeletes
+pendingDeletes.forEach((id) => {
+	const card = document.querySelector(`.video-card[data-id="${id}"]`);
+	if (card) card.classList.add('marked-for-delete');
+});
 
 /**
  * Format duration in seconds to readable format (mm:ss)
