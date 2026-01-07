@@ -633,6 +633,13 @@ function renderVideos() {
 						? `<button onclick="toggleDelete('${video.id}')" title="Đánh dấu xóa" class="btn-delete">❌</button>`
 						: ''
 				}
+				${
+					currentUser?.canEdit
+						? video.channelNotified
+							? `<button onclick="deleteChannelNotify('${video.id}')" title="Xóa thông báo Channel" class="btn-del-notify" style="background: rgba(231, 76, 60, 0.1); color: #e74c3c; border-color: #e74c3c;">🗑️ Del Notify</button>`
+							: `<button onclick="notifyChannel('${video.id}')" title="Gửi thông báo Channel" class="btn-notify" style="background: rgba(52, 152, 219, 0.1); color: #3498db; border-color: #3498db;">📢 Notify</button>`
+						: ''
+				}
 			</div>
 		</div>
 	`;
@@ -641,6 +648,70 @@ function renderVideos() {
 
 	// Setup lazy loading and visibility-based playback
 	initVideoObserver();
+// ...
+}
+
+// ... existing code ...
+
+// ========== Channel Notification Functions ==========
+
+async function notifyChannel(videoId) {
+	if (!currentUser?.canEdit) return;
+	
+	const confirmed = await UI.confirm('Bạn có chắc muốn gửi video này vào Channel không?');
+	if (!confirmed) return;
+
+	showNotify('info', 'Đang gửi...', 'Đang gửi video vào channel...');
+
+	try {
+		const { ok, data } = await API.post(`/api/videos/${videoId}/notify-channel`);
+		
+		if (!ok) {
+			throw new Error(data?.error || 'Failed to send notification');
+		}
+
+		showNotify('success', 'Thành công', 'Đã gửi video vào channel!');
+		
+		// Update UI immediately
+		const video = videos.find(v => v.id === videoId);
+		if (video) video.channelNotified = true;
+		renderVideos();
+	} catch (error) {
+		console.error('Notify error:', error);
+		showNotify('error', 'Lỗi', error.message);
+	}
+}
+
+async function deleteChannelNotify(videoId) {
+	if (!currentUser?.canEdit) return;
+
+	const confirmed = await UI.confirm('Bạn có chắc muốn xóa tin nhắn video này khỏi Channel không?');
+	if (!confirmed) return;
+
+	showNotify('info', 'Đang xóa...', 'Đang xóa tin nhắn khỏi channel...');
+
+	try {
+		const { ok, data } = await API.delete(`/api/videos/${videoId}/notify-channel`);
+		
+		if (!ok) {
+			throw new Error(data?.error || 'Failed to delete notification');
+		}
+
+		showNotify('success', 'Thành công', 'Đã xóa tin nhắn khỏi channel!');
+		
+		// Update UI immediately
+		const video = videos.find(v => v.id === videoId);
+		if (video) video.channelNotified = false;
+		renderVideos();
+	} catch (error) {
+		console.error('Delete notify error:', error);
+		showNotify('error', 'Lỗi', error.message);
+	}
+}
+
+// Ensure functions are global
+window.notifyChannel = notifyChannel;
+window.deleteChannelNotify = deleteChannelNotify;
 
 	// Restore marked-for-delete state for videos in pendingDeletes
 	pendingDeletes.forEach((id) => {

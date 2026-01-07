@@ -374,6 +374,7 @@ router.get('/', async (req, res) => {
 				videoUrl: isCdnEnabled()
 					? getCdnUrl(path.basename(post.videoPath))
 					: `/api/videos/${post.id}/stream`,
+				channelNotified: post.channelNotified,
 			}));
 
 			res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
@@ -421,6 +422,7 @@ router.get('/', async (req, res) => {
 			videoUrl: isCdnEnabled()
 				? getCdnUrl(path.basename(post.videoPath))
 				: `/api/videos/${post.id}/stream`,
+			channelNotified: post.channelNotified,
 		}));
 
 		res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
@@ -746,6 +748,83 @@ router.post('/batch-delete', async (req, res) => {
 		});
 	} catch (error) {
 		console.error('[Videos API] Batch delete error:', error);
+		res.status(500).json({ error: error.message });
+	}
+});
+
+/**
+ * Manually trigger channel notification for a video
+ */
+router.post('/:id/notify-channel', async (req, res) => {
+	const { id } = req.params;
+
+	const telegramIdAsNum = parseInt(req.user.telegramId, 10);
+	if (!hasPermission(telegramIdAsNum, 'edit')) {
+		return res.status(403).json({ error: 'No edit permission' });
+	}
+
+	try {
+		const post = await prisma.scheduledPost.findUnique({ where: { id } });
+		if (!post) {
+			return res.status(404).json({ error: 'Video not found' });
+		}
+
+		// Dynamically import scheduler to avoid circular dependency issues at top level if any
+		// But usually it's fine. Let's use dynamic import to be safe since scheduler imports DB/etc.
+		const { sendChannelNotification } = await import(
+			'../../services/scheduler.js'
+		);
+
+		await sendChannelNotification(post);
+
+		await logAction(
+			telegramIdAsNum,
+			'manual_notify_channel',
+			id,
+			'Manually sent channel notification'
+		);
+
+		res.json({ success: true });
+	} catch (error) {
+		console.error('[Videos API] Notify error:', error);
+		res.status(500).json({ error: error.message });
+	}
+});
+
+/**
+ * Manually delete channel notification messages for a video
+ */
+router.delete('/:id/notify-channel', async (req, res) => {
+	const { id } = req.params;
+
+	const telegramIdAsNum = parseInt(req.user.telegramId, 10);
+	if (!hasPermission(telegramIdAsNum, 'delete')) {
+		// Delete permission for deleting messages
+		return res.status(403).json({ error: 'No delete permission' });
+	}
+
+	try {
+		const post = await prisma.scheduledPost.findUnique({ where: { id } });
+		if (!post) {
+			return res.status(404).json({ error: 'Video not found' });
+		}
+
+		const { deleteChannelNotification } = await import(
+			'../../services/scheduler.js'
+		);
+
+		await deleteChannelNotification(post);
+
+		await logAction(
+			telegramIdAsNum,
+			'manual_delete_notify_channel',
+			id,
+			'Manually deleted channel notification'
+		);
+
+		res.json({ success: true });
+	} catch (error) {
+		console.error('[Videos API] Delete notify error:', error);
 		res.status(500).json({ error: error.message });
 	}
 });

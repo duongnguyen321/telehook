@@ -17,6 +17,8 @@ import {
 	rescheduleToEnd,
 	getUnnotifiedPosts,
 	markChannelNotified,
+	updateChannelMessageIds,
+	clearChannelMessageIds,
 } from '../utils/storage.js';
 import { prisma } from '../utils/prisma.js';
 import { getNotificationRecipients, getUserRole } from './roleService.js';
@@ -33,6 +35,128 @@ let defaultChatId = null;
 /**
  * Check for posts that have been posted/cancelled and notify channels
  */
+/**
+ * Send notification (video) to all active channels for a post
+ * @param {Object} post
+ */
+export async function sendChannelNotification(post) {
+	if (!bot) return;
+
+	// Get active channels
+	const channels = await prisma.telegramChannel.findMany({
+		where: { isActive: true },
+	});
+
+	if (channels.length === 0) return;
+
+	const TIKTOK_USERNAME = process.env.TIKTOK_USERNAME || '';
+	const BASE_URL = process.env.BASE_URL || 'http://localhost:8888';
+	const fullLink = `${BASE_URL}/`;
+
+	const tiktokLink = TIKTOK_USERNAME
+		? `\n\n🔥 Follow: https://tiktok.com/@${TIKTOK_USERNAME}`
+		: '';
+
+	const isPosted = post.status === 'posted';
+	const caption = `**${post.title}**\n\n${post.hashtags || ''}${
+		isPosted ? tiktokLink : ''
+	}`;
+
+	const keyboard = new InlineKeyboard();
+	if (fullLink.startsWith('https')) {
+		keyboard.webApp('📱 Mở App', fullLink);
+	}
+
+	// Prepare video source
+	const videoKey = path.basename(post.videoPath);
+	const localPath = path.join(DATA_DIR, 'videos', videoKey);
+	let videoSource = null;
+
+	// Try to get video source: cached file_id > local > s3
+	if (post.telegramFileId) {
+		videoSource = post.telegramFileId;
+	} else if (fs.existsSync(localPath)) {
+		videoSource = new InputFile(localPath);
+	} else if (isS3Enabled()) {
+		// Download from S3 logic
+		const cacheDir = path.join(DATA_DIR, 'videos');
+		const videoBuffer = await s3DownloadVideo(videoKey, cacheDir);
+		if (videoBuffer) {
+			videoSource = new InputFile(videoBuffer, videoKey);
+		}
+	}
+
+	if (!videoSource) {
+		console.warn(
+			`[Scheduler] Video source not found for ${post.id}, skipping channel notify`
+		);
+		return;
+	}
+
+	const sentMessageIds = [];
+
+	// Send to all channels
+	for (const channel of channels) {
+		try {
+			const sent = await bot.api.sendVideo(channel.chatId, videoSource, {
+				caption: caption,
+				parse_mode: 'Markdown',
+				reply_markup: keyboard,
+				supports_streaming: true,
+			});
+			sentMessageIds.push(`${channel.chatId}:${sent.message_id}`);
+		} catch (err) {
+			console.error(
+				`[Scheduler] Failed to send video to channel ${channel.chatId}:`,
+				err.message
+			);
+		}
+	}
+
+	// Update DB with message IDs
+	if (sentMessageIds.length > 0) {
+		await updateChannelMessageIds(post.id, sentMessageIds);
+	} else {
+		// If automated call and failed to send (but video existed), ensure we don't loop forever.
+		// Use markChannelNotified as fallback if no messages were sent but we don't want to retry.
+		// But in manual mode, user might want to retry.
+		// For now, let's just leave it unnotified if failed, so retry cleans it up?
+		// Or mark it to be safe.
+		// Let's assume if it failed for ALL channels, something is wrong.
+	}
+}
+
+/**
+ * Delete channel notifications for a post
+ * @param {Object} post
+ */
+export async function deleteChannelNotification(post) {
+	if (!bot || !post.channelMessageIds || post.channelMessageIds.length === 0)
+		return;
+
+	for (const idString of post.channelMessageIds) {
+		const parts = idString.split(':');
+		if (parts.length >= 2) {
+			const chatId = parts[0];
+			const messageId = parts[1];
+
+			try {
+				await bot.api.deleteMessage(chatId, parseInt(messageId));
+			} catch (err) {
+				console.error(
+					`[Scheduler] Failed to delete channel message ${idString}:`,
+					err.message
+				);
+			}
+		}
+	}
+
+	await clearChannelMessageIds(post.id);
+}
+
+/**
+ * Check for posts that have been posted/cancelled and notify channels
+ */
 async function checkAndNotifyChannelStatus() {
 	if (!bot) return;
 
@@ -40,84 +164,15 @@ async function checkAndNotifyChannelStatus() {
 		const posts = await getUnnotifiedPosts();
 		if (posts.length === 0) return;
 
-		// Get active channels
-		const channels = await prisma.telegramChannel.findMany({
-			where: { isActive: true },
-		});
-
-		if (channels.length === 0) return;
-
 		console.log(`[Scheduler] Found ${posts.length} posts to send to channels`);
 
-		const TIKTOK_USERNAME = process.env.TIKTOK_USERNAME || '';
-		const BASE_URL = process.env.BASE_URL || 'http://localhost:8888';
-		const fullLink = `${BASE_URL}/`;
-
-		const tiktokLink = TIKTOK_USERNAME
-			? `\n\n🔥 Follow: https://tiktok.com/@${TIKTOK_USERNAME}`
-			: '';
-
 		for (const post of posts) {
-			const isPosted = post.status === 'posted';
-			// Only show tiktok link if posted, but send video in both cases (posted/cancelled)
-
-			const caption = `**${post.title}**\n\n${post.hashtags || ''}${
-				isPosted ? tiktokLink : ''
-			}`;
-
-			const keyboard = new InlineKeyboard();
-			if (fullLink.startsWith('https')) {
-				keyboard.webApp('📱 Mở App', fullLink);
-			}
-
-			// Prepare video source
-			const videoKey = path.basename(post.videoPath);
-			const localPath = path.join(DATA_DIR, 'videos', videoKey);
-			let videoSource = null;
-
-			// Try to get video source: cached file_id > local > s3
-			if (post.telegramFileId) {
-				videoSource = post.telegramFileId;
-			} else if (fs.existsSync(localPath)) {
-				videoSource = new InputFile(localPath);
-			} else if (isS3Enabled()) {
-				// Download from S3 logic
-				const cacheDir = path.join(DATA_DIR, 'videos');
-				const videoBuffer = await s3DownloadVideo(videoKey, cacheDir);
-				if (videoBuffer) {
-					videoSource = new InputFile(videoBuffer, videoKey);
-				}
-			}
-
-			if (!videoSource) {
-				console.warn(
-					`[Scheduler] Video source not found for ${post.id}, skipping channel notify`
-				);
-				// Still mark as notified to avoid infinite retries on missing file
+			await sendChannelNotification(post);
+			// Fallback mark notified to prevent infinite loops if send partial fails or logic differs
+			const updatedPost = await getRawPostById(post.id);
+			if (!updatedPost.channelNotified) {
 				await markChannelNotified(post.id);
-				continue;
 			}
-
-			// Send to all channels
-			for (const channel of channels) {
-				try {
-					await bot.api.sendVideo(channel.chatId, videoSource, {
-						caption: caption,
-						parse_mode: 'Markdown',
-						reply_markup: keyboard,
-						supports_streaming: true,
-					});
-				} catch (err) {
-					// Duplicate file logic omitted for simplicity + performance
-					console.error(
-						`[Scheduler] Failed to send video to channel ${channel.chatId}:`,
-						err.message
-					);
-				}
-			}
-
-			// Mark as notified
-			await markChannelNotified(post.id);
 		}
 	} catch (error) {
 		console.error('[Scheduler] Error notifying channels:', error.message);

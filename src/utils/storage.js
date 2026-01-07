@@ -1667,3 +1667,28 @@ export async function markChannelNotified(id) {
 		data: { channelNotified: true },
 	});
 }
+
+/**
+ * Save channel message IDs for a post
+ * @param {string} id
+ * @param {string[]} messageIds
+ * @returns {Promise<Object>}
+ */
+export async function updateChannelMessageIds(id, messageIds) {
+	return prisma.scheduledPost.update({
+		where: { id },
+		data: { channelMessageIds: messageIds, channelNotified: true },
+	});
+}
+
+/**
+ * Clear channel message IDs for a post
+ * @param {string} id
+ * @returns {Promise<Object>}
+ */
+export async function clearChannelMessageIds(id) {
+	return prisma.scheduledPost.update({
+		where: { id },
+		data: { channelMessageIds: [], channelNotified: false },
+	});
+}

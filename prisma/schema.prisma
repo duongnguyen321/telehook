@@ -30,6 +30,7 @@ model ScheduledPost {
   duration               Float?   @map("duration")
   fileSize               Int?     @map("file_size")
   channelNotified        Boolean  @default(false) @map("channel_notified")
+  channelMessageIds      String[] @default([])    @map("channel_message_ids")
 
   @@index([status])
   @@index([scheduledAt])
