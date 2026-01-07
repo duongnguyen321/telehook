@@ -62,10 +62,17 @@ export async function sendChannelNotification(post) {
 		isPosted ? tiktokLink : ''
 	}`;
 
+	// Use MINI_APP_URL if available (best for Channels to avoid BUTTON_TYPE_INVALID while opening Mini App)
+	// Example: https://t.me/MyBot/appname
+	const MINI_APP_URL = process.env.MINI_APP_URL;
+
 	const keyboard = new InlineKeyboard();
-	if (fullLink.startsWith('https') || fullLink.startsWith('http')) {
-		// Use url button instead of webApp to avoid BUTTON_TYPE_INVALID
-		keyboard.url('📱 Mở App', fullLink);
+	if (MINI_APP_URL) {
+		keyboard.url('📱 Mở App', MINI_APP_URL);
+	} else if (fullLink.startsWith('https')) {
+		// Fallback to webApp button (User prefers Mini App action)
+		// Note: This might fail in some Channels with BUTTON_TYPE_INVALID if bot not configured nicely
+		keyboard.webApp('📱 Mở App', fullLink);
 	}
 
 	// Prepare video source
