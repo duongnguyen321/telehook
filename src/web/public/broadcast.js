@@ -1,5 +1,6 @@
 /**
- * Broadcast & Chat Management JavaScript
+ * Broadcast & Chat & Channel Management JavaScript
+ * Uses centralized API client from api.js
  */
 
 // Socket.io connection
@@ -22,7 +23,6 @@ function initBroadcast() {
 			if (selectedChatUser === data.telegramId) {
 				appendChatMessage(data);
 			}
-			// Refresh user list
 			loadChatUsers();
 		});
 
@@ -42,12 +42,8 @@ async function loadVariables() {
 	if (!container) return;
 
 	try {
-		const res = await fetch('/api/broadcast/variables', {
-			headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-		});
-		const data = await res.json();
-
-		if (data.variables && data.variables.length > 0) {
+		const { ok, data } = await API.get('/api/broadcast/variables');
+		if (ok && data.variables?.length > 0) {
 			container.innerHTML = data.variables
 				.map(
 					(v) => `
@@ -121,19 +117,11 @@ async function saveVariable() {
 		const url = id
 			? `/api/broadcast/variables/${id}`
 			: '/api/broadcast/variables';
-		const method = id ? 'PUT' : 'POST';
+		const { ok, data, error } = id
+			? await API.put(url, { key, value, description })
+			: await API.post(url, { key, value, description });
 
-		const res = await fetch(url, {
-			method,
-			headers: {
-				'Content-Type': 'application/json',
-				Authorization: `Bearer ${localStorage.getItem('token')}`,
-			},
-			body: JSON.stringify({ key, value, description }),
-		});
-
-		const data = await res.json();
-		if (res.ok) {
+		if (ok) {
 			closeVariableModal();
 			loadVariables();
 			showNotify(
@@ -142,7 +130,7 @@ async function saveVariable() {
 				id ? 'Đã cập nhật variable' : 'Đã thêm variable'
 			);
 		} else {
-			showNotify('error', 'Lỗi', data.error || 'Không thể lưu');
+			showNotify('error', 'Lỗi', error || 'Không thể lưu');
 		}
 	} catch (error) {
 		showNotify('error', 'Lỗi', error.message);
@@ -150,15 +138,12 @@ async function saveVariable() {
 }
 
 async function deleteVariable(id) {
-	if (!confirm('Xóa variable này?')) return;
+	const confirmed = await UI.confirm('Xóa variable này?');
+	if (!confirmed) return;
 
 	try {
-		const res = await fetch(`/api/broadcast/variables/${id}`, {
-			method: 'DELETE',
-			headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-		});
-
-		if (res.ok) {
+		const { ok } = await API.delete(`/api/broadcast/variables/${id}`);
+		if (ok) {
 			loadVariables();
 			showNotify('success', 'Thành công', 'Đã xóa variable');
 		}
@@ -174,12 +159,8 @@ async function loadTemplates() {
 	if (!container) return;
 
 	try {
-		const res = await fetch('/api/broadcast/templates', {
-			headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-		});
-		const data = await res.json();
-
-		if (data.templates && data.templates.length > 0) {
+		const { ok, data } = await API.get('/api/broadcast/templates');
+		if (ok && data.templates?.length > 0) {
 			container.innerHTML = data.templates
 				.map(
 					(t) => `
@@ -238,12 +219,8 @@ function closeTemplateModal() {
 
 async function editTemplate(id) {
 	try {
-		const res = await fetch(`/api/broadcast/templates/${id}`, {
-			headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-		});
-		const data = await res.json();
-
-		if (data.template) {
+		const { ok, data } = await API.get(`/api/broadcast/templates/${id}`);
+		if (ok && data.template) {
 			openTemplateModal(id);
 			const t = data.template;
 			document.getElementById('template-name').value = t.name || '';
@@ -255,7 +232,6 @@ async function editTemplate(id) {
 				? JSON.stringify(t.buttons, null, 2)
 				: '';
 
-			// Show media preview
 			const preview = document.getElementById('template-media-preview');
 			if (t.mediaUrl && t.mediaType) {
 				if (t.mediaType === 'image') {
@@ -281,9 +257,7 @@ async function saveTemplate() {
 
 	try {
 		const buttonsStr = document.getElementById('template-buttons').value.trim();
-		if (buttonsStr) {
-			buttons = JSON.parse(buttonsStr);
-		}
+		if (buttonsStr) buttons = JSON.parse(buttonsStr);
 	} catch (e) {
 		showNotify('error', 'Lỗi', 'JSON buttons không hợp lệ');
 		return;
@@ -298,26 +272,12 @@ async function saveTemplate() {
 		const url = id
 			? `/api/broadcast/templates/${id}`
 			: '/api/broadcast/templates';
-		const method = id ? 'PUT' : 'POST';
+		const body = { name, title, content, mediaUrl, mediaType, buttons };
+		const { ok, error } = id
+			? await API.put(url, body)
+			: await API.post(url, body);
 
-		const res = await fetch(url, {
-			method,
-			headers: {
-				'Content-Type': 'application/json',
-				Authorization: `Bearer ${localStorage.getItem('token')}`,
-			},
-			body: JSON.stringify({
-				name,
-				title,
-				content,
-				mediaUrl,
-				mediaType,
-				buttons,
-			}),
-		});
-
-		const data = await res.json();
-		if (res.ok) {
+		if (ok) {
 			closeTemplateModal();
 			loadTemplates();
 			showNotify(
@@ -326,7 +286,7 @@ async function saveTemplate() {
 				id ? 'Đã cập nhật template' : 'Đã tạo template'
 			);
 		} else {
-			showNotify('error', 'Lỗi', data.error || 'Không thể lưu');
+			showNotify('error', 'Lỗi', error || 'Không thể lưu');
 		}
 	} catch (error) {
 		showNotify('error', 'Lỗi', error.message);
@@ -334,16 +294,14 @@ async function saveTemplate() {
 }
 
 async function deleteTemplate(id) {
-	if (!confirm('Xóa template này? Tất cả tin nhắn đã gửi cũng sẽ bị xóa.'))
-		return;
+	const confirmed = await UI.confirm(
+		'Xóa template này? Tất cả tin nhắn đã gửi cũng sẽ bị xóa.'
+	);
+	if (!confirmed) return;
 
 	try {
-		const res = await fetch(`/api/broadcast/templates/${id}`, {
-			method: 'DELETE',
-			headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-		});
-
-		if (res.ok) {
+		const { ok } = await API.delete(`/api/broadcast/templates/${id}`);
+		if (ok) {
 			loadTemplates();
 			loadBroadcastMessages();
 			showNotify('success', 'Thành công', 'Đã xóa template');
@@ -361,14 +319,11 @@ async function handleMediaUpload() {
 	formData.append('file', file);
 
 	try {
-		const res = await fetch('/api/broadcast/upload', {
-			method: 'POST',
-			headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-			body: formData,
-		});
-
-		const data = await res.json();
-		if (res.ok && data.media) {
+		const { ok, data, error } = await API.upload(
+			'/api/broadcast/upload',
+			formData
+		);
+		if (ok && data.media) {
 			document.getElementById('template-media-url').value = data.media.url;
 			document.getElementById('template-media-type').value = data.media.type;
 
@@ -380,7 +335,7 @@ async function handleMediaUpload() {
 			}
 			showNotify('success', 'Upload thành công', 'File đã được upload');
 		} else {
-			showNotify('error', 'Lỗi upload', data.error || 'Upload thất bại');
+			showNotify('error', 'Lỗi upload', error || 'Upload thất bại');
 		}
 	} catch (error) {
 		showNotify('error', 'Lỗi', error.message);
@@ -395,18 +350,12 @@ async function previewTemplate() {
 	}
 
 	try {
-		const res = await fetch(`/api/broadcast/templates/${id}/preview`, {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json',
-				Authorization: `Bearer ${localStorage.getItem('token')}`,
-			},
-		});
-
-		const data = await res.json();
-		if (data.preview) {
-			const preview = data.preview;
-			const content = `*${preview.title}*\n\n${preview.content}`;
+		const { ok, data } = await API.post(
+			`/api/broadcast/templates/${id}/preview`,
+			{}
+		);
+		if (ok && data.preview) {
+			const content = `*${data.preview.title}*\n\n${data.preview.content}`;
 			showNotify('info', 'Preview', content.replace(/\n/g, '<br>'));
 		}
 	} catch (error) {
@@ -421,12 +370,8 @@ async function loadBroadcastMessages() {
 	if (!container) return;
 
 	try {
-		const res = await fetch('/api/broadcast/messages', {
-			headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-		});
-		const data = await res.json();
-
-		if (data.messages && data.messages.length > 0) {
+		const { ok, data } = await API.get('/api/broadcast/messages');
+		if (ok && data.messages?.length > 0) {
 			container.innerHTML = data.messages
 				.map(
 					(m) => `
@@ -456,12 +401,39 @@ async function loadBroadcastMessages() {
 	}
 }
 
-function openPublishModal(templateId, templateName) {
+async function openPublishModal(templateId, templateName) {
 	document.getElementById('publish-modal').classList.remove('hidden');
 	document.getElementById('publish-template-id').value = templateId;
 	document.getElementById(
 		'publish-template-name'
 	).textContent = `Template: ${templateName}`;
+	document.getElementById('publish-target').value = 'all';
+
+	// Load channels for selection
+	const channelsList = document.getElementById('publish-channels-list');
+	channelsList.innerHTML = '<p class="empty-state">Đang tải...</p>';
+
+	try {
+		const { ok, data } = await API.get('/api/channels');
+		if (ok && data.channels?.length > 0) {
+			channelsList.innerHTML = data.channels
+				.filter((c) => c.isActive)
+				.map(
+					(c) => `
+				<label class="channel-checkbox">
+					<input type="checkbox" name="publish-channel" value="${c.id}" />
+					<span>${getChannelTypeIcon(c.type)} ${escapeHtml(c.title)}</span>
+				</label>
+			`
+				)
+				.join('');
+		} else {
+			channelsList.innerHTML =
+				'<p class="empty-state">Chưa có channel nào. Thêm channel trong tab Channels.</p>';
+		}
+	} catch (error) {
+		channelsList.innerHTML = '<p class="error">Lỗi tải channels</p>';
+	}
 }
 
 function closePublishModal() {
@@ -472,32 +444,50 @@ async function publishBroadcast() {
 	const templateId = document.getElementById('publish-template-id').value;
 	const targetRole = document.getElementById('publish-target').value;
 
+	// Get selected channels
+	const selectedChannels = Array.from(
+		document.querySelectorAll('input[name="publish-channel"]:checked')
+	).map((el) => el.value);
+
 	if (!templateId) {
 		showNotify('error', 'Lỗi', 'Không tìm thấy template');
 		return;
 	}
 
-	try {
-		const res = await fetch('/api/broadcast/publish', {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json',
-				Authorization: `Bearer ${localStorage.getItem('token')}`,
-			},
-			body: JSON.stringify({ templateId, targetRole }),
-		});
+	// Must select at least one target (users or channels)
+	if (!targetRole && selectedChannels.length === 0) {
+		showNotify(
+			'error',
+			'Lỗi',
+			'Chọn ít nhất một đối tượng nhận tin (Users hoặc Channels)'
+		);
+		return;
+	}
 
-		const data = await res.json();
-		if (res.ok) {
+	try {
+		const { ok, data, error } = await API.post('/api/broadcast/publish', {
+			templateId,
+			targetRole: targetRole || null,
+			channelIds: selectedChannels,
+		});
+		if (ok) {
 			closePublishModal();
 			loadBroadcastMessages();
+
+			let message = '';
+			if (data.stats?.success > 0) {
+				message += `Users: ${data.stats.success}/${data.stats.total} tin nhắn. `;
+			}
+			if (data.channelStats?.success > 0) {
+				message += `Channels: ${data.channelStats.success}/${data.channelStats.total}`;
+			}
 			showNotify(
 				'success',
 				'Đã gửi thành công!',
-				`Đã gửi ${data.stats.success}/${data.stats.total} tin nhắn`
+				message || 'Tin nhắn đã được gửi'
 			);
 		} else {
-			showNotify('error', 'Lỗi', data.error || 'Không thể gửi');
+			showNotify('error', 'Lỗi', error || 'Không thể gửi');
 		}
 	} catch (error) {
 		showNotify('error', 'Lỗi', error.message);
@@ -505,21 +495,18 @@ async function publishBroadcast() {
 }
 
 async function editBroadcastMessage(id) {
-	const newContent = prompt('Nhập nội dung mới (để trống nếu giữ nguyên):');
+	const newContent = await UI.prompt('Nhập nội dung mới:', {
+		title: 'Sửa tin nhắn',
+		placeholder: 'Để trống nếu giữ nguyên',
+	});
 	if (newContent === null) return;
 
 	try {
-		const res = await fetch(`/api/broadcast/messages/${id}/edit`, {
-			method: 'PUT',
-			headers: {
-				'Content-Type': 'application/json',
-				Authorization: `Bearer ${localStorage.getItem('token')}`,
-			},
-			body: JSON.stringify({ content: newContent || undefined }),
-		});
-
-		const data = await res.json();
-		if (res.ok) {
+		const { ok, data, error } = await API.put(
+			`/api/broadcast/messages/${id}/edit`,
+			{ content: newContent || undefined }
+		);
+		if (ok) {
 			loadBroadcastMessages();
 			showNotify(
 				'success',
@@ -527,7 +514,7 @@ async function editBroadcastMessage(id) {
 				`Đã sửa ${data.stats.success}/${data.stats.total} tin nhắn`
 			);
 		} else {
-			showNotify('error', 'Lỗi', data.error || 'Không thể sửa');
+			showNotify('error', 'Lỗi', error || 'Không thể sửa');
 		}
 	} catch (error) {
 		showNotify('error', 'Lỗi', error.message);
@@ -541,12 +528,8 @@ async function loadChatUsers() {
 	if (!container) return;
 
 	try {
-		const res = await fetch('/api/chat/users', {
-			headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-		});
-		const data = await res.json();
-
-		if (data.users && data.users.length > 0) {
+		const { ok, data } = await API.get('/api/chat/users');
+		if (ok && data.users?.length > 0) {
 			container.innerHTML = data.users
 				.map(
 					(u) => `
@@ -566,7 +549,6 @@ async function loadChatUsers() {
 				)
 				.join('');
 
-			// Update total unread badge
 			const totalUnread = data.users.reduce(
 				(sum, u) => sum + (u.unreadCount || 0),
 				0
@@ -585,13 +567,13 @@ async function selectChatUser(telegramId, name) {
 	document.getElementById('chat-user-name').textContent = name;
 	document.getElementById('chat-input-area').classList.remove('hidden');
 
-	// Update active state in user list
 	document
 		.querySelectorAll('.chat-user-item')
 		.forEach((el) => el.classList.remove('active'));
-	event.currentTarget.classList.add('active');
+	if (event?.currentTarget) event.currentTarget.classList.add('active');
 
 	await loadChatConversation(telegramId);
+	await checkAndUpdateBlockStatus(telegramId);
 }
 
 async function loadChatConversation(telegramId) {
@@ -599,13 +581,8 @@ async function loadChatConversation(telegramId) {
 	if (!container) return;
 
 	try {
-		const res = await fetch(`/api/chat/messages/${telegramId}`, {
-			headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-		});
-		const data = await res.json();
-
-		if (data.messages && data.messages.length > 0) {
-			// Reverse to show oldest first
+		const { ok, data } = await API.get(`/api/chat/messages/${telegramId}`);
+		if (ok && data.messages?.length > 0) {
 			const messages = data.messages.reverse();
 			container.innerHTML = messages
 				.map(
@@ -631,13 +608,11 @@ async function loadChatConversation(telegramId) {
 				)
 				.join('');
 
-			// Scroll to bottom
 			container.scrollTop = container.scrollHeight;
 		} else {
 			container.innerHTML = '<p class="empty-state">Chưa có tin nhắn</p>';
 		}
 
-		// Refresh user list to update unread counts
 		loadChatUsers();
 	} catch (error) {
 		console.error('[Chat] Load conversation error:', error);
@@ -673,36 +648,27 @@ async function sendChatReply() {
 		return;
 	}
 
-	// Get the last message ID for this user
 	try {
-		const res = await fetch(`/api/chat/messages/${selectedChatUser}?limit=1`, {
-			headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-		});
-		const data = await res.json();
-
-		if (!data.messages || data.messages.length === 0) {
+		const { ok, data } = await API.get(
+			`/api/chat/messages/${selectedChatUser}?limit=1`
+		);
+		if (!ok || !data.messages?.length) {
 			showNotify('error', 'Lỗi', 'Không tìm thấy tin nhắn để trả lời');
 			return;
 		}
 
 		const lastMessageId = data.messages[0].id;
+		const { ok: replyOk, error } = await API.post(
+			`/api/chat/reply/${lastMessageId}`,
+			{ replyText }
+		);
 
-		const replyRes = await fetch(`/api/chat/reply/${lastMessageId}`, {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json',
-				Authorization: `Bearer ${localStorage.getItem('token')}`,
-			},
-			body: JSON.stringify({ replyText }),
-		});
-
-		const replyData = await replyRes.json();
-		if (replyRes.ok) {
+		if (replyOk) {
 			input.value = '';
 			loadChatConversation(selectedChatUser);
 			showNotify('success', 'Đã gửi', 'Tin nhắn đã được gửi');
 		} else {
-			showNotify('error', 'Lỗi', replyData.error || 'Không thể gửi');
+			showNotify('error', 'Lỗi', error || 'Không thể gửi');
 		}
 	} catch (error) {
 		showNotify('error', 'Lỗi', error.message);
@@ -710,7 +676,7 @@ async function sendChatReply() {
 }
 
 function updateChatBadge() {
-	loadChatUsers(); // This will update the badge count
+	loadChatUsers();
 }
 
 function updateChatBadgeCount(count) {
@@ -725,62 +691,20 @@ function updateChatBadgeCount(count) {
 	}
 }
 
-// ==================== HELPERS ====================
-
-function escapeHtml(text) {
-	if (!text) return '';
-	const div = document.createElement('div');
-	div.textContent = text;
-	return div.innerHTML;
-}
-
-function getRoleLabel(role) {
-	const labels = {
-		all: '🌍 Tất cả',
-		user: '👤 User',
-		mod: '📤 Mod',
-		reviewer: '📝 Reviewer',
-	};
-	return labels[role] || role;
-}
-
-function formatDate(dateStr) {
-	const date = new Date(dateStr);
-	return date.toLocaleDateString('vi-VN', {
-		day: '2-digit',
-		month: '2-digit',
-		year: 'numeric',
-		hour: '2-digit',
-		minute: '2-digit',
-	});
-}
-
-function formatTime(dateStr) {
-	const date = new Date(dateStr);
-	return date.toLocaleTimeString('vi-VN', {
-		hour: '2-digit',
-		minute: '2-digit',
-	});
-}
-
 // ==================== BLOCK/UNBLOCK/DELETE ====================
 
 async function blockUser(telegramId) {
-	if (
-		!confirm(
-			'Chặn user này? Tất cả tin nhắn sẽ bị xóa và user không thể tương tác với bot nữa.'
-		)
-	)
-		return;
+	const confirmed = await UI.confirm(
+		'Chặn user này? Tất cả tin nhắn sẽ bị xóa và user không thể tương tác với bot nữa.'
+	);
+	if (!confirmed) return;
 
 	try {
-		const res = await fetch(`/api/chat/block/${telegramId}`, {
-			method: 'POST',
-			headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-		});
-
-		const data = await res.json();
-		if (res.ok) {
+		const { ok, data, error } = await API.post(
+			`/api/chat/block/${telegramId}`,
+			{}
+		);
+		if (ok) {
 			showNotify(
 				'success',
 				'Đã chặn',
@@ -793,7 +717,7 @@ async function blockUser(telegramId) {
 			document.getElementById('chat-input-area').classList.add('hidden');
 			updateChatHeaderBlock(true);
 		} else {
-			showNotify('error', 'Lỗi', data.error || 'Không thể chặn');
+			showNotify('error', 'Lỗi', error || 'Không thể chặn');
 		}
 	} catch (error) {
 		showNotify('error', 'Lỗi', error.message);
@@ -801,16 +725,12 @@ async function blockUser(telegramId) {
 }
 
 async function unblockUser(telegramId) {
-	if (!confirm('Bỏ chặn user này?')) return;
+	const confirmed = await UI.confirm('Bỏ chặn user này?');
+	if (!confirmed) return;
 
 	try {
-		const res = await fetch(`/api/chat/unblock/${telegramId}`, {
-			method: 'POST',
-			headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-		});
-
-		const data = await res.json();
-		if (res.ok) {
+		const { ok, error } = await API.post(`/api/chat/unblock/${telegramId}`, {});
+		if (ok) {
 			showNotify(
 				'success',
 				'Đã bỏ chặn',
@@ -818,7 +738,7 @@ async function unblockUser(telegramId) {
 			);
 			updateChatHeaderBlock(false);
 		} else {
-			showNotify('error', 'Lỗi', data.error || 'Không thể bỏ chặn');
+			showNotify('error', 'Lỗi', error || 'Không thể bỏ chặn');
 		}
 	} catch (error) {
 		showNotify('error', 'Lỗi', error.message);
@@ -826,22 +746,20 @@ async function unblockUser(telegramId) {
 }
 
 async function deleteUserMessages(telegramId) {
-	if (!confirm('Xóa tất cả tin nhắn từ user này?')) return;
+	const confirmed = await UI.confirm('Xóa tất cả tin nhắn từ user này?');
+	if (!confirmed) return;
 
 	try {
-		const res = await fetch(`/api/chat/messages/${telegramId}`, {
-			method: 'DELETE',
-			headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-		});
-
-		const data = await res.json();
-		if (res.ok) {
+		const { ok, data, error } = await API.delete(
+			`/api/chat/messages/${telegramId}`
+		);
+		if (ok) {
 			showNotify('success', 'Đã xóa', `Đã xóa ${data.count} tin nhắn`);
 			loadChatUsers();
 			document.getElementById('chat-messages').innerHTML =
 				'<p class="empty-state">Đã xóa tất cả tin nhắn</p>';
 		} else {
-			showNotify('error', 'Lỗi', data.error || 'Không thể xóa');
+			showNotify('error', 'Lỗi', error || 'Không thể xóa');
 		}
 	} catch (error) {
 		showNotify('error', 'Lỗi', error.message);
@@ -850,11 +768,8 @@ async function deleteUserMessages(telegramId) {
 
 async function checkAndUpdateBlockStatus(telegramId) {
 	try {
-		const res = await fetch(`/api/chat/block-status/${telegramId}`, {
-			headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-		});
-		const data = await res.json();
-		updateChatHeaderBlock(data.isBlocked, telegramId);
+		const { ok, data } = await API.get(`/api/chat/block-status/${telegramId}`);
+		if (ok) updateChatHeaderBlock(data.isBlocked, telegramId);
 	} catch (error) {
 		console.error('[Chat] Check block status error:', error);
 	}
@@ -877,23 +792,6 @@ function updateChatHeaderBlock(isBlocked, telegramId = selectedChatUser) {
 	`;
 }
 
-// Override selectChatUser to check block status
-const originalSelectChatUser = selectChatUser;
-selectChatUser = async function (telegramId, name) {
-	selectedChatUser = telegramId;
-	document.getElementById('chat-user-name').textContent = name;
-	document.getElementById('chat-input-area').classList.remove('hidden');
-
-	// Update active state in user list
-	document
-		.querySelectorAll('.chat-user-item')
-		.forEach((el) => el.classList.remove('active'));
-	if (event?.currentTarget) event.currentTarget.classList.add('active');
-
-	await loadChatConversation(telegramId);
-	await checkAndUpdateBlockStatus(telegramId);
-};
-
 // ==================== CHANNEL MANAGEMENT ====================
 
 async function loadChannels() {
@@ -903,12 +801,8 @@ async function loadChannels() {
 	container.innerHTML = '<p class="empty-state">Đang tải...</p>';
 
 	try {
-		const res = await fetch('/api/channels', {
-			headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-		});
-		const data = await res.json();
-
-		if (data.channels && data.channels.length > 0) {
+		const { ok, data } = await API.get('/api/channels');
+		if (ok && data.channels?.length > 0) {
 			container.innerHTML = data.channels
 				.map(
 					(c) => `
@@ -976,27 +870,17 @@ async function addChannel() {
 		return;
 	}
 
-	// Determine if it's chatId or username
 	const isNumber = /^-?\d+$/.test(input);
 	const body = isNumber ? { chatId: input } : { username: input };
 
 	try {
-		const res = await fetch('/api/channels', {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json',
-				Authorization: `Bearer ${localStorage.getItem('token')}`,
-			},
-			body: JSON.stringify(body),
-		});
-
-		const data = await res.json();
-		if (res.ok) {
+		const { ok, data, error } = await API.post('/api/channels', body);
+		if (ok) {
 			closeAddChannelModal();
 			loadChannels();
 			showNotify('success', 'Thành công', `Đã thêm: ${data.channel.title}`);
 		} else {
-			showNotify('error', 'Lỗi', data.error || 'Không thể thêm');
+			showNotify('error', 'Lỗi', error || 'Không thể thêm');
 		}
 	} catch (error) {
 		showNotify('error', 'Lỗi', error.message);
@@ -1005,10 +889,8 @@ async function addChannel() {
 
 async function refreshChannel(id) {
 	try {
-		const res = await fetch(`/api/channels/${id}/refresh`, {
-			headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-		});
-		if (res.ok) {
+		const { ok } = await API.get(`/api/channels/${id}/refresh`);
+		if (ok) {
 			loadChannels();
 			showNotify('success', 'Thành công', 'Đã cập nhật thông tin');
 		}
@@ -1019,27 +901,20 @@ async function refreshChannel(id) {
 
 async function toggleChannel(id) {
 	try {
-		const res = await fetch(`/api/channels/${id}/toggle`, {
-			method: 'PUT',
-			headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-		});
-		if (res.ok) {
-			loadChannels();
-		}
+		const { ok } = await API.put(`/api/channels/${id}/toggle`, {});
+		if (ok) loadChannels();
 	} catch (error) {
 		showNotify('error', 'Lỗi', error.message);
 	}
 }
 
 async function deleteChannel(id) {
-	if (!confirm('Xóa channel này khỏi danh sách quản lý?')) return;
+	const confirmed = await UI.confirm('Xóa channel này khỏi danh sách quản lý?');
+	if (!confirmed) return;
 
 	try {
-		const res = await fetch(`/api/channels/${id}`, {
-			method: 'DELETE',
-			headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-		});
-		if (res.ok) {
+		const { ok } = await API.delete(`/api/channels/${id}`);
+		if (ok) {
 			loadChannels();
 			showNotify('success', 'Thành công', 'Đã xóa channel');
 		}
@@ -1074,14 +949,11 @@ async function handleChannelMediaUpload() {
 	formData.append('file', file);
 
 	try {
-		const res = await fetch('/api/broadcast/upload', {
-			method: 'POST',
-			headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-			body: formData,
-		});
-
-		const data = await res.json();
-		if (res.ok && data.media) {
+		const { ok, data, error } = await API.upload(
+			'/api/broadcast/upload',
+			formData
+		);
+		if (ok && data.media) {
 			document.getElementById('send-channel-media-url').value = data.media.url;
 			if (!document.getElementById('send-channel-media-type').value) {
 				document.getElementById('send-channel-media-type').value =
@@ -1098,7 +970,7 @@ async function handleChannelMediaUpload() {
 			}
 			showNotify('success', 'Upload thành công', 'File đã được upload');
 		} else {
-			showNotify('error', 'Lỗi upload', data.error || 'Upload thất bại');
+			showNotify('error', 'Lỗi upload', error || 'Upload thất bại');
 		}
 	} catch (error) {
 		showNotify('error', 'Lỗi', error.message);
@@ -1128,21 +1000,17 @@ async function sendToChannel() {
 	}
 
 	try {
-		const res = await fetch(`/api/channels/${id}/send`, {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json',
-				Authorization: `Bearer ${localStorage.getItem('token')}`,
-			},
-			body: JSON.stringify({ text, mediaType, mediaUrl, buttons }),
+		const { ok, error } = await API.post(`/api/channels/${id}/send`, {
+			text,
+			mediaType,
+			mediaUrl,
+			buttons,
 		});
-
-		const data = await res.json();
-		if (res.ok) {
+		if (ok) {
 			closeSendChannelModal();
 			showNotify('success', 'Đã gửi!', 'Tin nhắn đã được gửi thành công');
 		} else {
-			showNotify('error', 'Lỗi', data.error || 'Không thể gửi');
+			showNotify('error', 'Lỗi', error || 'Không thể gửi');
 		}
 	} catch (error) {
 		showNotify('error', 'Lỗi', error.message);
@@ -1172,21 +1040,15 @@ async function banChannelUser() {
 	}
 
 	try {
-		const res = await fetch(`/api/channels/${channelId}/ban`, {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json',
-				Authorization: `Bearer ${localStorage.getItem('token')}`,
-			},
-			body: JSON.stringify({ telegramId, reason }),
+		const { ok, error } = await API.post(`/api/channels/${channelId}/ban`, {
+			telegramId,
+			reason,
 		});
-
-		const data = await res.json();
-		if (res.ok) {
+		if (ok) {
 			closeChannelBanModal();
 			showNotify('success', 'Đã chặn', 'User đã bị chặn khỏi channel');
 		} else {
-			showNotify('error', 'Lỗi', data.error || 'Không thể chặn');
+			showNotify('error', 'Lỗi', error || 'Không thể chặn');
 		}
 	} catch (error) {
 		showNotify('error', 'Lỗi', error.message);
@@ -1194,23 +1056,17 @@ async function banChannelUser() {
 }
 
 async function kickChannelUser(channelId, telegramId) {
-	if (!confirm('Kick user này khỏi channel?')) return;
+	const confirmed = await UI.confirm('Kick user này khỏi channel?');
+	if (!confirmed) return;
 
 	try {
-		const res = await fetch(`/api/channels/${channelId}/kick`, {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json',
-				Authorization: `Bearer ${localStorage.getItem('token')}`,
-			},
-			body: JSON.stringify({ telegramId }),
+		const { ok, error } = await API.post(`/api/channels/${channelId}/kick`, {
+			telegramId,
 		});
-
-		const data = await res.json();
-		if (res.ok) {
+		if (ok) {
 			showNotify('success', 'Thành công', 'User đã bị kick');
 		} else {
-			showNotify('error', 'Lỗi', data.error);
+			showNotify('error', 'Lỗi', error);
 		}
 	} catch (error) {
 		showNotify('error', 'Lỗi', error.message);
@@ -1219,24 +1075,55 @@ async function kickChannelUser(channelId, telegramId) {
 
 async function unbanChannelUser(channelId, telegramId) {
 	try {
-		const res = await fetch(`/api/channels/${channelId}/unban`, {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json',
-				Authorization: `Bearer ${localStorage.getItem('token')}`,
-			},
-			body: JSON.stringify({ telegramId }),
+		const { ok, error } = await API.post(`/api/channels/${channelId}/unban`, {
+			telegramId,
 		});
-
-		const data = await res.json();
-		if (res.ok) {
+		if (ok) {
 			showNotify('success', 'Thành công', 'User đã được bỏ chặn');
 		} else {
-			showNotify('error', 'Lỗi', data.error);
+			showNotify('error', 'Lỗi', error);
 		}
 	} catch (error) {
 		showNotify('error', 'Lỗi', error.message);
 	}
+}
+
+// ==================== HELPERS ====================
+
+function escapeHtml(text) {
+	if (!text) return '';
+	const div = document.createElement('div');
+	div.textContent = text;
+	return div.innerHTML;
+}
+
+function getRoleLabel(role) {
+	const labels = {
+		all: '🌍 Tất cả',
+		user: '👤 User',
+		mod: '📤 Mod',
+		reviewer: '📝 Reviewer',
+	};
+	return labels[role] || role;
+}
+
+function formatDate(dateStr) {
+	const date = new Date(dateStr);
+	return date.toLocaleDateString('vi-VN', {
+		day: '2-digit',
+		month: '2-digit',
+		year: 'numeric',
+		hour: '2-digit',
+		minute: '2-digit',
+	});
+}
+
+function formatTime(dateStr) {
+	const date = new Date(dateStr);
+	return date.toLocaleTimeString('vi-VN', {
+		hour: '2-digit',
+		minute: '2-digit',
+	});
 }
 
 // Initialize when document is ready

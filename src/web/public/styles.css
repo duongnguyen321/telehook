@@ -577,8 +577,60 @@ header {
 
 /* Modal Medium Size */
 .modal-medium {
-	max-width: 500px;
+	max-width: 550px;
 	padding: 24px;
+}
+
+/* Publish Target Sections */
+.publish-targets {
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+	margin-bottom: 16px;
+}
+
+.publish-target-section {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+.publish-target-section label {
+	font-weight: 500;
+	font-size: 14px;
+}
+
+.publish-channels-list {
+	max-height: 150px;
+	overflow-y: auto;
+	border: 1px solid var(--border);
+	border-radius: 8px;
+	padding: 8px;
+	background: var(--card-bg);
+}
+
+.channel-checkbox {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 6px 8px;
+	cursor: pointer;
+	border-radius: 6px;
+	transition: background 0.2s;
+}
+
+.channel-checkbox:hover {
+	background: var(--hover-bg);
+}
+
+.channel-checkbox input {
+	width: 16px;
+	height: 16px;
+	cursor: pointer;
+}
+
+.channel-checkbox span {
+	font-size: 14px;
 }
 
 /* Notification Modal */

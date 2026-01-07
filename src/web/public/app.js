@@ -1,18 +1,10 @@
 /**
  * Video Dashboard Frontend
+ * Uses centralized API client from api.js
  */
 
-// State
-let token =
-	localStorage.getItem('auth_token') ||
-	localStorage.getItem('dashboard_token') ||
-	localStorage.getItem('feed_token');
-if (token) {
-	// Migration: ensure we use standard key
-	localStorage.setItem('auth_token', token);
-	localStorage.removeItem('dashboard_token');
-	localStorage.removeItem('feed_token');
-}
+// State - use API client for token management
+let token = API.getToken();
 let currentUser = null;
 let videos = [];
 let filteredVideos = [];
@@ -134,16 +126,12 @@ async function requestOTP() {
 	hideError();
 
 	try {
-		const res = await fetch(`${API_BASE}/auth/request-otp`, {
-			method: 'POST',
-			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify({ telegramId }),
+		const { ok, data, error } = await API.post('/api/auth/request-otp', {
+			telegramId,
 		});
 
-		const data = await res.json();
-
-		if (!res.ok) {
-			throw new Error(data.error || 'Lỗi không xác định');
+		if (!ok) {
+			throw new Error(error || 'Lỗi không xác định');
 		}
 
 		// Save telegram ID for next time
@@ -178,23 +166,20 @@ async function verifyOTP() {
 	hideError();
 
 	try {
-		const res = await fetch(`${API_BASE}/auth/verify-otp`, {
-			method: 'POST',
-			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify({ telegramId, code }),
+		const { ok, data, error } = await API.post('/api/auth/verify-otp', {
+			telegramId,
+			code,
 		});
 
-		const data = await res.json();
-
-		if (!res.ok) {
-			throw new Error(data.error || 'Mã không hợp lệ');
+		if (!ok) {
+			throw new Error(error || 'Mã không hợp lệ');
 		}
 
 		// Save token and user
 		token = data.token;
 		currentUser = data.user;
 
-		localStorage.setItem('auth_token', token);
+		API.setToken(token);
 
 		// Show dashboard
 		showDashboard();
@@ -215,17 +200,14 @@ function backToStep1() {
 
 async function logout() {
 	try {
-		await fetch(`${API_BASE}/auth/logout`, {
-			method: 'POST',
-			headers: { Authorization: `Bearer ${token}` },
-		});
+		await API.post('/api/auth/logout', {});
 	} catch (e) {
 		// Ignore
 	}
 
 	token = null;
 	currentUser = null;
-	localStorage.removeItem('auth_token');
+	API.clearToken();
 	showLogin();
 }
 
@@ -248,20 +230,18 @@ async function checkAuth() {
 	}
 
 	try {
-		const res = await fetch(`${API_BASE}/auth/me`, {
-			headers: { Authorization: `Bearer ${token}` },
-		});
+		const { ok, data } = await API.get('/api/auth/me');
 
-		if (!res.ok) {
+		if (!ok) {
 			throw new Error('Token expired');
 		}
 
-		currentUser = await res.json();
+		currentUser = data;
 
 		showDashboard();
 	} catch (error) {
 		token = null;
-		localStorage.removeItem('auth_token');
+		API.clearToken();
 		showLogin();
 	}
 }
@@ -364,15 +344,12 @@ async function loadVideos(page = currentPage) {
 		if (currentSearch) params.set('search', currentSearch);
 		if (currentStatus !== 'all') params.set('status', currentStatus);
 
-		const res = await fetch(`${API_BASE}/videos?${params}`, {
-			headers: { Authorization: `Bearer ${token}` },
-		});
+		const { ok, data } = await API.get(`/api/videos?${params}`);
 
-		if (!res.ok) {
+		if (!ok) {
 			throw new Error('Failed to load videos');
 		}
 
-		const data = await res.json();
 		videos = data.videos;
 		filteredVideos = videos; // Server already filtered
 
@@ -845,16 +822,11 @@ function initSortable() {
 			});
 
 			try {
-				const res = await fetch(`${API_BASE}/videos/reorder/batch`, {
-					method: 'PUT',
-					headers: {
-						'Content-Type': 'application/json',
-						Authorization: `Bearer ${token}`,
-					},
-					body: JSON.stringify({ order: newOrder }),
+				const { ok } = await API.put('/api/videos/reorder/batch', {
+					order: newOrder,
 				});
 
-				if (!res.ok) {
+				if (!ok) {
 					throw new Error('Reorder failed');
 				}
 
@@ -899,16 +871,11 @@ async function updateTitle(videoId, newTitle) {
 	if (!video || video.title === newTitle.trim()) return;
 
 	try {
-		const res = await fetch(`${API_BASE}/videos/${videoId}`, {
-			method: 'PUT',
-			headers: {
-				'Content-Type': 'application/json',
-				Authorization: `Bearer ${token}`,
-			},
-			body: JSON.stringify({ title: newTitle.trim() }),
+		const { ok } = await API.put(`/api/videos/${videoId}`, {
+			title: newTitle.trim(),
 		});
 
-		if (!res.ok) {
+		if (!ok) {
 			throw new Error('Update failed');
 		}
 
@@ -943,7 +910,7 @@ function showNotify(type, title, message) {
 	iconEl.className = `notify-icon ${type}`;
 
 	titleEl.textContent = title;
-	messageEl.textContent = message;
+	messageEl.innerHTML = message;
 
 	modal.classList.remove('hidden');
 }
@@ -984,16 +951,11 @@ async function saveHashtags() {
 	}
 
 	try {
-		const res = await fetch(`${API_BASE}/videos/${videoId}`, {
-			method: 'PUT',
-			headers: {
-				'Content-Type': 'application/json',
-				Authorization: `Bearer ${token}`,
-			},
-			body: JSON.stringify({ hashtags: newHashtags }),
+		const { ok } = await API.put(`/api/videos/${videoId}`, {
+			hashtags: newHashtags,
 		});
 
-		if (!res.ok) {
+		if (!ok) {
 			throw new Error('Update failed');
 		}
 
@@ -1027,14 +989,10 @@ async function confirmDelete() {
 	const videoUrl = video?.videoUrl;
 
 	try {
-		const res = await fetch(`${API_BASE}/videos/${pendingDeleteId}`, {
-			method: 'DELETE',
-			headers: { Authorization: `Bearer ${token}` },
-		});
+		const { ok, error } = await API.delete(`/api/videos/${pendingDeleteId}`);
 
-		if (!res.ok) {
-			const data = await res.json();
-			throw new Error(data.error || 'Delete failed');
+		if (!ok) {
+			throw new Error(error || 'Delete failed');
 		}
 
 		// Remove from cache
@@ -1100,21 +1058,13 @@ async function saveBatchDeletes() {
 	btn.disabled = true;
 
 	try {
-		const res = await fetch(`${API_BASE}/videos/batch-delete`, {
-			method: 'POST',
-			headers: {
-				Authorization: `Bearer ${token}`,
-				'Content-Type': 'application/json',
-			},
-			body: JSON.stringify({ ids }),
+		const { ok, data, error } = await API.post('/api/videos/batch-delete', {
+			ids,
 		});
 
-		if (!res.ok) {
-			const data = await res.json();
-			throw new Error(data.error || 'Delete failed');
+		if (!ok) {
+			throw new Error(error || 'Delete failed');
 		}
-
-		const result = await res.json();
 
 		// Remove deleted videos from cache
 		ids.forEach((id) => {
@@ -1125,7 +1075,7 @@ async function saveBatchDeletes() {
 		showNotify(
 			'success',
 			'Thành công',
-			`Đã xóa ${result.deleted} video và sắp xếp lại lịch đăng!`
+			`Đã xóa ${data.deleted} video và sắp xếp lại lịch đăng!`
 		);
 
 		pendingDeletes.clear();
@@ -1326,15 +1276,9 @@ async function loadUsers(page = 1) {
 	updateURLParams({ tab: 'users', usersPage: page });
 
 	try {
-		const res = await fetch(`${API_BASE}/admin/users?${params}`, {
-			headers: {
-				Authorization: `Bearer ${token}`,
-			},
-		});
+		const { ok, data } = await API.get(`/api/admin/users?${params}`);
 
-		if (!res.ok) throw new Error('Failed to load users');
-
-		const data = await res.json();
+		if (!ok) throw new Error('Failed to load users');
 
 		if (data.meta) {
 			usersTotalPages = data.meta.totalPages;
@@ -1409,15 +1353,10 @@ function closeUserModal() {
 
 async function viewUserDetails(telegramId) {
 	try {
-		const res = await fetch(`${API_BASE}/admin/users/${telegramId}`, {
-			headers: {
-				Authorization: `Bearer ${token}`,
-			},
-		});
+		const { ok, data } = await API.get(`/api/admin/users/${telegramId}`);
 
-		if (!res.ok) throw new Error('Failed to load user');
+		if (!ok) throw new Error('Failed to load user');
 
-		const data = await res.json();
 		const user = data.user;
 
 		// Build modal content
@@ -1514,15 +1453,9 @@ async function loadAuditLogs(page = 1) {
 	updateURLParams({ tab: 'audit', auditPage: page });
 
 	try {
-		const res = await fetch(`${API_BASE}/admin/audit?${params}`, {
-			headers: {
-				Authorization: `Bearer ${token}`,
-			},
-		});
+		const { ok, data } = await API.get(`/api/admin/audit?${params}`);
 
-		if (!res.ok) throw new Error('Failed to load audit logs');
-
-		const data = await res.json();
+		if (!ok) throw new Error('Failed to load audit logs');
 
 		if (data.meta) {
 			auditTotalPages = data.meta.totalPages;
@@ -1724,13 +1657,10 @@ function closeGeneratorModal() {
  */
 async function loadCategories() {
 	try {
-		const res = await fetch(`${API_BASE}/content/categories`, {
-			headers: { Authorization: `Bearer ${token}` },
-		});
+		const { ok, data } = await API.get('/api/content/categories');
 
-		if (!res.ok) throw new Error('Failed to load categories');
+		if (!ok) throw new Error('Failed to load categories');
 
-		const data = await res.json();
 		categories = data.categories;
 	} catch (error) {
 		console.error('Error loading categories:', error);
@@ -1867,21 +1797,13 @@ async function generateContent() {
 		'<p style="color: var(--text-muted)">Generating...</p>';
 
 	try {
-		const res = await fetch(`${API_BASE}/content/generate`, {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json',
-				Authorization: `Bearer ${token}`,
-			},
-			body: JSON.stringify({
-				categories: selectedCategories,
-				count: 5,
-			}),
+		const { ok, data } = await API.post('/api/content/generate', {
+			categories: selectedCategories,
+			count: 5,
 		});
 
-		if (!res.ok) throw new Error('Generation failed');
+		if (!ok) throw new Error('Generation failed');
 
-		const data = await res.json();
 		generatedResults = data.results || [];
 		selectedResultIndex = -1;
 
@@ -1961,16 +1883,12 @@ async function applyGeneratedContent() {
 	}
 
 	try {
-		const res = await fetch(`${API_BASE}/videos/${generatorVideoId}`, {
-			method: 'PUT',
-			headers: {
-				'Content-Type': 'application/json',
-				Authorization: `Bearer ${token}`,
-			},
-			body: JSON.stringify({ title, hashtags }),
+		const { ok } = await API.put(`/api/videos/${generatorVideoId}`, {
+			title,
+			hashtags,
 		});
 
-		if (!res.ok) throw new Error('Update failed');
+		if (!ok) throw new Error('Update failed');
 
 		// Update local state
 		const video = videos.find((v) => v.id === generatorVideoId);

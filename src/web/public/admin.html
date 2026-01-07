@@ -668,18 +668,32 @@
 
 				<!-- Publish Modal -->
 				<div id="publish-modal" class="modal hidden">
-					<div class="modal-content modal-small">
+					<div class="modal-content modal-medium">
 						<button class="modal-close" onclick="closePublishModal()">×</button>
 						<h3>📢 Đăng tin</h3>
 						<input type="hidden" id="publish-template-id" />
 						<p id="publish-template-name"></p>
-						<label>Gửi đến:</label>
-						<select id="publish-target">
-							<option value="all">🌍 Tất cả users</option>
-							<option value="user">👤 User thường</option>
-							<option value="mod">📤 Mod</option>
-							<option value="reviewer">📝 Reviewer</option>
-						</select>
+						
+						<div class="publish-targets">
+							<div class="publish-target-section">
+								<label>Gửi đến Users:</label>
+								<select id="publish-target">
+									<option value="">❌ Không gửi cho users</option>
+									<option value="all">🌍 Tất cả users</option>
+									<option value="user">👤 User thường</option>
+									<option value="mod">📤 Mod</option>
+									<option value="reviewer">📝 Reviewer</option>
+								</select>
+							</div>
+							
+							<div class="publish-target-section">
+								<label>Gửi đến Channels/Groups:</label>
+								<div id="publish-channels-list" class="publish-channels-list">
+									<!-- Channels will be loaded here -->
+								</div>
+							</div>
+						</div>
+						
 						<div class="modal-actions">
 							<button onclick="publishBroadcast()" class="btn-primary">
 								📢 Gửi ngay
@@ -704,7 +718,9 @@
 			</div>
 		</div>
 
+		<script src="/api.js"></script>
 		<script src="/app.js"></script>
 		<script src="/broadcast.js"></script>
 	</body>
+</html>
 </html>

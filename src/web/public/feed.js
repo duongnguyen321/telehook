@@ -1,18 +1,10 @@
 /**
  * TikTok-style Video Feed Logic
+ * Uses centralized API client from api.js
  */
 
-// State
-let token =
-	localStorage.getItem('auth_token') ||
-	localStorage.getItem('feed_token') ||
-	localStorage.getItem('dashboard_token');
-if (token) {
-	// Migration: ensure we use standard key
-	localStorage.setItem('auth_token', token);
-	localStorage.removeItem('feed_token');
-	localStorage.removeItem('dashboard_token');
-}
+// State - initialize token from API client
+let token = API.getToken();
 let videos = [];
 let currentUser = null;
 let currentPage = 1;
@@ -21,15 +13,9 @@ let hasMore = true;
 let totalPages = 1;
 
 // Watched Videos Tracking
-// A video is considered "watched" if user has viewed >10% of its duration
-// Videos are also marked as watched immediately when they become visible
 const WATCHED_THRESHOLD = 0.1; // 10%
 const WATCHED_STORAGE_KEY = 'feed_watched_videos';
 
-/**
- * Get list of watched video IDs from localStorage
- * @returns {string[]}
- */
 function getWatchedVideos() {
 	try {
 		const data = localStorage.getItem(WATCHED_STORAGE_KEY);
@@ -39,10 +25,6 @@ function getWatchedVideos() {
 	}
 }
 
-/**
- * Mark a video as watched
- * @param {string} videoId
- */
 function markVideoAsWatched(videoId) {
 	const watched = getWatchedVideos();
 	if (!watched.includes(videoId)) {
@@ -52,22 +34,15 @@ function markVideoAsWatched(videoId) {
 	}
 }
 
-/**
- * Clear all watched videos (when all videos have been seen)
- */
 function clearWatchedVideos() {
 	localStorage.removeItem(WATCHED_STORAGE_KEY);
 	console.log('[Feed] Cleared watched videos list - starting fresh');
 }
 
 // Preload Configuration
-const PRELOAD_AHEAD = 8; // Preload 8 videos ahead
-const preloadedUrls = new Set(); // Track already preloaded URLs
+const PRELOAD_AHEAD = 8;
+const preloadedUrls = new Set();
 
-/**
- * Preload upcoming videos ahead of current position
- * @param {number} currentIndex - Current visible video index
- */
 function preloadUpcomingVideos(currentIndex) {
 	const items = document.querySelectorAll('.video-item');
 	const endIndex = Math.min(currentIndex + PRELOAD_AHEAD, items.length);
@@ -78,14 +53,12 @@ function preloadUpcomingVideos(currentIndex) {
 		if (video?.src && !preloadedUrls.has(video.src)) {
 			preloadedUrls.add(video.src);
 			urlsToPreload.push(video.src);
-			// Upgrade preload attribute for near videos
 			if (i < currentIndex + 3) {
 				video.preload = 'auto';
 			}
 		}
 	}
 
-	// Send to Service Worker for batch caching
 	if (urlsToPreload.length > 0 && navigator.serviceWorker?.controller) {
 		console.log('[Preload] Requesting', urlsToPreload.length, 'videos ahead');
 		navigator.serviceWorker.controller.postMessage({
@@ -106,7 +79,7 @@ const loadingIndicator = document.getElementById('loading-indicator');
 // Intersection Observer for Auto-Play
 const observerOptions = {
 	root: scroller,
-	threshold: 0.6, // Video must be 60% visible to play
+	threshold: 0.6,
 };
 
 const videoObserver = new IntersectionObserver((entries) => {
@@ -116,20 +89,12 @@ const videoObserver = new IntersectionObserver((entries) => {
 		if (!video) return;
 
 		if (entry.isIntersecting) {
-			// Mark video as watched immediately when visible
-			// This ensures users don't see the same videos repeatedly
-			if (videoId) {
-				markVideoAsWatched(videoId);
-			}
+			if (videoId) markVideoAsWatched(videoId);
 
-			// Trigger preload for upcoming videos
 			const items = Array.from(document.querySelectorAll('.video-item'));
 			const currentIndex = items.indexOf(entry.target);
-			if (currentIndex >= 0) {
-				preloadUpcomingVideos(currentIndex);
-			}
+			if (currentIndex >= 0) preloadUpcomingVideos(currentIndex);
 
-			// Play video
 			const playPromise = video.play();
 			if (playPromise !== undefined) {
 				playPromise.catch((error) => {
@@ -137,7 +102,6 @@ const videoObserver = new IntersectionObserver((entries) => {
 				});
 			}
 		} else {
-			// Pause video when not visible
 			video.pause();
 		}
 	});
@@ -149,7 +113,7 @@ function init() {
 	// Initialize Telegram WebApp for Auto-fill
 	if (window.Telegram && window.Telegram.WebApp) {
 		window.Telegram.WebApp.ready();
-		window.Telegram.WebApp.expand(); // Optional: expand to full height
+		window.Telegram.WebApp.expand();
 		const user = window.Telegram.WebApp.initDataUnsafe?.user;
 		if (user && user.id) {
 			const input = document.getElementById('telegram-id');
@@ -177,7 +141,7 @@ function init() {
 		const clientHeight = scroller.clientHeight;
 
 		if (scrollTop + clientHeight >= scrollHeight - clientHeight * 2) {
-			loadMoreVideos(); // Load when 2 screens away from bottom
+			loadMoreVideos();
 		}
 	});
 
@@ -202,14 +166,10 @@ function showFeed() {
 	reloadFeed();
 }
 
-/**
- * Update switch button visibility based on user role
- */
 function updateSwitchButton() {
 	const switchBtn = document.getElementById('switch-dashboard-btn');
 	if (!switchBtn) return;
 
-	// Show switch button only for admin/mod/reviewer
 	if (currentUser && ['admin', 'mod', 'reviewer'].includes(currentUser.role)) {
 		switchBtn.classList.remove('hidden');
 	} else {
@@ -217,9 +177,6 @@ function updateSwitchButton() {
 	}
 }
 
-/**
- * Navigate to admin dashboard
- */
 function goToAdmin() {
 	window.location.href = '/admin';
 }
@@ -228,30 +185,29 @@ function goToAdmin() {
 
 async function requestOTP() {
 	const telegramId = document.getElementById('telegram-id').value;
-	if (!telegramId) return alert('Vui lòng nhập Telegram ID');
+	if (!telegramId) {
+		document.getElementById('login-message').innerText =
+			'Vui lòng nhập Telegram ID';
+		return;
+	}
 
 	try {
-		const res = await fetch('/api/auth/request-otp', {
-			method: 'POST',
-			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify({ telegramId }),
+		// Auth endpoints don't need token
+		const { ok, data, error } = await API.post('/api/auth/request-otp', {
+			telegramId,
 		});
 
-		const data = await res.json();
-
-		if (data.success) {
-			// Save ID for next time
+		if (ok && data.success) {
 			localStorage.setItem('telegram_id', telegramId);
-
 			document.getElementById('step-1').classList.add('hidden');
 			document.getElementById('step-2').classList.remove('hidden');
 			document.getElementById('login-message').innerText = '';
 		} else {
 			document.getElementById('login-message').innerText =
-				data.message || data.error;
+				error || data?.message || 'Lỗi gửi OTP';
 		}
 	} catch (e) {
-		alert('Lỗi kết nối');
+		document.getElementById('login-message').innerText = 'Lỗi kết nối';
 	}
 }
 
@@ -260,25 +216,22 @@ async function verifyOTP() {
 	const code = document.getElementById('otp-code').value;
 
 	try {
-		const res = await fetch('/api/auth/verify-otp', {
-			method: 'POST',
-			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify({ telegramId, code }),
+		const { ok, data, error } = await API.post('/api/auth/verify-otp', {
+			telegramId,
+			code,
 		});
 
-		const data = await res.json();
-
-		if (data.success) {
-			// Save token and user
+		if (ok && data.success) {
 			token = data.token;
 			currentUser = data.user;
-			localStorage.setItem('auth_token', token);
+			API.setToken(token); // Use centralized token management
 			showFeed();
 		} else {
-			alert(data.error);
+			document.getElementById('login-message').innerText =
+				error || 'Mã OTP không đúng';
 		}
 	} catch (e) {
-		alert('Lỗi xác thực');
+		document.getElementById('login-message').innerText = 'Lỗi xác thực';
 	}
 }
 
@@ -289,14 +242,13 @@ function backToStep1() {
 
 async function checkAuth() {
 	try {
-		const res = await fetch('/api/auth/me', {
-			headers: { Authorization: `Bearer ${token}` },
-		});
-		if (res.ok) {
-			currentUser = await res.json();
+		const { ok, data } = await API.get('/api/auth/me');
+		if (ok) {
+			currentUser = data;
 			showFeed();
 		} else {
-			localStorage.removeItem('auth_token');
+			API.clearToken();
+			token = null;
 			showLogin();
 		}
 	} catch (e) {
@@ -307,7 +259,7 @@ async function checkAuth() {
 // --- Video Feed ---
 
 function reloadFeed() {
-	scroller.innerHTML = ''; // Clear current videos
+	scroller.innerHTML = '';
 	videos = [];
 	currentPage = 1;
 	hasMore = true;
@@ -316,8 +268,6 @@ function reloadFeed() {
 
 async function loadMoreVideos() {
 	if (isLoading) return;
-	// Mix all video statuses (pending, posted, cancelled) with shuffle and exclude watched
-	// When all videos are watched, server returns allWatched=true, we clear the list and retry
 
 	isLoading = true;
 	loadingIndicator.classList.remove('hidden');
@@ -326,21 +276,21 @@ async function loadMoreVideos() {
 		const watchedVideos = getWatchedVideos();
 		const params = new URLSearchParams({
 			page: currentPage,
-			limit: 10, // Load 10 at a time for smooth streaming
-			status: 'all', // Fetch all statuses mixed together
-			shuffle: '1', // Enable shuffle mode
+			limit: 10,
+			status: 'all',
+			shuffle: '1',
 		});
 
-		// Send watched video IDs to exclude
 		if (watchedVideos.length > 0) {
 			params.append('excludeWatched', watchedVideos.join(','));
 		}
 
-		const res = await fetch(`/api/videos?${params}`, {
-			headers: { Authorization: `Bearer ${token}` },
-		});
+		const { ok, data } = await API.get(`/api/videos?${params}`);
 
-		const data = await res.json();
+		if (!ok) {
+			console.error('Load video error');
+			return;
+		}
 
 		// Check if all videos have been watched
 		if (data.meta?.allWatched) {
@@ -361,14 +311,11 @@ async function loadMoreVideos() {
 			totalPages = data.meta.totalPages;
 			currentPage++;
 		} else {
-			// No videos returned
 			if (currentPage === 1) {
-				// Really empty (no videos in DB)
 				hasMore = false;
 				scroller.innerHTML =
 					'<div style="color:white;text-align:center;padding-top:50vh">Không có video nào</div>';
 			} else {
-				// End of shuffled list, loop back
 				console.log('End of list, looping back to page 1');
 				currentPage = 1;
 				setTimeout(() => {
@@ -395,25 +342,20 @@ function appendVideo(videoData) {
 	const wrapper = clone.querySelector('.video-wrapper');
 	const muteBtn = clone.querySelector('.mute-btn');
 
-	// Store video ID for watched tracking
 	videoItem.dataset.videoId = videoData.id;
-
-	// Set Data
 	videoEl.src = videoData.videoUrl;
-	videoEl.poster = ''; // Could implement thumbnails later
+	videoEl.poster = '';
 
 	titleEl.innerText = videoData.title || 'Không có tiêu đề';
 	tagsEl.innerText = videoData.hashtags || '';
 
-	// Apply mute preference from localStorage
 	const isMuted = localStorage.getItem('feed_muted') !== 'false';
 	videoEl.muted = isMuted;
 	updateMuteButtonState(muteBtn, isMuted);
 
-	// Track watched progress - mark as watched when >30% is viewed
 	let hasMarkedWatched = false;
 	videoEl.addEventListener('timeupdate', () => {
-		if (hasMarkedWatched) return; // Already marked
+		if (hasMarkedWatched) return;
 		if (
 			videoEl.duration &&
 			videoEl.currentTime / videoEl.duration > WATCHED_THRESHOLD
@@ -423,9 +365,7 @@ function appendVideo(videoData) {
 		}
 	});
 
-	// Play/Pause Interaction - only trigger on video area, not mute button
 	wrapper.addEventListener('click', (e) => {
-		// Don't trigger play/pause when clicking mute button
 		if (e.target.classList.contains('mute-btn')) return;
 
 		if (videoEl.paused) {
@@ -437,32 +377,23 @@ function appendVideo(videoData) {
 		}
 	});
 
-	// Observe
 	videoObserver.observe(videoItem);
-
 	scroller.appendChild(videoItem);
 
-	// Trigger initial preload after first few videos loaded
 	const items = document.querySelectorAll('.video-item');
 	if (items.length <= PRELOAD_AHEAD) {
 		preloadUpcomingVideos(0);
 	}
 }
 
-/**
- * Toggle mute state for all videos
- * @param {Event} event
- */
 function toggleMute(event) {
-	event.stopPropagation(); // Prevent play/pause toggle
+	event.stopPropagation();
 
 	const isMuted = localStorage.getItem('feed_muted') !== 'false';
 	const newMutedState = !isMuted;
 
-	// Save preference
 	localStorage.setItem('feed_muted', newMutedState ? 'true' : 'false');
 
-	// Update all videos and mute buttons
 	document.querySelectorAll('.video-item').forEach((item) => {
 		const video = item.querySelector('video');
 		const btn = item.querySelector('.mute-btn');
@@ -472,14 +403,8 @@ function toggleMute(event) {
 	});
 }
 
-/**
- * Update mute button visual state
- * @param {HTMLElement} btn
- * @param {boolean} isMuted
- */
 function updateMuteButtonState(btn, isMuted) {
 	if (!btn) return;
-
 	btn.textContent = isMuted ? '🔇' : '🔊';
 	btn.classList.toggle('unmuted', !isMuted);
 }

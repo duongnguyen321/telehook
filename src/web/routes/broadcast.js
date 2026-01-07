@@ -302,21 +302,26 @@ router.get('/messages', adminOnly, async (req, res) => {
 });
 
 /**
- * Publish a broadcast message
+ * Publish a broadcast message to users and/or channels
  */
 router.post('/publish', adminOnly, async (req, res) => {
 	try {
-		const { templateId, targetRole } = req.body;
+		const { templateId, targetRole, channelIds } = req.body;
 		const adminId = parseInt(req.user.telegramId, 10);
 
-		if (!templateId || !targetRole) {
-			return res
-				.status(400)
-				.json({ error: 'templateId and targetRole are required' });
+		if (!templateId) {
+			return res.status(400).json({ error: 'templateId is required' });
 		}
 
-		if (!['user', 'mod', 'reviewer', 'all'].includes(targetRole)) {
-			return res.status(400).json({ error: 'Invalid target role' });
+		// Must have at least one target
+		const hasUserTarget =
+			targetRole && ['user', 'mod', 'reviewer', 'all'].includes(targetRole);
+		const hasChannelTarget = Array.isArray(channelIds) && channelIds.length > 0;
+
+		if (!hasUserTarget && !hasChannelTarget) {
+			return res
+				.status(400)
+				.json({ error: 'Must specify targetRole and/or channelIds' });
 		}
 
 		// Get template
@@ -329,13 +334,6 @@ router.post('/publish', adminOnly, async (req, res) => {
 		const title = await replaceVariables(template.title);
 		const content = await replaceVariables(template.content);
 		const fullMessage = `*${title}*\n\n${content}`;
-
-		// Get target users based on role
-		let where = {};
-		if (targetRole !== 'all') {
-			where.role = targetRole;
-		}
-		const users = await prisma.user.findMany({ where });
 
 		const bot = getBot();
 		if (!bot) {
@@ -354,7 +352,6 @@ router.post('/publish', adminOnly, async (req, res) => {
 					if (btn.type === 'link') {
 						return [{ text: btn.text, url: btn.value }];
 					} else if (btn.type === 'copy') {
-						// For copy, we use callback data and handle it in bot
 						return [
 							{
 								text: btn.text,
@@ -369,59 +366,129 @@ router.post('/publish', adminOnly, async (req, res) => {
 			};
 		}
 
-		// Send messages to all target users
 		const messageRecords = [];
-		let successCount = 0;
-		let failCount = 0;
+		let userSuccess = 0;
+		let userFail = 0;
+		let userTotal = 0;
 
-		for (const user of users) {
-			try {
-				let sentMessage;
-				const chatId = Number(user.telegramId);
+		// Send to users (if targetRole specified)
+		if (hasUserTarget) {
+			let where = {};
+			if (targetRole !== 'all') {
+				where.role = targetRole;
+			}
+			const users = await prisma.user.findMany({ where });
+			userTotal = users.length;
 
-				if (template.mediaUrl && template.mediaType) {
-					const mediaUrl = template.mediaUrl.startsWith('http')
-						? template.mediaUrl
-						: getCdnUrl(template.mediaUrl);
+			for (const user of users) {
+				try {
+					let sentMessage;
+					const chatId = Number(user.telegramId);
 
-					if (template.mediaType === 'image') {
-						sentMessage = await bot.api.sendPhoto(chatId, mediaUrl, {
-							caption: fullMessage,
-							parse_mode: 'Markdown',
-							reply_markup: keyboard,
-						});
-					} else if (template.mediaType === 'video') {
-						sentMessage = await bot.api.sendVideo(chatId, mediaUrl, {
-							caption: fullMessage,
+					if (template.mediaUrl && template.mediaType) {
+						const mediaUrl = template.mediaUrl.startsWith('http')
+							? template.mediaUrl
+							: getCdnUrl(template.mediaUrl);
+
+						if (template.mediaType === 'image') {
+							sentMessage = await bot.api.sendPhoto(chatId, mediaUrl, {
+								caption: fullMessage,
+								parse_mode: 'Markdown',
+								reply_markup: keyboard,
+							});
+						} else if (template.mediaType === 'video') {
+							sentMessage = await bot.api.sendVideo(chatId, mediaUrl, {
+								caption: fullMessage,
+								parse_mode: 'Markdown',
+								reply_markup: keyboard,
+							});
+						}
+					} else {
+						sentMessage = await bot.api.sendMessage(chatId, fullMessage, {
 							parse_mode: 'Markdown',
 							reply_markup: keyboard,
 						});
 					}
-				} else {
-					sentMessage = await bot.api.sendMessage(chatId, fullMessage, {
-						parse_mode: 'Markdown',
-						reply_markup: keyboard,
-					});
-				}
 
-				messageRecords.push({
-					chatId: chatId.toString(),
-					messageId: sentMessage.message_id.toString(),
-				});
-				successCount++;
-			} catch (err) {
-				console.error(
-					`[Broadcast] Failed to send to ${user.telegramId}:`,
-					err.message
-				);
-				failCount++;
+					messageRecords.push({
+						chatId: chatId.toString(),
+						messageId: sentMessage.message_id.toString(),
+						type: 'user',
+					});
+					userSuccess++;
+				} catch (err) {
+					console.error(
+						`[Broadcast] Failed to send to user ${user.telegramId}:`,
+						err.message
+					);
+					userFail++;
+				}
+			}
+		}
+
+		// Send to channels (if channelIds specified)
+		let channelSuccess = 0;
+		let channelFail = 0;
+		let channelTotal = 0;
+
+		if (hasChannelTarget) {
+			const channels = await prisma.telegramChannel.findMany({
+				where: { id: { in: channelIds }, isActive: true },
+			});
+			channelTotal = channels.length;
+
+			for (const channel of channels) {
+				try {
+					let sentMessage;
+					const chatId = channel.chatId;
+
+					if (template.mediaUrl && template.mediaType) {
+						const mediaUrl = template.mediaUrl.startsWith('http')
+							? template.mediaUrl
+							: getCdnUrl(template.mediaUrl);
+
+						if (template.mediaType === 'image') {
+							sentMessage = await bot.api.sendPhoto(chatId, mediaUrl, {
+								caption: fullMessage,
+								parse_mode: 'Markdown',
+								reply_markup: keyboard,
+							});
+						} else if (template.mediaType === 'video') {
+							sentMessage = await bot.api.sendVideo(chatId, mediaUrl, {
+								caption: fullMessage,
+								parse_mode: 'Markdown',
+								reply_markup: keyboard,
+							});
+						}
+					} else {
+						sentMessage = await bot.api.sendMessage(chatId, fullMessage, {
+							parse_mode: 'Markdown',
+							reply_markup: keyboard,
+						});
+					}
+
+					messageRecords.push({
+						chatId: chatId.toString(),
+						messageId: sentMessage.message_id.toString(),
+						type: 'channel',
+						channelId: channel.id,
+					});
+					channelSuccess++;
+				} catch (err) {
+					console.error(
+						`[Broadcast] Failed to send to channel ${channel.chatId}:`,
+						err.message
+					);
+					channelFail++;
+				}
 			}
 		}
 
 		// Save message record
 		const message = await createMessage({
 			templateId,
-			targetRole,
+			targetRole: targetRole || null,
+			channelIds: hasChannelTarget ? channelIds : [],
 			sentBy: adminId,
 			messageRecords,
 			status: 'sent',
@@ -434,9 +501,14 @@ router.post('/publish', adminOnly, async (req, res) => {
 				sentBy: message.sentBy.toString(),
 			},
 			stats: {
-				total: users.length,
-				success: successCount,
-				failed: failCount,
+				total: userTotal,
+				success: userSuccess,
+				failed: userFail,
+			},
+			channelStats: {
+				total: channelTotal,
+				success: channelSuccess,
+				failed: channelFail,
 			},
 		});
 	} catch (error) {
