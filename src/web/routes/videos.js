@@ -829,4 +829,49 @@ router.delete('/:id/notify-channel', async (req, res) => {
 	}
 });
 
+/**
+ * Batch trigger channel notification for videos
+ */
+router.post('/batch/notify-channel', async (req, res) => {
+	const { ids } = req.body;
+
+	const telegramIdAsNum = parseInt(req.user.telegramId, 10);
+	if (!hasPermission(telegramIdAsNum, 'edit')) {
+		return res.status(403).json({ error: 'No edit permission' });
+	}
+
+	if (!ids || !Array.isArray(ids) || ids.length === 0) {
+		return res.status(400).json({ error: 'Invalid IDs' });
+	}
+
+	try {
+		// Dynamic import
+		const { sendChannelNotification } = await import(
+			'../../services/scheduler.js'
+		);
+
+		let successCount = 0;
+		const posts = await prisma.scheduledPost.findMany({
+			where: { id: { in: ids } },
+		});
+
+		for (const post of posts) {
+			await sendChannelNotification(post);
+			successCount++;
+		}
+
+		await logAction(
+			telegramIdAsNum,
+			'batch_notify_channel',
+			'batch',
+			`Manually sent channel notification for ${successCount} videos`
+		);
+
+		res.json({ success: true, count: successCount });
+	} catch (error) {
+		console.error('[Videos API] Batch notify error:', error);
+		res.status(500).json({ error: error.message });
+	}
+});
+
 export default router;

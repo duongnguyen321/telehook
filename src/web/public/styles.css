@@ -300,6 +300,25 @@ header {
 	box-shadow: 0 8px 30px rgba(124, 58, 237, 0.3);
 }
 
+.video-card.selected {
+	border-color: var(--accent);
+	background: rgba(124, 58, 237, 0.1);
+}
+
+.selection-checkbox {
+	display: flex;
+	align-items: center;
+	cursor: pointer;
+	padding-right: 4px;
+}
+
+.selection-checkbox input {
+	width: 16px;
+	height: 16px;
+	cursor: pointer;
+	accent-color: var(--accent);
+}
+
 .video-card.duplicate {
 	border-color: var(--danger);
 	background: rgba(239, 68, 68, 0.08);

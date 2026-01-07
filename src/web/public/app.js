@@ -9,7 +9,7 @@ let currentUser = null;
 let videos = [];
 let filteredVideos = [];
 let pendingDeleteId = null;
-const pendingDeletes = new Set();
+const selectedVideos = new Set();
 let sortable = null;
 
 // Pagination State
@@ -582,6 +582,15 @@ function renderVideos() {
 				groupKey || ''
 			}">
 			<div class="video-card-header">
+				${
+					currentUser?.canDelete
+						? `<div class="selection-checkbox" onclick="toggleSelect('${
+								video.id
+						  }'); event.stopPropagation();" title="Chọn video">
+								<input type="checkbox" ${selectedVideos.has(video.id) ? 'checked' : ''}>
+						   </div>`
+						: ''
+				}
 				<div class="drag-handle">⋮⋮</div>
 				<div class="video-index">${
 					video.order || index + 1 + (currentPage - 1) * itemsPerPage
@@ -628,11 +637,7 @@ function renderVideos() {
 						? `<button onclick="editHashtags('${video.id}')" title="Sửa hashtags">🏷️</button>`
 						: ''
 				}
-				${
-					currentUser?.canDelete
-						? `<button onclick="toggleDelete('${video.id}')" title="Đánh dấu xóa" class="btn-delete">❌</button>`
-						: ''
-				}
+
 				${
 					currentUser?.canEdit
 						? video.channelNotified
@@ -1084,56 +1089,62 @@ async function confirmDelete() {
 	}
 }
 
-// ========== Batch Delete ==========
+// ========== Batch Actions (Selection) ==========
 
-function toggleDelete(id) {
-	if (pendingDeletes.has(id)) {
-		pendingDeletes.delete(id);
+function toggleSelect(id) {
+	if (selectedVideos.has(id)) {
+		selectedVideos.delete(id);
 	} else {
-		pendingDeletes.add(id);
+		selectedVideos.add(id);
 	}
 
-	updateBatchDeleteUI();
+	updateSelectionUI();
 
 	// Update specific card
 	const card = document.querySelector(`.video-card[data-id="${id}"]`);
 	if (card) {
-		if (pendingDeletes.has(id)) {
-			card.classList.add('marked-for-delete');
+		if (selectedVideos.has(id)) {
+			card.classList.add('selected');
 		} else {
-			card.classList.remove('marked-for-delete');
+			card.classList.remove('selected');
 		}
 	}
 }
 
-function updateBatchDeleteUI() {
+function updateSelectionUI() {
 	const bar = document.getElementById('save-actions');
-	const countEl = document.getElementById('delete-count');
+	const countEl = document.getElementById('selected-count');
 
-	if (pendingDeletes.size > 0) {
+	if (selectedVideos.size > 0) {
 		bar.classList.remove('hidden');
-		countEl.textContent = pendingDeletes.size;
+		if (countEl) countEl.textContent = selectedVideos.size;
 	} else {
 		bar.classList.add('hidden');
 	}
 }
 
-function cancelBatchDeletes() {
-	pendingDeletes.clear();
-	updateBatchDeleteUI();
-	document.querySelectorAll('.video-card.marked-for-delete').forEach((card) => {
-		card.classList.remove('marked-for-delete');
+function cancelSelection() {
+	selectedVideos.clear();
+	updateSelectionUI();
+	document.querySelectorAll('.video-card.selected').forEach((card) => {
+		card.classList.remove('selected');
 	});
 }
 
-async function saveBatchDeletes() {
-	if (pendingDeletes.size === 0) return;
+async function batchDelete() {
+	if (selectedVideos.size === 0) return;
 
-	const ids = Array.from(pendingDeletes);
-	const btn = document.querySelector('#save-actions .btn-danger');
-	const originalText = btn.textContent;
-	btn.textContent = 'Đang xử lý...';
-	btn.disabled = true;
+	const confirmed = await UI.confirm(
+		`Bạn có chắc muốn xóa ${selectedVideos.size} video đã chọn không?`
+	);
+	if (!confirmed) return;
+
+	const ids = Array.from(selectedVideos);
+	const btn = document.getElementById('btn-batch-delete');
+	if (btn) {
+		btn.textContent = 'Đang xử lý...';
+		btn.disabled = true;
+	}
 
 	try {
 		const { ok, data, error } = await API.post('/api/videos/batch-delete', {
@@ -1156,15 +1167,73 @@ async function saveBatchDeletes() {
 			`Đã xóa ${data.deleted} video và sắp xếp lại lịch đăng!`
 		);
 
-		pendingDeletes.clear();
-		updateBatchDeleteUI();
+		selectedVideos.clear();
+		updateSelectionUI();
 		loadVideos();
 	} catch (error) {
 		console.error('Batch delete error:', error);
 		showNotify('error', 'Lỗi xóa video', error.message);
 	} finally {
-		btn.textContent = originalText;
-		btn.disabled = false;
+		if (btn) {
+			btn.textContent = '🗑️ Xóa'; // Reset text
+			btn.disabled = false;
+		}
+	}
+}
+
+async function batchNotify() {
+	if (selectedVideos.size === 0) return;
+
+	const confirmed = await UI.confirm(
+		`Gửi ${selectedVideos.size} video vào Channel?`
+	);
+	if (!confirmed) return;
+
+	const ids = Array.from(selectedVideos);
+	const btn = document.getElementById('btn-batch-notify');
+	if (btn) {
+		btn.textContent = 'Đang gửi...';
+		btn.disabled = true;
+	}
+
+	showNotify('info', 'Đang xử lý', 'Đang gửi thông báo vào channel...');
+
+	try {
+		const { ok, data, error } = await API.post(
+			'/api/videos/batch/notify-channel',
+			{
+				ids,
+			}
+		);
+
+		if (!ok) {
+			throw new Error(error || 'Notify failed');
+		}
+
+		showNotify(
+			'success',
+			'Thành công',
+			`Đã gửi ${data.count} video vào channel!`
+		);
+
+		selectedVideos.clear();
+		updateSelectionUI();
+		// Update UI status directly without reload? Or reload to be safe
+		// Better reload to update button states (Notify -> Del Notify)
+		// Or update local state
+		ids.forEach((id) => {
+			const v = videos.find((video) => video.id === id);
+			if (v) v.channelNotified = true;
+		});
+		renderVideos();
+	} catch (error) {
+		console.error('Batch notify error:', error);
+		showNotify('error', 'Lỗi gửi channel', error.message);
+	} finally {
+		if (btn) {
+			btn.textContent = '📢 Notify';
+			btn.disabled = false;
+		}
 	}
 }
 

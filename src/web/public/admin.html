@@ -707,11 +707,14 @@
 
 				<!-- Save Actions Bar -->
 				<div id="save-actions" class="save-actions-bar hidden">
-					<span>🗑️ Đã chọn xóa <b id="delete-count">0</b> video</span>
-					<button onclick="saveBatchDeletes()" class="btn-danger">
-						Lưu thay đổi
+					<span>Đã chọn <b id="selected-count">0</b> video</span>
+					<button onclick="batchNotify()" id="btn-batch-notify" class="btn-primary" style="margin-right: 8px;">
+						📢 Notify
 					</button>
-					<button onclick="cancelBatchDeletes()" class="btn-secondary">
+					<button onclick="batchDelete()" id="btn-batch-delete" class="btn-danger">
+						🗑️ Xóa
+					</button>
+					<button onclick="cancelSelection()" class="btn-secondary">
 						Hủy
 					</button>
 				</div>
