@@ -143,14 +143,16 @@ model BroadcastTemplate {
 // Message đã gửi (để edit sau này)
 model BroadcastMessage {
   id             String   @id @default(auto()) @map("_id") @db.ObjectId
-  templateId     String   @map("template_id") @db.ObjectId
-  targetRole     String   @map("target_role") // 'user'|'mod'|'reviewer'|'all'
+  templateId     String?  @map("template_id") @db.ObjectId
+  targetRole     String?  @map("target_role") // 'user'|'mod'|'reviewer'|'all'
+  channelIds     String[] @map("channel_ids") // IDs of channels to broadcast to
   sentAt         DateTime @default(now()) @map("sent_at")
   sentBy         BigInt   @map("sent_by") // Admin telegram ID
   messageRecords Json     // Array of { chatId, messageId } for edit
+  mediaGroup     Json?    @map("media_group") // For multiple media items
   status         String   @default("sent") // 'sent'|'edited'|'failed'
 
-  template BroadcastTemplate @relation(fields: [templateId], references: [id])
+  template BroadcastTemplate? @relation(fields: [templateId], references: [id])
 
   @@index([templateId])
   @@map("broadcast_messages")
@@ -174,3 +176,40 @@ model UserChat {
   @@index([isRead])
   @@map("user_chats")
 }
+
+// ==================== CHANNEL/GROUP MANAGEMENT ====================
+
+// Channels/Groups mà bot là admin
+model TelegramChannel {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  chatId      BigInt   @unique @map("chat_id")
+  title       String
+  type        String   // 'channel' | 'group' | 'supergroup'
+  username    String?  // @username nếu có
+  description String?
+  photoUrl    String?  @map("photo_url")
+  memberCount Int?     @map("member_count")
+  isActive    Boolean  @default(true) @map("is_active")
+  addedAt     DateTime @default(now()) @map("added_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("telegram_channels")
+}
+
+// Danh sách user bị ban trong channel/group
+model ChannelBan {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  channelId  String   @map("channel_id") @db.ObjectId
+  chatId     BigInt   @map("chat_id") // channel/group chatId
+  telegramId BigInt   @map("telegram_id") // user bị ban
+  username   String?
+  firstName  String?  @map("first_name")
+  reason     String?
+  bannedBy   BigInt   @map("banned_by")
+  bannedAt   DateTime @default(now()) @map("banned_at")
+
+  @@unique([channelId, telegramId])
+  @@index([chatId])
+  @@map("channel_bans")
+}
+

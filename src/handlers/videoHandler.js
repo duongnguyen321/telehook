@@ -863,6 +863,106 @@ async function handleBackgroundUpscale(
  * @param {import('grammy').Bot} bot
  */
 export function setupVideoHandler(bot) {
+	// Auto-detect when bot is added/removed from channels/groups
+	bot.on('my_chat_member', async (ctx) => {
+		const update = ctx.myChatMember;
+		const chat = update.chat;
+		const newStatus = update.new_chat_member.status;
+		const oldStatus = update.old_chat_member.status;
+
+		// Only handle channels and groups
+		if (!['channel', 'group', 'supergroup'].includes(chat.type)) return;
+
+		console.log(
+			`[Bot] my_chat_member update: ${chat.title} (${chat.id}) - ${oldStatus} -> ${newStatus}`
+		);
+
+		// Bot was promoted to admin
+		if (
+			['administrator', 'creator'].includes(newStatus) &&
+			!['administrator', 'creator'].includes(oldStatus)
+		) {
+			try {
+				// Get member count
+				let memberCount = null;
+				try {
+					memberCount = await bot.api.getChatMemberCount(chat.id);
+				} catch (e) {}
+
+				// Save channel to database
+				await prisma.telegramChannel.upsert({
+					where: { chatId: BigInt(chat.id) },
+					update: {
+						title: chat.title,
+						type: chat.type,
+						username: chat.username || null,
+						memberCount,
+						isActive: true,
+					},
+					create: {
+						chatId: BigInt(chat.id),
+						title: chat.title,
+						type: chat.type,
+						username: chat.username || null,
+						memberCount,
+					},
+				});
+
+				console.log(`[Bot] Auto-added channel: ${chat.title} (${chat.id})`);
+
+				// Notify admin via Telegram
+				const adminId = process.env.ADMIN_USER_ID;
+				if (adminId) {
+					await bot.api.sendMessage(
+						Number(adminId),
+						`📣 *Bot đã được thêm vào ${
+							chat.type === 'channel' ? 'channel' : 'group'
+						}:*\n\n` +
+							`📝 *Tên:* ${chat.title}\n` +
+							`🆔 *ID:* \`${chat.id}\`\n` +
+							`👥 *Members:* ${memberCount || 'N/A'}\n\n` +
+							`✅ Đã tự động thêm vào danh sách quản lý.`,
+						{ parse_mode: 'Markdown' }
+					);
+				}
+			} catch (error) {
+				console.error('[Bot] Auto-add channel error:', error);
+			}
+		}
+		// Bot was demoted or removed
+		else if (
+			!['administrator', 'creator'].includes(newStatus) &&
+			['administrator', 'creator'].includes(oldStatus)
+		) {
+			try {
+				// Mark channel as inactive
+				await prisma.telegramChannel.updateMany({
+					where: { chatId: BigInt(chat.id) },
+					data: { isActive: false },
+				});
+
+				console.log(
+					`[Bot] Marked channel inactive: ${chat.title} (${chat.id})`
+				);
+
+				// Notify admin
+				const adminId = process.env.ADMIN_USER_ID;
+				if (adminId) {
+					await bot.api.sendMessage(
+						Number(adminId),
+						`⚠️ *Bot đã bị gỡ quyền admin khỏi:*\n\n` +
+							`📝 *Tên:* ${chat.title}\n` +
+							`🆔 *ID:* \`${chat.id}\`\n\n` +
+							`❌ Channel đã được đánh dấu không hoạt động.`,
+						{ parse_mode: 'Markdown' }
+					);
+				}
+			} catch (error) {
+				console.error('[Bot] Mark channel inactive error:', error);
+			}
+		}
+	});
+
 	// Handle video messages - auto schedule without user input
 	bot.on('message:video', async (ctx) => {
 		const userId = ctx.from?.id;

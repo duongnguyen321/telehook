@@ -894,6 +894,351 @@ selectChatUser = async function (telegramId, name) {
 	await checkAndUpdateBlockStatus(telegramId);
 };
 
+// ==================== CHANNEL MANAGEMENT ====================
+
+async function loadChannels() {
+	const container = document.getElementById('channels-list');
+	if (!container) return;
+
+	container.innerHTML = '<p class="empty-state">Đang tải...</p>';
+
+	try {
+		const res = await fetch('/api/channels', {
+			headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+		});
+		const data = await res.json();
+
+		if (data.channels && data.channels.length > 0) {
+			container.innerHTML = data.channels
+				.map(
+					(c) => `
+				<div class="channel-card ${c.isActive ? '' : 'inactive'}">
+					<div class="channel-info">
+						<div class="channel-header">
+							<span class="channel-type ${c.type}">${getChannelTypeIcon(c.type)}</span>
+							<strong>${escapeHtml(c.title)}</strong>
+							${c.username ? `<small>@${c.username}</small>` : ''}
+						</div>
+						<div class="channel-meta">
+							<span>👥 ${c.memberCount || '?'} members</span>
+							<span>ID: ${c.chatId}</span>
+						</div>
+					</div>
+					<div class="channel-actions">
+						<button onclick="openSendChannelModal('${c.id}', '${escapeHtml(
+						c.title
+					)}')" class="btn-primary btn-small">📤 Gửi</button>
+						<button onclick="openChannelBanModal('${
+							c.id
+						}')" class="btn-icon" title="Chặn user">🚫</button>
+						<button onclick="refreshChannel('${
+							c.id
+						}')" class="btn-icon" title="Refresh">🔄</button>
+						<button onclick="toggleChannel('${c.id}')" class="btn-icon" title="${
+						c.isActive ? 'Tắt' : 'Bật'
+					}">${c.isActive ? '✅' : '❌'}</button>
+						<button onclick="deleteChannel('${
+							c.id
+						}')" class="btn-icon btn-danger" title="Xóa">🗑️</button>
+					</div>
+				</div>
+			`
+				)
+				.join('');
+		} else {
+			container.innerHTML =
+				'<p class="empty-state">Chưa có channel nào. Bấm "Thêm Channel" để bắt đầu.</p>';
+		}
+	} catch (error) {
+		console.error('[Channels] Load error:', error);
+		container.innerHTML = '<p class="error">Lỗi tải dữ liệu</p>';
+	}
+}
+
+function getChannelTypeIcon(type) {
+	const icons = { channel: '📢', group: '👥', supergroup: '🏛️' };
+	return icons[type] || '💬';
+}
+
+function openAddChannelModal() {
+	document.getElementById('add-channel-modal').classList.remove('hidden');
+	document.getElementById('add-channel-input').value = '';
+}
+
+function closeAddChannelModal() {
+	document.getElementById('add-channel-modal').classList.add('hidden');
+}
+
+async function addChannel() {
+	const input = document.getElementById('add-channel-input').value.trim();
+	if (!input) {
+		showNotify('error', 'Lỗi', 'Nhập Chat ID hoặc @username');
+		return;
+	}
+
+	// Determine if it's chatId or username
+	const isNumber = /^-?\d+$/.test(input);
+	const body = isNumber ? { chatId: input } : { username: input };
+
+	try {
+		const res = await fetch('/api/channels', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+				Authorization: `Bearer ${localStorage.getItem('token')}`,
+			},
+			body: JSON.stringify(body),
+		});
+
+		const data = await res.json();
+		if (res.ok) {
+			closeAddChannelModal();
+			loadChannels();
+			showNotify('success', 'Thành công', `Đã thêm: ${data.channel.title}`);
+		} else {
+			showNotify('error', 'Lỗi', data.error || 'Không thể thêm');
+		}
+	} catch (error) {
+		showNotify('error', 'Lỗi', error.message);
+	}
+}
+
+async function refreshChannel(id) {
+	try {
+		const res = await fetch(`/api/channels/${id}/refresh`, {
+			headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+		});
+		if (res.ok) {
+			loadChannels();
+			showNotify('success', 'Thành công', 'Đã cập nhật thông tin');
+		}
+	} catch (error) {
+		showNotify('error', 'Lỗi', error.message);
+	}
+}
+
+async function toggleChannel(id) {
+	try {
+		const res = await fetch(`/api/channels/${id}/toggle`, {
+			method: 'PUT',
+			headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+		});
+		if (res.ok) {
+			loadChannels();
+		}
+	} catch (error) {
+		showNotify('error', 'Lỗi', error.message);
+	}
+}
+
+async function deleteChannel(id) {
+	if (!confirm('Xóa channel này khỏi danh sách quản lý?')) return;
+
+	try {
+		const res = await fetch(`/api/channels/${id}`, {
+			method: 'DELETE',
+			headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+		});
+		if (res.ok) {
+			loadChannels();
+			showNotify('success', 'Thành công', 'Đã xóa channel');
+		}
+	} catch (error) {
+		showNotify('error', 'Lỗi', error.message);
+	}
+}
+
+// Send to channel
+function openSendChannelModal(id, title) {
+	document.getElementById('send-channel-modal').classList.remove('hidden');
+	document.getElementById('send-channel-id').value = id;
+	document.getElementById(
+		'send-channel-title'
+	).textContent = `📤 Gửi tới: ${title}`;
+	document.getElementById('send-channel-text').value = '';
+	document.getElementById('send-channel-media-type').value = '';
+	document.getElementById('send-channel-media-url').value = '';
+	document.getElementById('send-channel-buttons').value = '';
+	document.getElementById('send-channel-media-preview').innerHTML = '';
+}
+
+function closeSendChannelModal() {
+	document.getElementById('send-channel-modal').classList.add('hidden');
+}
+
+async function handleChannelMediaUpload() {
+	const file = document.getElementById('send-channel-file').files[0];
+	if (!file) return;
+
+	const formData = new FormData();
+	formData.append('file', file);
+
+	try {
+		const res = await fetch('/api/broadcast/upload', {
+			method: 'POST',
+			headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+			body: formData,
+		});
+
+		const data = await res.json();
+		if (res.ok && data.media) {
+			document.getElementById('send-channel-media-url').value = data.media.url;
+			if (!document.getElementById('send-channel-media-type').value) {
+				document.getElementById('send-channel-media-type').value =
+					data.media.type;
+			}
+
+			const preview = document.getElementById('send-channel-media-preview');
+			if (data.media.type === 'photo' || data.media.type === 'image') {
+				preview.innerHTML = `<img src="${data.media.url}" alt="Preview" />`;
+			} else if (data.media.type === 'video') {
+				preview.innerHTML = `<video src="${data.media.url}" controls></video>`;
+			} else {
+				preview.innerHTML = `<p>📎 ${file.name}</p>`;
+			}
+			showNotify('success', 'Upload thành công', 'File đã được upload');
+		} else {
+			showNotify('error', 'Lỗi upload', data.error || 'Upload thất bại');
+		}
+	} catch (error) {
+		showNotify('error', 'Lỗi', error.message);
+	}
+}
+
+async function sendToChannel() {
+	const id = document.getElementById('send-channel-id').value;
+	const text = document.getElementById('send-channel-text').value.trim();
+	const mediaType = document.getElementById('send-channel-media-type').value;
+	const mediaUrl = document.getElementById('send-channel-media-url').value;
+	let buttons = null;
+
+	try {
+		const buttonsStr = document
+			.getElementById('send-channel-buttons')
+			.value.trim();
+		if (buttonsStr) buttons = JSON.parse(buttonsStr);
+	} catch (e) {
+		showNotify('error', 'Lỗi', 'JSON buttons không hợp lệ');
+		return;
+	}
+
+	if (!text && !mediaUrl) {
+		showNotify('error', 'Lỗi', 'Nhập nội dung hoặc chọn media');
+		return;
+	}
+
+	try {
+		const res = await fetch(`/api/channels/${id}/send`, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+				Authorization: `Bearer ${localStorage.getItem('token')}`,
+			},
+			body: JSON.stringify({ text, mediaType, mediaUrl, buttons }),
+		});
+
+		const data = await res.json();
+		if (res.ok) {
+			closeSendChannelModal();
+			showNotify('success', 'Đã gửi!', 'Tin nhắn đã được gửi thành công');
+		} else {
+			showNotify('error', 'Lỗi', data.error || 'Không thể gửi');
+		}
+	} catch (error) {
+		showNotify('error', 'Lỗi', error.message);
+	}
+}
+
+// Ban user from channel
+function openChannelBanModal(id) {
+	document.getElementById('channel-ban-modal').classList.remove('hidden');
+	document.getElementById('ban-channel-id').value = id;
+	document.getElementById('ban-user-id').value = '';
+	document.getElementById('ban-reason').value = '';
+}
+
+function closeChannelBanModal() {
+	document.getElementById('channel-ban-modal').classList.add('hidden');
+}
+
+async function banChannelUser() {
+	const channelId = document.getElementById('ban-channel-id').value;
+	const telegramId = document.getElementById('ban-user-id').value.trim();
+	const reason = document.getElementById('ban-reason').value.trim();
+
+	if (!telegramId) {
+		showNotify('error', 'Lỗi', 'Nhập Telegram ID');
+		return;
+	}
+
+	try {
+		const res = await fetch(`/api/channels/${channelId}/ban`, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+				Authorization: `Bearer ${localStorage.getItem('token')}`,
+			},
+			body: JSON.stringify({ telegramId, reason }),
+		});
+
+		const data = await res.json();
+		if (res.ok) {
+			closeChannelBanModal();
+			showNotify('success', 'Đã chặn', 'User đã bị chặn khỏi channel');
+		} else {
+			showNotify('error', 'Lỗi', data.error || 'Không thể chặn');
+		}
+	} catch (error) {
+		showNotify('error', 'Lỗi', error.message);
+	}
+}
+
+async function kickChannelUser(channelId, telegramId) {
+	if (!confirm('Kick user này khỏi channel?')) return;
+
+	try {
+		const res = await fetch(`/api/channels/${channelId}/kick`, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+				Authorization: `Bearer ${localStorage.getItem('token')}`,
+			},
+			body: JSON.stringify({ telegramId }),
+		});
+
+		const data = await res.json();
+		if (res.ok) {
+			showNotify('success', 'Thành công', 'User đã bị kick');
+		} else {
+			showNotify('error', 'Lỗi', data.error);
+		}
+	} catch (error) {
+		showNotify('error', 'Lỗi', error.message);
+	}
+}
+
+async function unbanChannelUser(channelId, telegramId) {
+	try {
+		const res = await fetch(`/api/channels/${channelId}/unban`, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+				Authorization: `Bearer ${localStorage.getItem('token')}`,
+			},
+			body: JSON.stringify({ telegramId }),
+		});
+
+		const data = await res.json();
+		if (res.ok) {
+			showNotify('success', 'Thành công', 'User đã được bỏ chặn');
+		} else {
+			showNotify('error', 'Lỗi', data.error);
+		}
+	} catch (error) {
+		showNotify('error', 'Lỗi', error.message);
+	}
+}
+
 // Initialize when document is ready
 if (document.readyState === 'loading') {
 	document.addEventListener('DOMContentLoaded', initBroadcast);

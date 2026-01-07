@@ -136,6 +136,13 @@
 					>
 						💬 Chat <span id="chat-badge" class="badge hidden">0</span>
 					</button>
+					<button
+						class="tab admin-only hidden"
+						data-tab="channels"
+						onclick="switchTab('channels')"
+					>
+						📣 Channels
+					</button>
 				</div>
 
 				<!-- Videos Tab -->
@@ -298,6 +305,142 @@
 									Gửi
 								</button>
 							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- Channels Tab (Admin Only) -->
+				<div id="tab-channels" class="tab-content hidden">
+					<div class="admin-panel">
+						<div class="admin-header">
+							<h2>📣 Quản lý Channels/Groups</h2>
+							<div class="header-actions">
+								<button
+									onclick="loadChannels()"
+									class="btn-icon"
+									title="Refresh"
+								>
+									🔄
+								</button>
+								<button onclick="openAddChannelModal()" class="btn-primary">
+									➕ Thêm Channel
+								</button>
+							</div>
+						</div>
+						<div id="channels-list" class="channels-list">
+							<!-- Channels will be rendered here -->
+						</div>
+					</div>
+				</div>
+
+				<!-- Add Channel Modal -->
+				<div id="add-channel-modal" class="modal hidden">
+					<div class="modal-content modal-medium">
+						<button class="modal-close" onclick="closeAddChannelModal()">
+							×
+						</button>
+						<h3>➕ Thêm Channel/Group</h3>
+						<p
+							style="
+								color: var(--text-muted);
+								font-size: 13px;
+								margin-bottom: 16px;
+							"
+						>
+							Nhập Chat ID (số âm) hoặc @username của channel/group. Bot phải là
+							admin.
+						</p>
+						<label>Chat ID hoặc @username</label>
+						<input
+							type="text"
+							id="add-channel-input"
+							placeholder="-1001234567890 hoặc @mychannel"
+						/>
+						<div class="modal-actions">
+							<button onclick="addChannel()" class="btn-primary">Thêm</button>
+							<button onclick="closeAddChannelModal()" class="btn-secondary">
+								Hủy
+							</button>
+						</div>
+					</div>
+				</div>
+
+				<!-- Send to Channel Modal -->
+				<div id="send-channel-modal" class="modal hidden">
+					<div class="modal-content modal-large">
+						<button class="modal-close" onclick="closeSendChannelModal()">
+							×
+						</button>
+						<h3 id="send-channel-title">📤 Gửi tin nhắn</h3>
+						<input type="hidden" id="send-channel-id" />
+
+						<label>Nội dung (hỗ trợ {{variable}})</label>
+						<textarea
+							id="send-channel-text"
+							rows="4"
+							placeholder="Nội dung tin nhắn..."
+						></textarea>
+
+						<div class="form-row">
+							<div class="form-col">
+								<label>Loại media</label>
+								<select id="send-channel-media-type">
+									<option value="">Không có media</option>
+									<option value="photo">Ảnh</option>
+									<option value="video">Video</option>
+									<option value="audio">Audio/Nhạc</option>
+									<option value="document">File/Tài liệu</option>
+								</select>
+							</div>
+							<div class="form-col">
+								<label>Upload file</label>
+								<input
+									type="file"
+									id="send-channel-file"
+									onchange="handleChannelMediaUpload()"
+								/>
+							</div>
+						</div>
+						<input type="hidden" id="send-channel-media-url" />
+						<div id="send-channel-media-preview" class="media-preview"></div>
+
+						<label>Buttons (JSON) - Tùy chọn</label>
+						<textarea
+							id="send-channel-buttons"
+							rows="2"
+							placeholder='[{"type": "link", "text": "Xem thêm", "value": "https://..."}]'
+						></textarea>
+
+						<div class="modal-actions">
+							<button onclick="sendToChannel()" class="btn-primary">
+								📤 Gửi
+							</button>
+							<button onclick="closeSendChannelModal()" class="btn-secondary">
+								Hủy
+							</button>
+						</div>
+					</div>
+				</div>
+
+				<!-- Channel Ban Modal -->
+				<div id="channel-ban-modal" class="modal hidden">
+					<div class="modal-content modal-medium">
+						<button class="modal-close" onclick="closeChannelBanModal()">
+							×
+						</button>
+						<h3>🚫 Chặn người dùng</h3>
+						<input type="hidden" id="ban-channel-id" />
+						<label>Telegram ID của người dùng</label>
+						<input type="text" id="ban-user-id" placeholder="123456789" />
+						<label>Lý do (tùy chọn)</label>
+						<input type="text" id="ban-reason" placeholder="Lý do chặn..." />
+						<div class="modal-actions">
+							<button onclick="banChannelUser()" class="btn-danger">
+								🚫 Chặn
+							</button>
+							<button onclick="closeChannelBanModal()" class="btn-secondary">
+								Hủy
+							</button>
 						</div>
 					</div>
 				</div>

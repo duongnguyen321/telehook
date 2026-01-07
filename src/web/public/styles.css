@@ -1731,3 +1731,83 @@ header {
 	padding: 6px 12px !important;
 	font-size: 12px !important;
 }
+
+/* ========== Channel Management ========== */
+.channels-list {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+}
+
+.channel-card {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding: 16px;
+	background: var(--bg-secondary);
+	border-radius: var(--radius);
+	border: 1px solid var(--border);
+	transition: all 0.2s;
+}
+
+.channel-card:hover {
+	border-color: var(--accent);
+}
+
+.channel-card.inactive {
+	opacity: 0.5;
+}
+
+.channel-info {
+	flex: 1;
+	min-width: 0;
+}
+
+.channel-header {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin-bottom: 4px;
+}
+
+.channel-header strong {
+	font-size: 1rem;
+}
+
+.channel-header small {
+	color: var(--text-muted);
+	font-size: 12px;
+}
+
+.channel-type {
+	font-size: 1.2rem;
+}
+
+.channel-meta {
+	display: flex;
+	gap: 16px;
+	font-size: 12px;
+	color: var(--text-secondary);
+}
+
+.channel-actions {
+	display: flex;
+	gap: 4px;
+	align-items: center;
+}
+
+.header-actions {
+	display: flex;
+	gap: 8px;
+	align-items: center;
+}
+
+/* Modal large override */
+.modal-large {
+	max-width: 650px;
+	padding: 24px;
+}
+
+.modal-large textarea {
+	min-height: 80px;
+}

@@ -1278,6 +1278,9 @@ function switchTab(tabName, resetPage = true) {
 	} else if (tabName === 'chat' && currentUser?.role === 'admin') {
 		// Load chat users - function from broadcast.js
 		if (typeof loadChatUsers === 'function') loadChatUsers();
+	} else if (tabName === 'channels' && currentUser?.role === 'admin') {
+		// Load channels - function from broadcast.js
+		if (typeof loadChannels === 'function') loadChannels();
 	}
 }
 

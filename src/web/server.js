@@ -16,6 +16,7 @@ import adminRoutes from './routes/admin.js';
 import contentRoutes from './routes/content.js';
 import broadcastRoutes from './routes/broadcast.js';
 import chatRoutes from './routes/chat.js';
+import channelRoutes from './routes/channels.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -101,6 +102,7 @@ export function startWebServer() {
 	app.use('/api/content', contentRoutes);
 	app.use('/api/broadcast', broadcastRoutes);
 	app.use('/api/chat', chatRoutes);
+	app.use('/api/channels', channelRoutes);
 
 	// User Feed (Main Page) - Served by express.static('public') automatically as index.html
 	// But we can keep explicit route if needed.
