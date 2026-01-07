@@ -97,17 +97,22 @@ export async function sendChannelNotification(post) {
 
 	// Send to all channels
 	for (const channel of channels) {
+		const targetId = channel.chatId.toString();
+		const targetType = (channel.type || 'channel').toUpperCase();
+		const targetLabel = `[${targetType}] ${channel.title || targetId}`;
+
 		try {
-			const sent = await bot.api.sendVideo(channel.chatId, videoSource, {
+			const sent = await bot.api.sendVideo(targetId, videoSource, {
 				caption: caption,
 				parse_mode: 'Markdown',
 				reply_markup: keyboard,
 				supports_streaming: true,
 			});
-			sentMessageIds.push(`${channel.chatId}:${sent.message_id}`);
+			sentMessageIds.push(`${targetId}:${sent.message_id}`);
+			console.log(`[Scheduler] Sent video to ${targetLabel}`);
 		} catch (err) {
 			console.error(
-				`[Scheduler] Failed to send video to channel ${channel.chatId}:`,
+				`[Scheduler] Failed to send video to ${targetLabel}:`,
 				err.message
 			);
 		}
