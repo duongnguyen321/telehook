@@ -11,6 +11,7 @@ let filteredVideos = [];
 let pendingDeleteId = null;
 const selectedVideos = new Set();
 let sortable = null;
+let videoObserver = null;
 
 // Pagination State
 let currentPage = 1;
@@ -651,9 +652,12 @@ function renderVideos() {
 		})
 		.join('');
 
+	// Update Pagination UI
+	updatePaginationUI();
+	updateSelectionUI();
+
 	// Setup lazy loading and visibility-based playback
 	initVideoObserver();
-	// ...
 }
 
 // ... existing code ...
@@ -741,9 +745,6 @@ function formatDuration(seconds) {
 	const secs = Math.round(seconds % 60);
 	return `${mins}:${secs.toString().padStart(2, '0')}`;
 }
-
-// Store observer globally to avoid re-creating
-let videoObserver = null;
 
 function initVideoObserver() {
 	// Disconnect existing observer if any
@@ -1111,6 +1112,41 @@ function toggleSelect(id) {
 	}
 }
 
+function selectAllOnPage() {
+	if (!videos || videos.length === 0) return;
+
+	let addedCount = 0;
+	videos.forEach((video) => {
+		if (!selectedVideos.has(video.id)) {
+			selectedVideos.add(video.id);
+			addedCount++;
+		}
+	});
+
+	if (addedCount > 0) {
+		updateSelectionUI();
+		document.querySelectorAll('.video-card').forEach((card) => {
+			const id = card.dataset.id;
+			if (selectedVideos.has(id)) {
+				card.classList.add('selected');
+				const checkbox = card.querySelector('.selection-checkbox input');
+				if (checkbox) checkbox.checked = true;
+			}
+		});
+		showNotify(
+			'success',
+			'Đã chọn',
+			`Đã thêm ${addedCount} video vào danh sách.`
+		);
+	} else {
+		showNotify(
+			'info',
+			'Thông báo',
+			'Tất cả video trên trang này đã được chọn.'
+		);
+	}
+}
+
 function updateSelectionUI() {
 	const bar = document.getElementById('save-actions');
 	const countEl = document.getElementById('selected-count');
@@ -1184,12 +1220,35 @@ async function batchDelete() {
 async function batchNotify() {
 	if (selectedVideos.size === 0) return;
 
-	const confirmed = await UI.confirm(
-		`Gửi ${selectedVideos.size} video vào Channel?`
-	);
+	const ids = Array.from(selectedVideos);
+
+	// Filter already notified videos (only for videos currently loaded in 'videos' array)
+	const notifiedIds = ids.filter((id) => {
+		const v = videos.find((video) => video.id === id);
+		return v && v.channelNotified;
+	});
+
+	let idsToSend = ids;
+	let confirmMessage = `Gửi ${selectedVideos.size} video vào Channel?`;
+
+	if (notifiedIds.length > 0) {
+		if (notifiedIds.length === ids.length) {
+			await UI.alert(
+				'⚠️ Tất cả các video đã chọn đều đã được gửi thông báo trước đó.'
+			);
+			return;
+		}
+
+		idsToSend = ids.filter((id) => !notifiedIds.includes(id));
+		confirmMessage =
+			`⚠️ Bạn đã chọn ${ids.length} video, nhưng có ${notifiedIds.length} video ĐÃ ĐƯỢC GỬI.\n\n` +
+			`Hệ thống sẽ chỉ gửi ${idsToSend.length} video chưa gửi.\n\n` +
+			`Bạn có muốn tiếp tục không?`;
+	}
+
+	const confirmed = await UI.confirm(confirmMessage);
 	if (!confirmed) return;
 
-	const ids = Array.from(selectedVideos);
 	const btn = document.getElementById('btn-batch-notify');
 	if (btn) {
 		btn.textContent = 'Đang gửi...';
@@ -1202,7 +1261,7 @@ async function batchNotify() {
 		const { ok, data, error } = await API.post(
 			'/api/videos/batch/notify-channel',
 			{
-				ids,
+				ids: idsToSend,
 			}
 		);
 
@@ -1218,10 +1277,9 @@ async function batchNotify() {
 
 		selectedVideos.clear();
 		updateSelectionUI();
-		// Update UI status directly without reload? Or reload to be safe
-		// Better reload to update button states (Notify -> Del Notify)
-		// Or update local state
-		ids.forEach((id) => {
+
+		// Update UI status directly
+		idsToSend.forEach((id) => {
 			const v = videos.find((video) => video.id === id);
 			if (v) v.channelNotified = true;
 		});
