@@ -29,6 +29,7 @@ model ScheduledPost {
   // For duplicate detection
   duration               Float?   @map("duration")
   fileSize               Int?     @map("file_size")
+  channelNotified        Boolean  @default(false) @map("channel_notified")
 
   @@index([status])
   @@index([scheduledAt])

@@ -15,7 +15,10 @@ import {
 	clearNotificationMessageIds,
 	getRawPostById,
 	rescheduleToEnd,
+	getUnnotifiedPosts,
+	markChannelNotified,
 } from '../utils/storage.js';
+import { prisma } from '../utils/prisma.js';
 import { getNotificationRecipients, getUserRole } from './roleService.js';
 import {
 	isS3Enabled,
@@ -26,6 +29,100 @@ import {
 
 let bot = null;
 let defaultChatId = null;
+
+/**
+ * Check for posts that have been posted/cancelled and notify channels
+ */
+async function checkAndNotifyChannelStatus() {
+	if (!bot) return;
+
+	try {
+		const posts = await getUnnotifiedPosts();
+		if (posts.length === 0) return;
+
+		// Get active channels
+		const channels = await prisma.telegramChannel.findMany({
+			where: { isActive: true },
+		});
+
+		if (channels.length === 0) return;
+
+		console.log(`[Scheduler] Found ${posts.length} posts to send to channels`);
+
+		const TIKTOK_USERNAME = process.env.TIKTOK_USERNAME || '';
+		const BASE_URL = process.env.BASE_URL || 'http://localhost:8888';
+		const fullLink = `${BASE_URL}/`;
+
+		const tiktokLink = TIKTOK_USERNAME
+			? `\n\n🔥 Follow: https://tiktok.com/@${TIKTOK_USERNAME}`
+			: '';
+
+		for (const post of posts) {
+			const isPosted = post.status === 'posted';
+			// Only show tiktok link if posted, but send video in both cases (posted/cancelled)
+
+			const caption = `**${post.title}**\n\n${post.hashtags || ''}${
+				isPosted ? tiktokLink : ''
+			}`;
+
+			const keyboard = new InlineKeyboard();
+			if (fullLink.startsWith('https')) {
+				keyboard.webApp('📱 Mở App', fullLink);
+			}
+
+			// Prepare video source
+			const videoKey = path.basename(post.videoPath);
+			const localPath = path.join(DATA_DIR, 'videos', videoKey);
+			let videoSource = null;
+
+			// Try to get video source: cached file_id > local > s3
+			if (post.telegramFileId) {
+				videoSource = post.telegramFileId;
+			} else if (fs.existsSync(localPath)) {
+				videoSource = new InputFile(localPath);
+			} else if (isS3Enabled()) {
+				// Download from S3 logic
+				const cacheDir = path.join(DATA_DIR, 'videos');
+				const videoBuffer = await s3DownloadVideo(videoKey, cacheDir);
+				if (videoBuffer) {
+					videoSource = new InputFile(videoBuffer, videoKey);
+				}
+			}
+
+			if (!videoSource) {
+				console.warn(
+					`[Scheduler] Video source not found for ${post.id}, skipping channel notify`
+				);
+				// Still mark as notified to avoid infinite retries on missing file
+				await markChannelNotified(post.id);
+				continue;
+			}
+
+			// Send to all channels
+			for (const channel of channels) {
+				try {
+					await bot.api.sendVideo(channel.chatId, videoSource, {
+						caption: caption,
+						parse_mode: 'Markdown',
+						reply_markup: keyboard,
+						supports_streaming: true,
+					});
+				} catch (err) {
+					// Duplicate file logic omitted for simplicity + performance
+					console.error(
+						`[Scheduler] Failed to send video to channel ${channel.chatId}:`,
+						err.message
+					);
+				}
+			}
+
+			// Mark as notified
+			await markChannelNotified(post.id);
+		}
+	} catch (error) {
+		console.error('[Scheduler] Error notifying channels:', error.message);
+	}
+}
 
 /**
  * Set the bot instance for notifications
@@ -463,12 +560,14 @@ export function startWorker() {
 		}
 
 		checkAndProcessDuePosts().catch(console.error);
+		checkAndNotifyChannelStatus().catch(console.error);
 	});
 
 	// Also run immediately on startup to catch any missed posts
 	console.log('[Scheduler] Running initial check for due posts...');
 	setTimeout(() => {
 		checkAndProcessDuePosts().catch(console.error);
+		checkAndNotifyChannelStatus().catch(console.error);
 	}, 2000); // Wait 2s for bot to be ready
 
 	// Daily repost check at 8:00 AM

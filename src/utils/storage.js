@@ -1643,3 +1643,27 @@ export async function getVideoStats(chatId) {
 
 // Export prisma for direct access if needed
 export { prisma };
+/**
+ * Get posts that have been posted/cancelled but not notified to channels
+ * @returns {Promise<Array>}
+ */
+export async function getUnnotifiedPosts() {
+	return prisma.scheduledPost.findMany({
+		where: {
+			status: { in: ['posted', 'cancelled'] },
+			channelNotified: false,
+		},
+	});
+}
+
+/**
+ * Mark a post as notified to channels
+ * @param {string} id
+ * @returns {Promise<Object>}
+ */
+export async function markChannelNotified(id) {
+	return prisma.scheduledPost.update({
+		where: { id },
+		data: { channelNotified: true },
+	});
+}
