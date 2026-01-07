@@ -1863,3 +1863,45 @@ header {
 .modal-large textarea {
 	min-height: 80px;
 }
+/* ========== Mobile Responsive Modals ========== */
+@media (max-width: 600px) {
+	.modal-content,
+	.modal-small,
+	.modal-medium {
+		width: 95% !important;
+		max-width: 95% !important;
+		padding: 16px !important;
+		margin: 0 auto;
+	}
+
+	.modal-actions {
+		flex-direction: column;
+		gap: 10px;
+		margin-top: 16px;
+	}
+
+	.modal-actions button {
+		width: 100%;
+		padding: 14px; /* Larger touch target */
+		font-size: 16px;
+	}
+
+	/* Adjust confirm/prompt specific elements */
+	#ui-confirm-modal .modal-actions,
+	#ui-prompt-modal .modal-actions {
+		flex-direction: column;
+	}
+
+	/* Make inputs easier to use */
+	.modal-content input,
+	.modal-content select,
+	.modal-content textarea {
+		font-size: 16px; /* Prevent zoom on iOS */
+		padding: 10px;
+	}
+
+	.notify-icon {
+		font-size: 40px;
+		margin-bottom: 8px;
+	}
+}
