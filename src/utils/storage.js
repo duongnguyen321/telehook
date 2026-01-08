@@ -22,48 +22,45 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 export const DATA_DIR = path.join(__dirname, '../../data');
 export const VIDEOS_DIR = path.join(DATA_DIR, 'videos');
 
-// 9 videos/day at optimal times (GMT+7)
-// Weekday (Mon-Fri): 11:30, 12:15, 17:30, 19:45, 20:30, 21:15, 22:00, 22:45, 23:45
-export const WEEKDAY_SLOTS = [
-	[11, 30], // Lunch Open
-	[12, 15], // Lunch Peak
-	[17, 30], // Commute End
-	[19, 45], // Evening Prime Open
-	[20, 30], // Golden Hour
-	[21, 15], // Private Hour
-	[22, 0], // Gen Z Peak
-	[22, 45], // Late Night Peak
-	[23, 45], // The "Hut" Slot
-];
+// 10 videos/week - Strategic Posting Schedule (GMT+7)
+// Based on audience psychology and peak engagement times
 
-// Saturday: Remove 19:45, 20:30. Add 16:00.
-// 11:30, 12:15, 16:00, 17:30, 21:15, 22:00, 22:45, 23:45
-export const SATURDAY_SLOTS = [
-	[11, 30],
-	[12, 15],
-	[16, 0], // Get Ready slot
-	[17, 30],
-	[21, 15],
-	[22, 0],
-	[22, 45],
-	[23, 45],
-];
+/**
+ * Weekly slot configuration - 1-2 videos per day
+ * Key: Day of week (0=Sunday, 1=Monday, ..., 6=Saturday)
+ * Value: Array of [hour, minute] slots
+ */
+export const WEEKLY_SLOTS = {
+	// Monday: "The Monday Relief" - Stress relief after dinner
+	1: [[20, 30]],
 
-// Sunday: Add 01:00 (Sat Post-Party), 09:00, 10:00.
-// 01:00, 09:00, 10:00, 11:30, 12:15, 17:30, 19:45, 20:30, 21:15, 22:00, 22:45
-export const SUNDAY_SLOTS = [
-	[1, 0], // Post-Party (technically Sun morning)
-	[9, 0], // Sleeping in
-	[10, 0], // Sleeping in
-	[11, 30],
-	[12, 15],
-	[17, 30],
-	[19, 45],
-	[20, 30],
-	[21, 15],
-	[22, 0],
-	[22, 45],
-];
+	// Tuesday: "Engagement Peak" - High retention, stable work week
+	2: [[21, 0]],
+
+	// Wednesday: "The Mid-Week Pulse" - Lunch rush + evening leisure
+	3: [
+		[11, 45],
+		[20, 0],
+	],
+
+	// Thursday: "Anticipation Build" - Weekend approaching, playful content
+	4: [[20, 0]],
+
+	// Friday: "Late Night Fri-Yay" - VN late night + KR/JP early morning overlap
+	5: [[22, 15]],
+
+	// Saturday: "The Leisure Day" - Late wake-up + deep scroll night
+	6: [
+		[11, 0],
+		[23, 0],
+	],
+
+	// Sunday: "The Reset" - Peak leisure noon + highest traffic evening
+	0: [
+		[12, 0],
+		[20, 30],
+	],
+};
 
 /**
  * Get slots for a specific date (GMT+7)
@@ -72,11 +69,8 @@ export const SUNDAY_SLOTS = [
  */
 export function getSlotsForDate(date) {
 	const gmt7Date = toGMT7(date);
-	const day = gmt7Date.getDay(); // 0 is Sunday, 6 is Saturday
-
-	if (day === 0) return SUNDAY_SLOTS;
-	if (day === 6) return SATURDAY_SLOTS;
-	return WEEKDAY_SLOTS;
+	const day = gmt7Date.getDay(); // 0=Sunday, 1=Monday, ..., 6=Saturday
+	return WEEKLY_SLOTS[day] || [[20, 30]]; // Fallback to Monday slot
 }
 /**
  * Convert relative video path (filename) to absolute path
@@ -137,7 +131,7 @@ export async function setSetting(key, value) {
 // Initialize default settings
 async function initSettings() {
 	const defaults = [
-		['videos_per_day', '9'],
+		['videos_per_week', '10'],
 		['current_repost_cycle', '0'],
 		['repost_index', '0'],
 	];
